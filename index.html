@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awas Reservation — Shri Parmagam Shravak Trust, Sonagir</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .page-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--maroon);
+    text-align: center;
+    margin-bottom: 6px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .page-subtitle {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-light);
+    margin-bottom: 28px;
+    font-family: 'Tiro Devanagari Hindi', serif;
+  }
+  .step-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .step-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--ivory-dark);
+    transition: all 0.3s;
+  }
+  .step-dot.active {
+    background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+    color: white;
+    border-color: var(--saffron);
+    font-weight: 600;
+  }
+  .step-dot.done {
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
+  }
+  .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .info-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #FFF8E1; border: 1px solid var(--gold-light);
+    color: var(--maroon); font-size: 0.78rem; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="site-header">
+  <div class="header-om">🕉</div>
+  <div class="header-trust-name">Shri Parmagam Shravak Trust, Sonagir</div>
+  <div class="header-hindi">श्री परमागम श्रावक ट्रस्ट, सोनागिर</div>
+  <div class="header-divider"></div>
+  <div class="header-address">
+    श्री कुन्दकुन्द नगर, पिछोरखेड़ सोनागिर — 473885, जिला: दतिया (म.प्र.) &nbsp;|&nbsp;
+    📞 8887417076 &nbsp;/&nbsp; 7987164958
+  </div>
+</header>
+
+<!-- ── MAIN FORM ── -->
+<main class="container">
+
+  <div class="page-title">Awas Reservation Form &nbsp;|&nbsp; आवास आरक्षण फॉर्म</div>
+  <div class="page-subtitle">कुंद कुंद नगर, सोनागिर — Kund Kund Nagar, Sonagir</div>
+
+  <!-- Step Indicator -->
+  <div class="step-indicator" id="stepIndicator">
+    <div class="step-dot active" id="step1dot">👤 Personal Info</div>
+    <div class="step-dot" id="step2dot">🏠 Stay & Rooms</div>
+    <div class="step-dot" id="step3dot">💳 Payment</div>
+    <div class="step-dot" id="step4dot">👨‍👩‍👧 Members</div>
+  </div>
+
+  <form id="reservationForm" novalidate>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 1 — PERSONAL INFORMATION
+    ═══════════════════════════════════════ -->
+    <div class="form-section" id="sec1">
+      <div class="section-title">
+        <span class="icon">👤</span>
+        Personal Information
+        <span style="font-size:0.75rem; color:var(--text-light); font-family:'Nunito',sans-serif; font-weight:400; margin-left:4px;">/ व्यक्तिगत विवरण</span>
+      </div>
+      <div class="section-subtitle">Primary visitor details · मुख्य आगंतुक की जानकारी</div>
+
+      <div class="form-grid">
+
+        <!-- Full Name -->
+        <div class="field-group full">
+          <label class="field-label">Full Name <span class="hindi">/ पूरा नाम</span><span class="req">*</span></label>
+          <input type="text" class="field-input" id="fullName" placeholder="Enter your full name" autocomplete="name">
+          <span class="field-error" id="err-fullName">Please enter your full name</span>
+        </div>
+
+        <!-- Address -->
+        <div class="field-group full">
+          <label class="field-label">Address <span class="hindi">/ पता</span><span class="req">*</span></label>
+          <textarea class="field-textarea" id="address" placeholder="House/Flat No., Street, Area..." rows="2"></textarea>
+          <span class="field-error" id="err-address">Please enter your address</span>
+        </div>
+
+        <!-- City -->
+        <div class="field-group">
+          <label class="field-label">City / Town / Village <span class="hindi">/ शहर/नगर/गाँव</span><span class="req">*</span></label>
+          <input type="text" class="field-input" id="city" placeholder="Your city or village">
+          <span class="field-error" id="err-city">Please enter your city/village</span>
+        </div>
+
+        <!-- State -->
+        <div class="field-group">
+          <label class="field-label">State <span class="hindi">/ राज्य</span><span class="req">*</span></label>
+          <select class="field-select" id="state">
+            <option value="">— Select State —</option>
+            <option>Andhra Pradesh</option><option>Arunachal Pradesh</option>
+            <option>Assam</option><option>Bihar</option><option>Chhattisgarh</option>
+            <option>Goa</option><option>Gujarat</option><option>Haryana</option>
+            <option>Himachal Pradesh</option><option>Jharkhand</option>
+            <option>Karnataka</option><option>Kerala</option>
+            <option>Madhya Pradesh</option><option>Maharashtra</option>
+            <option>Manipur</option><option>Meghalaya</option><option>Mizoram</option>
+            <option>Nagaland</option><option>Odisha</option><option>Punjab</option>
+            <option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option>
+            <option>Telangana</option><option>Tripura</option>
+            <option>Uttar Pradesh</option><option>Uttarakhand</option>
+            <option>West Bengal</option>
+            <optgroup label="Union Territories">
+              <option>Andaman &amp; Nicobar Islands</option>
+              <option>Chandigarh</option>
+              <option>Dadra &amp; Nagar Haveli and Daman &amp; Diu</option>
+              <option>Delhi (NCT)</option><option>Jammu &amp; Kashmir</option>
+              <option>Ladakh</option><option>Lakshadweep</option><option>Puducherry</option>
+            </optgroup>
+            <option value="Other">Other (Foreign / अन्य देश)</option>
+          </select>
+          <span class="field-error" id="err-state">Please select your state</span>
+        </div>
+
+        <!-- Mobile -->
+        <div class="field-group">
+          <label class="field-label">Mobile Number <span class="hindi">/ मोबाइल नंबर</span><span class="req">*</span></label>
+          <input type="tel" class="field-input" id="mobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
+          <span class="field-error" id="err-mobile">Please enter a valid 10-digit mobile number</span>
+        </div>
+
+        <!-- Email -->
+        <div class="field-group">
+          <label class="field-label">Email Address <span class="hindi">/ ईमेल</span><span class="req">*</span></label>
+          <input type="email" class="field-input" id="email" placeholder="your@email.com" autocomplete="email">
+          <span class="field-error" id="err-email">Please enter a valid email address</span>
+        </div>
+
+        <!-- Aadhaar / PAN -->
+        <div class="field-group">
+          <label class="field-label">Aadhaar or PAN <span class="hindi">/ आधार या पैन नंबर</span></label>
+          <input type="text" class="field-input" id="aadhaarPan" placeholder="XXXX XXXX XXXX or ABCDE1234F" maxlength="14">
+          <span class="field-error" id="err-aadhaarPan">Enter valid Aadhaar (12 digits) or PAN (10 chars)</span>
+        </div>
+
+        <!-- Gender -->
+        <div class="field-group">
+          <label class="field-label">Gender <span class="hindi">/ लिंग</span><span class="req">*</span></label>
+          <div class="radio-group gender-grid" id="genderGroup">
+            <label class="radio-option" onclick="selectRadio('gender','Male',this)">
+              <input type="radio" name="gender" value="Male"> 👨 Male / पुरुष
+            </label>
+            <label class="radio-option" onclick="selectRadio('gender','Female',this)">
+              <input type="radio" name="gender" value="Female"> 👩 Female / महिला
+            </label>
+          </div>
+          <span class="field-error" id="err-gender">Please select your gender</span>
+        </div>
+
+        <!-- Age -->
+        <div class="field-group">
+          <label class="field-label">Age <span class="hindi">/ आयु</span><span class="req">*</span></label>
+          <input type="number" class="field-input" id="age" placeholder="Your age in years" min="1" max="120" inputmode="numeric">
+          <span class="field-error" id="err-age">Please enter a valid age</span>
+        </div>
+
+        <!-- Occupation -->
+        <div class="field-group full">
+          <label class="field-label">Occupation <span class="hindi">/ पेशा</span><span class="req">*</span></label>
+          <div class="radio-group" id="occupationGroup">
+            <label class="radio-option" onclick="selectRadio('occupation','Business',this)">
+              <input type="radio" name="occupation" value="Business"> 🏪 Business / व्यापार
+            </label>
+            <label class="radio-option" onclick="selectRadio('occupation','Government Service',this)">
+              <input type="radio" name="occupation" value="Government Service"> 🏛️ Govt. Service / सरकारी सेवा
+            </label>
+            <label class="radio-option" onclick="selectRadio('occupation','Private Service',this)">
+              <input type="radio" name="occupation" value="Private Service"> 💼 Private Service / निजी सेवा
+            </label>
+            <label class="radio-option" onclick="selectRadio('occupation','Other',this)">
+              <input type="radio" name="occupation" value="Other"> ✨ Other / अन्य
+            </label>
+          </div>
+          <span class="field-error" id="err-occupation">Please select your occupation</span>
+        </div>
+
+        <!-- Organization -->
+        <div class="field-group full">
+          <label class="field-label">Organization Name <span class="hindi">/ संगठन का नाम</span></label>
+          <input type="text" class="field-input" id="organization" placeholder="Your organization (if applicable)">
+        </div>
+
+      </div><!-- /form-grid -->
+    </div><!-- /sec1 -->
+
+    <!-- ═══════════════════════════════════════
+         SECTION 2 — STAY DETAILS & ROOM SELECTION
+    ═══════════════════════════════════════ -->
+    <div class="form-section" id="sec2">
+      <div class="section-title">
+        <span class="icon">🏠</span>
+        Stay Details &amp; Room Selection
+        <span style="font-size:0.75rem; color:var(--text-light); font-family:'Nunito',sans-serif; font-weight:400; margin-left:4px;">/ आवास विवरण</span>
+      </div>
+      <div class="section-subtitle">Arrival · Departure · Room Type · आगमन · प्रस्थान · कमरा प्रकार</div>
+
+      <div class="form-grid">
+
+        <!-- Check-In -->
+        <div class="field-group">
+          <label class="field-label">Check-In Date <span class="hindi">/ आने की तिथि</span><span class="req">*</span></label>
+          <input type="date" class="field-input" id="checkIn" onchange="calcNights()">
+          <span class="field-error" id="err-checkIn">Check-in date cannot be in the past</span>
+        </div>
+
+        <!-- Check-Out -->
+        <div class="field-group">
+          <label class="field-label">Check-Out Date <span class="hindi">/ वापसी की तिथि</span><span class="req">*</span></label>
+          <input type="date" class="field-input" id="checkOut" onchange="calcNights()">
+          <span class="field-error" id="err-checkOut">Check-out must be after check-in</span>
+        </div>
+
+        <!-- Nights Display -->
+        <div class="field-group full" id="nightsDisplay" style="display:none;">
+          <div class="nights-badge">
+            🌙 <span id="nightsCount">0</span> Night(s) Stay
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Room Selection -->
+      <div style="margin-top: 20px;">
+        <div class="field-label" style="margin-bottom:12px;">
+          Room Category &amp; Count <span class="hindi">/ कमरे का प्रकार</span><span class="req">*</span>
+        </div>
+
+        <div class="alert alert-info" style="margin-bottom:14px;">
+          ℹ️ Room selection is a <strong>request only</strong>. Actual allocation will be confirmed by the trust via email based on availability.
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px;">
+
+          <div class="room-card" id="roomCard-ac">
+            <div class="room-info">
+              <div class="room-name">❄️ AC Room</div>
+              <div class="room-rate">₹1,200 per night</div>
+            </div>
+            <div class="room-counter">
+              <button type="button" class="counter-btn" onclick="changeRoom('ac',-1)">−</button>
+              <span class="counter-val" id="roomCount-ac">0</span>
+              <button type="button" class="counter-btn" onclick="changeRoom('ac',1)">+</button>
+            </div>
+          </div>
+
+          <div class="room-card" id="roomCard-nonAc">
+            <div class="room-info">
+              <div class="room-name">🌬️ Non-AC Room with Cooler</div>
+              <div class="room-rate">₹700 per night</div>
+            </div>
+            <div class="room-counter">
+              <button type="button" class="counter-btn" onclick="changeRoom('nonAc',-1)">−</button>
+              <span class="counter-val" id="roomCount-nonAc">0</span>
+              <button type="button" class="counter-btn" onclick="changeRoom('nonAc',1)">+</button>
+            </div>
+          </div>
+
+          <div class="room-card" id="roomCard-guestHouse">
+            <div class="room-info">
+              <div class="room-name">🏡 Guest House Room with AC</div>
+              <div class="room-rate">₹2,000 per night</div>
+            </div>
+            <div class="room-counter">
+              <button type="button" class="counter-btn" onclick="changeRoom('guestHouse',-1)">−</button>
+              <span class="counter-val" id="roomCount-guestHouse">0</span>
+              <button type="button" class="counter-btn" onclick="changeRoom('guestHouse',1)">+</button>
+            </div>
+          </div>
+
+        </div>
+
+        <span class="field-error" id="err-rooms" style="margin-top:6px; display:none;">Please select at least one room</span>
+
+        <!-- Cost Summary -->
+        <div class="cost-summary" id="costSummary" style="display:none;">
+          <div id="costRows"></div>
+          <div class="cost-row">
+            <span>💰 Estimated Total</span>
+            <span id="costTotal">₹0</span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-light); margin-top:6px;">* Estimate based on selected rooms &amp; nights. Subject to confirmation.</div>
+        </div>
+
+      </div>
+
+      <!-- Transport Mode -->
+      <div style="margin-top: 24px;">
+        <div class="field-label" style="margin-bottom:12px;">
+          Mode of Transport <span class="hindi">/ परिवहन के साधन</span><span class="req">*</span>
+        </div>
+        <div class="transport-grid" id="transportGroup">
+          <div class="transport-card" onclick="selectTransport('Air',this)">
+            <div class="t-icon">✈️</div><div class="t-label">Air / हवाई</div>
+          </div>
+          <div class="transport-card" onclick="selectTransport('Train',this)">
+            <div class="t-icon">🚂</div><div class="t-label">Train / रेलगाड़ी</div>
+          </div>
+          <div class="transport-card" onclick="selectTransport('Car',this)">
+            <div class="t-icon">🚗</div><div class="t-label">Car / कार</div>
+          </div>
+          <div class="transport-card" onclick="selectTransport('Bus',this)">
+            <div class="t-icon">🚌</div><div class="t-label">Bus / बस</div>
+          </div>
+        </div>
+        <span class="field-error" id="err-transport">Please select your mode of transport</span>
+      </div>
+
+      <!-- Additional Requirements -->
+      <div class="form-grid" style="margin-top: 20px;">
+        <div class="field-group">
+          <label class="field-label">Need Transport? <span class="hindi">/ परिवहन चाहिए?</span><span class="req">*</span></label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn" id="transportYes" onclick="setToggle('needTransport','Yes')">✅ Yes / हाँ</button>
+            <button type="button" class="toggle-btn" id="transportNo"  onclick="setToggle('needTransport','No')">❌ No / नहीं</button>
+          </div>
+          <span class="field-error" id="err-needTransport">Please indicate if you need transport</span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Need Pooja Arrangement? <span class="hindi">/ पूजा व्यवस्था चाहिए?</span><span class="req">*</span></label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn" id="poojaYes" onclick="setToggle('needPooja','Yes')">🙏 Yes / हाँ</button>
+            <button type="button" class="toggle-btn" id="poojaNo"  onclick="setToggle('needPooja','No')">❌ No / नहीं</button>
+          </div>
+          <span class="field-error" id="err-needPooja">Please indicate if you need pooja arrangement</span>
+        </div>
+
+        <div class="field-group full">
+          <label class="field-label">Any Additional Requirements <span class="hindi">/ अतिरिक्त आवश्यकता</span></label>
+          <textarea class="field-textarea" id="additionalReq" placeholder="Please mention any additional requirements / किसी अतिरिक्त आवश्यकता का उल्लेख करें..."></textarea>
+        </div>
+      </div>
+
+    </div><!-- /sec2 -->
+
+    <!-- ═══════════════════════════════════════
+         SECTION 3 — PAYMENT DETAILS
+    ═══════════════════════════════════════ -->
+    <div class="form-section" id="sec3">
+      <div class="section-title">
+        <span class="icon">💳</span>
+        Payment Details
+        <span style="font-size:0.75rem; color:var(--text-light); font-family:'Nunito',sans-serif; font-weight:400; margin-left:4px;">/ भुगतान विवरण</span>
+      </div>
+      <div class="section-subtitle">Pay via UPI or Bank Transfer and upload screenshot · UPI या बैंक ट्रांसफर द्वारा भुगतान करें</div>
+
+      <div class="payment-box">
+        <!-- QR Code -->
+        <div class="qr-box">
+          <div class="qr-placeholder">📱</div>
+          <div class="qr-label">SHRI SHRAVAK BHOJNALAY</div>
+          <div style="font-size:0.72rem; color:var(--text-light); margin-top:4px;">TID: 82089080</div>
+          <div style="font-size:0.72rem; color:var(--saffron); font-weight:700; margin-top:6px;">Scan QR to Pay</div>
+          <div style="font-size:0.68rem; color:var(--text-light); margin-top:4px;">
+            💡 Replace with actual QR image
+          </div>
+        </div>
+
+        <!-- Bank Details -->
+        <div>
+          <div class="bank-details">
+            <h4>🏦 Bank Transfer Details / बैंक हस्तांतरण</h4>
+            <div class="bank-row"><span>Bank Name</span><strong>HDFC Bank Govindganj Datia</strong></div>
+            <div class="bank-row"><span>Account No.</span><strong>50100845160186</strong></div>
+            <div class="bank-row"><span>IFSC Code</span><strong>HDFC0011116</strong></div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field-group full">
+              <label class="field-label">Deposited Amount (in ₹) <span class="hindi">/ जमा राशि</span><span class="req">*</span></label>
+              <input type="number" class="field-input" id="paymentAmount" placeholder="Enter amount paid" min="0" inputmode="numeric">
+              <span class="field-error" id="err-paymentAmount">Please enter the amount you have paid</span>
+            </div>
+
+            <div class="field-group full">
+              <label class="field-label">Upload Payment Screenshot <span class="hindi">/ स्क्रीनशॉट अपलोड करें</span><span class="req">*</span></label>
+              <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('paymentFile').click()">
+                <div class="upload-icon">📸</div>
+                <p><strong>Click to upload</strong> or drag &amp; drop</p>
+                <p>JPG, PNG, PDF · Max 5MB</p>
+              </div>
+              <input type="file" id="paymentFile" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(this)">
+              <span class="field-error" id="err-paymentFile">Please upload your payment screenshot</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /sec3 -->
+
+    <!-- ═══════════════════════════════════════
+         SECTION 4 — ACCOMPANYING MEMBERS
+    ═══════════════════════════════════════ -->
+    <div class="form-section" id="sec4">
+      <div class="section-title">
+        <span class="icon">👨‍👩‍👧</span>
+        Accompanying Members
+        <span style="font-size:0.75rem; color:var(--text-light); font-family:'Nunito',sans-serif; font-weight:400; margin-left:4px;">/ साथ आने वाले सदस्य</span>
+      </div>
+      <div class="section-subtitle">Add details for all guests travelling with you · साथ यात्रा करने वाले सभी अतिथियों का विवरण</div>
+
+      <div class="alert alert-warn">
+        ⚠️ <span><strong>Important:</strong> Do not repeat your own details here. Your information has been auto-filled as Member 1 below.</span>
+      </div>
+
+      <!-- Members List -->
+      <div id="membersList" style="margin-top:16px;"></div>
+
+      <!-- Add Member Button -->
+      <button type="button" class="btn-add-member" onclick="addMember()">
+        ➕ Add Accompanying Member / सदस्य जोड़ें
+      </button>
+
+      <!-- Member Summary -->
+      <div id="memberSummary" style="margin-top:16px; display:none;">
+        <div class="alert alert-success" id="memberSummaryText"></div>
+      </div>
+
+    </div><!-- /sec4 -->
+
+    <!-- ── SUBMIT BUTTON ── -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        ↑ Back to Top
+      </button>
+      <button type="button" class="btn btn-primary" onclick="submitForm()" id="submitBtn">
+        Preview &amp; Submit &nbsp;→
+      </button>
+    </div>
+
+  </form>
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+  🕉 Shri Parmagam Shravak Trust, Sonagir &nbsp;|&nbsp; श्री परमागम श्रावक ट्रस्ट, सोनागिर
+  <br>Kund Kund Nagar, Pichorkhed Sonagir — 473885, Dist. Datia (M.P.)
+  <br>📞 8887417076 &nbsp;/&nbsp; 7987164958
+</footer>
+
+<script src="js/sheets.js"></script>
+<script src="js/form.js"></script>
+</body>
+</html>

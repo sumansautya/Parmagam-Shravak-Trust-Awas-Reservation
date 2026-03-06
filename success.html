@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservation Submitted — Shri Parmagam Shravak Trust</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .success-card {
+    background: var(--white);
+    border: 2px solid var(--green-light);
+    border-radius: var(--radius);
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(45,106,79,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .success-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green), var(--green-light), var(--green));
+  }
+  .success-icon { font-size: 4rem; margin-bottom: 16px; animation: popIn 0.5s ease; }
+  @keyframes popIn {
+    0%   { transform: scale(0); opacity:0; }
+    70%  { transform: scale(1.2); }
+    100% { transform: scale(1); opacity:1; }
+  }
+  .success-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  .ref-box {
+    background: var(--cream);
+    border: 2px dashed var(--gold);
+    border-radius: var(--radius-sm);
+    padding: 16px 24px;
+    margin: 20px auto;
+    max-width: 320px;
+  }
+  .ref-label { font-size: 0.78rem; color: var(--text-light); margin-bottom: 4px; }
+  .ref-id { font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--maroon); font-weight: 700; letter-spacing: 0.1em; }
+  .next-steps { text-align: left; margin-top: 24px; }
+  .step-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(200,151,58,0.3);
+    font-size: 0.88rem;
+    color: var(--text-mid);
+  }
+  .step-item:last-child { border: none; }
+  .step-num {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--saffron), var(--gold));
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-om">🕉</div>
+  <div class="header-trust-name">Shri Parmagam Shravak Trust, Sonagir</div>
+  <div class="header-hindi">श्री परमागम श्रावक ट्रस्ट, सोनागिर</div>
+  <div class="header-divider"></div>
+  <div class="header-address">📞 8887417076 &nbsp;/&nbsp; 7987164958</div>
+</header>
+
+<main class="container" style="max-width:600px;">
+
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Reservation Submitted!</div>
+    <p style="color:var(--text-light); font-size:0.88rem;">
+      Jai Jinendra! Your room reservation request has been received successfully.
+    </p>
+
+    <div class="ref-box">
+      <div class="ref-label">Your Reference ID</div>
+      <div class="ref-id" id="refId">PST---------</div>
+      <div style="font-size:0.72rem; color:var(--text-light); margin-top:4px;">Please note this for future correspondence</div>
+    </div>
+
+    <div class="alert alert-info" style="text-align:left;">
+      📧 A confirmation email will be sent to <strong id="visitorEmail">your email</strong> once your room is allocated by the trust management.
+    </div>
+
+    <div class="next-steps">
+      <div style="font-family:'Cinzel',serif; font-size:0.85rem; color:var(--maroon); margin-bottom:10px; letter-spacing:0.04em;">WHAT HAPPENS NEXT</div>
+      <div class="step-item"><div class="step-num">1</div><div>Your request has been recorded and will be reviewed by the front office team.</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>A room will be allocated based on availability and your category preference.</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>You will receive a detailed confirmation email with your room number(s) and all member details.</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>For urgent queries, contact: <strong>8887417076 / 7987164958</strong></div></div>
+    </div>
+
+    <div style="margin-top: 28px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Confirmation</button>
+      <button class="btn btn-primary" onclick="newReservation()">+ New Reservation</button>
+    </div>
+  </div>
+
+  <!-- Trust Info -->
+  <div class="form-section" style="margin-top: 24px; text-align:center;">
+    <div class="section-title" style="justify-content:center;">
+      <span class="icon">🏛️</span> Shri Parmagam Shravak Trust
+    </div>
+    <p style="font-size:0.85rem; color:var(--text-mid); margin-top:8px;">
+      Shri Kund Kund Nagar, Pichorkhed, Sonagir — 473885<br>
+      District Datia, Madhya Pradesh<br>
+      <br>
+      <strong style="color:var(--saffron);">🕉 ॐ नमः सिद्धेभ्यः 🕉</strong>
+    </p>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  🕉 Shri Parmagam Shravak Trust, Sonagir &nbsp;|&nbsp; Kund Kund Nagar, Sonagir — 473885, Dist. Datia (M.P.)
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const id = sessionStorage.getItem('reservationId') || 'PST-' + Date.now();
+  const email = sessionStorage.getItem('visitorEmail') || 'your email';
+  document.getElementById('refId').textContent = id;
+  document.getElementById('visitorEmail').textContent = email;
+});
+
+function newReservation() {
+  sessionStorage.clear();
+  window.location.href = 'index.html';
+}
+</script>
+
+</body>
+</html>

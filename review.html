@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Reservation — Shri Parmagam Shravak Trust</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .review-block {
+    background: var(--cream);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+  .review-block h4 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    color: var(--saffron-dark);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .review-row {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.88rem;
+    border-bottom: 1px dashed rgba(200,151,58,0.2);
+  }
+  .review-row:last-child { border: none; }
+  .review-label { color: var(--text-light); min-width: 160px; font-size: 0.82rem; flex-shrink: 0; }
+  .review-value { color: var(--text-dark); font-weight: 600; }
+  .review-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .badge-green { background: #E8F5E9; color: var(--green); }
+  .badge-saffron { background: #FFF3E8; color: var(--saffron-dark); }
+  .review-member-card {
+    background: var(--white);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .page-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--maroon);
+    text-align: center;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .confirm-icon { font-size: 3rem; text-align: center; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-om">🕉</div>
+  <div class="header-trust-name">Shri Parmagam Shravak Trust, Sonagir</div>
+  <div class="header-hindi">श्री परमागम श्रावक ट्रस्ट, सोनागिर</div>
+  <div class="header-divider"></div>
+  <div class="header-address">
+    श्री कुन्दकुन्द नगर, सोनागिर — 473885 &nbsp;|&nbsp; 📞 8887417076 / 7987164958
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="confirm-icon">📋</div>
+  <div class="page-title">Review Your Reservation / आरक्षण समीक्षा</div>
+  <p style="text-align:center; color:var(--text-light); font-size:0.85rem; margin-bottom:28px;">
+    Please review all details carefully before submitting your reservation form.
+  </p>
+
+  <div class="alert alert-warn" style="margin-bottom:24px;">
+    ⚠️ Room allocation is subject to availability. You will receive a confirmation email once your room is allocated by the trust management.
+  </div>
+
+  <!-- ── REVIEW CONTENT ── -->
+  <div id="reviewContent">
+    <div style="text-align:center; padding:40px; color:var(--text-light);">Loading your details...</div>
+  </div>
+
+  <!-- ── ACTIONS ── -->
+  <div class="form-actions" style="margin-top: 24px;">
+    <button class="btn btn-secondary" onclick="window.location.href='index.html'">
+      ← Edit Form
+    </button>
+    <button class="btn btn-primary" id="confirmBtn" onclick="confirmSubmit()">
+      ✅ Confirm &amp; Submit
+    </button>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  🕉 Shri Parmagam Shravak Trust, Sonagir &nbsp;|&nbsp; Kund Kund Nagar, Sonagir — 473885, Dist. Datia (M.P.)
+</footer>
+
+<script src="js/sheets.js"></script>
+<script>
+const ROOM_RATES = { ac: 1200, nonAc: 700, guestHouse: 2000 };
+let reservationData = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const raw = sessionStorage.getItem('reservationData');
+  if (!raw) { window.location.href = 'index.html'; return; }
+
+  reservationData = JSON.parse(raw);
+  renderReview(reservationData);
+});
+
+function renderReview(d) {
+  const nights = d.totalNights || 0;
+  const { ac=0, nonAc=0, guestHouse=0 } = d.rooms || {};
+  const grandTotal = (ac * ROOM_RATES.ac + nonAc * ROOM_RATES.nonAc + guestHouse * ROOM_RATES.guestHouse) * nights;
+
+  const allMembers = d.members || [];
+  const male     = allMembers.filter(m => m.gender === 'Male').length;
+  const female   = allMembers.filter(m => m.gender === 'Female').length;
+  const children = allMembers.filter(m => parseInt(m.age) < 18).length;
+  const seniors  = allMembers.filter(m => parseInt(m.age) >= 60).length;
+  const snrM     = allMembers.filter(m => parseInt(m.age) >= 60 && m.gender === 'Male').length;
+  const snrF     = allMembers.filter(m => parseInt(m.age) >= 60 && m.gender === 'Female').length;
+
+  const memberCards = allMembers.map((m, i) => `
+    <div class="review-member-card">
+      <strong style="font-size:0.85rem; color:var(--maroon);">
+        ${i === 0 ? '⭐ ' : ''}Member ${i+1}${i===0?' (Primary Visitor)':''}
+      </strong>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; margin-top:6px; font-size:0.82rem;">
+        <div><span style="color:var(--text-light);">Name: </span><strong>${m.name || '—'}</strong></div>
+        <div><span style="color:var(--text-light);">Gender: </span><strong>${m.gender || '—'}</strong></div>
+        <div><span style="color:var(--text-light);">Age: </span><strong>${m.age || '—'} yrs</strong></div>
+        <div><span style="color:var(--text-light);">Relation: </span><strong>${m.relation || 'Self'}</strong></div>
+        ${m.mobile ? `<div><span style="color:var(--text-light);">Mobile: </span><strong>${m.mobile}</strong></div>` : ''}
+        ${m.aadhaar ? `<div><span style="color:var(--text-light);">Aadhaar: </span><strong>XXXXXXXX${m.aadhaar.slice(-4)}</strong></div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('reviewContent').innerHTML = `
+
+    <!-- Personal Info -->
+    <div class="form-section">
+      <div class="section-title"><span class="icon">👤</span> Personal Information</div>
+      <div class="review-block">
+        <div class="review-row"><span class="review-label">Full Name</span><span class="review-value">${d.fullName}</span></div>
+        <div class="review-row"><span class="review-label">Address</span><span class="review-value">${d.address}</span></div>
+        <div class="review-row"><span class="review-label">City / State</span><span class="review-value">${d.city}, ${d.state}</span></div>
+        <div class="review-row"><span class="review-label">Mobile</span><span class="review-value">${d.mobile}</span></div>
+        <div class="review-row"><span class="review-label">Email</span><span class="review-value">${d.email}</span></div>
+        <div class="review-row"><span class="review-label">Gender / Age</span><span class="review-value">${d.gender} &nbsp;/&nbsp; ${d.age} years</span></div>
+        <div class="review-row"><span class="review-label">Occupation</span><span class="review-value">${d.occupation}${d.organization ? ` — ${d.organization}` : ''}</span></div>
+        ${d.aadhaarPan ? `<div class="review-row"><span class="review-label">Aadhaar/PAN</span><span class="review-value">••••••••${d.aadhaarPan.slice(-4)}</span></div>` : ''}
+      </div>
+    </div>
+
+    <!-- Stay Details -->
+    <div class="form-section">
+      <div class="section-title"><span class="icon">🏠</span> Stay Details &amp; Rooms</div>
+      <div class="review-block">
+        <div class="review-row"><span class="review-label">Check-In</span><span class="review-value">${formatDate(d.checkIn)}</span></div>
+        <div class="review-row"><span class="review-label">Check-Out</span><span class="review-value">${formatDate(d.checkOut)}</span></div>
+        <div class="review-row"><span class="review-label">Total Nights</span><span class="review-value"><span class="review-badge badge-green">🌙 ${nights} Night(s)</span></span></div>
+        ${ac > 0 ? `<div class="review-row"><span class="review-label">AC Room(s)</span><span class="review-value">${ac} room(s) × ₹1,200/night = ₹${(ac*1200*nights).toLocaleString('en-IN')}</span></div>` : ''}
+        ${nonAc > 0 ? `<div class="review-row"><span class="review-label">Non-AC Room(s)</span><span class="review-value">${nonAc} room(s) × ₹700/night = ₹${(nonAc*700*nights).toLocaleString('en-IN')}</span></div>` : ''}
+        ${guestHouse > 0 ? `<div class="review-row"><span class="review-label">Guest House Room(s)</span><span class="review-value">${guestHouse} room(s) × ₹2,000/night = ₹${(guestHouse*2000*nights).toLocaleString('en-IN')}</span></div>` : ''}
+        <div class="review-row"><span class="review-label">Estimated Total</span><span class="review-value" style="color:var(--green); font-size:1rem;">₹${grandTotal.toLocaleString('en-IN')}</span></div>
+      </div>
+      <div class="review-block">
+        <div class="review-row"><span class="review-label">Mode of Transport</span><span class="review-value">${d.transportMode}</span></div>
+        <div class="review-row"><span class="review-label">Need Transport</span><span class="review-value"><span class="review-badge ${d.needTransport==='Yes'?'badge-saffron':'badge-green'}">${d.needTransport}</span></span></div>
+        <div class="review-row"><span class="review-label">Need Pooja Arrangement</span><span class="review-value"><span class="review-badge ${d.needPooja==='Yes'?'badge-saffron':'badge-green'}">${d.needPooja}</span></span></div>
+        ${d.additionalRequirements ? `<div class="review-row"><span class="review-label">Additional Requirements</span><span class="review-value">${d.additionalRequirements}</span></div>` : ''}
+      </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="form-section">
+      <div class="section-title"><span class="icon">💳</span> Payment Details</div>
+      <div class="review-block">
+        <div class="review-row"><span class="review-label">Amount Paid</span><span class="review-value" style="color:var(--green); font-size:1rem; font-weight:700;">₹${parseFloat(d.paymentAmount).toLocaleString('en-IN')}</span></div>
+        <div class="review-row"><span class="review-label">Screenshot</span><span class="review-value">${sessionStorage.getItem('paymentFileName') || 'Uploaded ✅'}</span></div>
+      </div>
+    </div>
+
+    <!-- Members -->
+    <div class="form-section">
+      <div class="section-title"><span class="icon">👨‍👩‍👧</span> Accompanying Members</div>
+      <div class="alert alert-success" style="margin-bottom:14px;">
+        👥 Total Members: <strong>${allMembers.length}</strong> &nbsp;|&nbsp;
+        👨 Male: <strong>${male}</strong> &nbsp;|&nbsp;
+        👩 Female: <strong>${female}</strong> &nbsp;|&nbsp;
+        👶 Children (&lt;18): <strong>${children}</strong> &nbsp;|&nbsp;
+        🧓 Seniors (60+): <strong>${seniors}</strong> (M: ${snrM}, F: ${snrF})
+      </div>
+      ${memberCards}
+    </div>
+  `;
+}
+
+function formatDate(str) {
+  if (!str) return '—';
+  return new Date(str).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+}
+
+async function confirmSubmit() {
+  if (!reservationData) return;
+
+  const btn = document.getElementById('confirmBtn');
+  btn.innerHTML = '<span class="spinner"></span> Submitting...';
+  btn.disabled = true;
+
+  try {
+    const result = await submitReservation(reservationData);
+
+    if (result.success) {
+      sessionStorage.setItem('reservationId', result.id);
+      sessionStorage.setItem('visitorName', reservationData.fullName);
+      sessionStorage.setItem('visitorEmail', reservationData.email);
+      window.location.href = 'success.html';
+    } else {
+      throw new Error(result.error || 'Submission failed');
+    }
+  } catch (err) {
+    btn.innerHTML = '✅ Confirm &amp; Submit';
+    btn.disabled = false;
+    alert('There was an error submitting your reservation. Please try again or contact the trust directly.\n\nError: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>
