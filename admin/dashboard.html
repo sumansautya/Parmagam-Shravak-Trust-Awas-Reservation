@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Shri Parmagam Shravak Trust</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ── DASHBOARD LAYOUT ── */
+* { box-sizing: border-box; }
+body { display: flex; flex-direction: column; min-height: 100vh; background: #F5EDD8; }
+
+.dash-shell { display: flex; flex: 1; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px; min-height: 100vh;
+  background: linear-gradient(180deg, #3D0C00 0%, #5C1A00 40%, #7B2D00 100%);
+  color: var(--ivory);
+  padding: 20px 0;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar-brand {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid rgba(200,151,58,0.3);
+  margin-bottom: 12px;
+}
+.sidebar-brand .om { font-size: 1.5rem; }
+.sidebar-brand h2 { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--gold-light); margin-top: 4px; line-height: 1.3; }
+
+.nav-group-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: rgba(232,192,106,0.6);
+  text-transform: uppercase;
+  padding: 12px 20px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  color: rgba(253,248,240,0.8);
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); color: var(--gold-light); }
+.nav-item.active { background: rgba(232,99,10,0.2); border-left-color: var(--saffron); color: white; font-weight: 600; }
+.nav-item .ni { font-size: 1rem; }
+
+/* MAIN CONTENT */
+.dash-main { flex: 1; padding: 28px; overflow-x: hidden; }
+
+.dash-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.dash-title { font-family: 'Cinzel', serif; font-size: 1.3rem; color: var(--maroon); }
+.dash-date { font-size: 0.82rem; color: var(--text-light); }
+
+/* STAT CARDS */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: 0 2px 12px var(--shadow-warm);
+  border-top: 3px solid transparent;
+  position: relative; overflow: hidden;
+}
+.stat-card.saffron { border-top-color: var(--saffron); }
+.stat-card.green   { border-top-color: var(--green); }
+.stat-card.gold    { border-top-color: var(--gold); }
+.stat-card.maroon  { border-top-color: var(--maroon); }
+.stat-card.blue    { border-top-color: #1565C0; }
+.stat-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.stat-value { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label { font-size: 0.75rem; color: var(--text-light); margin-top: 4px; }
+
+/* PANEL */
+.panel {
+  background: var(--white);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 12px var(--shadow-warm);
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.panel-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem; color: var(--maroon); font-weight: 600;
+}
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.data-table th {
+  background: linear-gradient(135deg, var(--maroon), #5C1A00);
+  color: var(--gold-light);
+  padding: 10px 12px;
+  text-align: left;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--ivory-dark); vertical-align: middle; }
+.data-table tr:hover td { background: var(--cream); }
+.data-table tr:last-child td { border: none; }
+
+/* STATUS BADGES */
+.status-badge {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 12px; font-size: 0.72rem; font-weight: 700;
+}
+.s-pending   { background: #FFF8E1; color: #F57F17; }
+.s-confirmed { background: #E8F5E9; color: var(--green); }
+.s-cancelled { background: #FFEBEE; color: #C62828; }
+
+/* FILTER BAR */
+.filter-bar {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;
+}
+.filter-bar input,
+.filter-bar select {
+  padding: 8px 12px;
+  border: 1.5px solid var(--ivory-dark);
+  border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  background: var(--ivory);
+  outline: none;
+  transition: all 0.2s;
+}
+.filter-bar input:focus,
+.filter-bar select:focus { border-color: var(--saffron); }
+
+/* TABS */
+.tab-bar { display: flex; gap: 0; border-bottom: 2px solid var(--ivory-dark); margin-bottom: 20px; }
+.tab-btn {
+  padding: 8px 18px;
+  background: none; border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem; cursor: pointer;
+  color: var(--text-light); border-bottom: 2px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s;
+}
+.tab-btn.active { color: var(--saffron); border-bottom-color: var(--saffron); font-weight: 700; }
+
+/* ALLOCATION MODAL */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,10,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+  display: none;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 28px;
+  max-width: 480px; width: 100%;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-title { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--maroon); margin-bottom: 16px; }
+
+/* ROOM GRID */
+.room-grid-admin { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+.room-chip {
+  padding: 8px; border-radius: var(--radius-sm); text-align: center;
+  font-size: 0.75rem; font-weight: 700; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.2s;
+}
+.room-chip.available { background: #E8F5E9; color: var(--green); border-color: #A5D6A7; }
+.room-chip.occupied  { background: #FFEBEE; color: #C62828; border-color: #EF9A9A; cursor: not-allowed; }
+.room-chip.maintenance { background: #FFF8E1; color: #F57F17; border-color: #FFE082; cursor: not-allowed; }
+.room-chip.selected  { background: var(--green); color: white; border-color: var(--green); }
+
+/* REPORT CARD */
+.report-metric {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px; margin-bottom: 16px;
+}
+.metric-box {
+  background: var(--cream);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  padding: 14px; text-align: center;
+}
+.metric-val { font-family: 'Cinzel', serif; font-size: 1.5rem; color: var(--maroon); }
+.metric-lbl { font-size: 0.72rem; color: var(--text-light); margin-top: 2px; }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .dash-main { padding: 16px; }
+}
+
+/* PAGE SECTIONS */
+.page-section { display: none; }
+.page-section.active { display: block; }
+
+/* CHART BAR */
+.mini-bar { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+.bar-label { min-width: 80px; color: var(--text-light); text-align: right; }
+.bar-track { flex: 1; background: var(--ivory-dark); border-radius: 4px; height: 18px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 6px; font-size: 0.7rem; font-weight: 700; color: white; transition: width 0.8s ease; }
+</style>
+</head>
+<body>
+
+<!-- AUTH CHECK -->
+<script>
+  if (sessionStorage.getItem('adminAuth') !== 'true') {
+    window.location.href = 'index.html';
+  }
+</script>
+
+<div class="dash-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="om">🕉</div>
+      <h2>Parmagam Shravak Trust<br>Admin Portal</h2>
+    </div>
+
+    <div class="nav-group-label">Overview</div>
+    <div class="nav-item active" onclick="showPage('overview',this)"><span class="ni">📊</span> Dashboard</div>
+
+    <div class="nav-group-label">Reservation</div>
+    <div class="nav-item" onclick="showPage('reservations',this)"><span class="ni">📋</span> All Reservations</div>
+    <div class="nav-item" onclick="showPage('allocate',this)"><span class="ni">🏠</span> Room Allocation</div>
+
+    <div class="nav-group-label">Rooms</div>
+    <div class="nav-item" onclick="showPage('rooms',this)"><span class="ni">🛏️</span> Manage Rooms</div>
+
+    <div class="nav-group-label">Reports</div>
+    <div class="nav-item" onclick="showPage('rpt-arrivals',this)"><span class="ni">📅</span> Arrivals &amp; Departures</div>
+    <div class="nav-item" onclick="showPage('rpt-occupancy',this)"><span class="ni">📈</span> Occupancy Report</div>
+    <div class="nav-item" onclick="showPage('rpt-transport',this)"><span class="ni">🚗</span> Transport Report</div>
+    <div class="nav-item" onclick="showPage('rpt-pooja',this)"><span class="ni">🙏</span> Pooja Report</div>
+    <div class="nav-item" onclick="showPage('rpt-additional',this)"><span class="ni">📝</span> Additional Requests</div>
+    <div class="nav-item" onclick="showPage('rpt-devotee',this)"><span class="ni">👤</span> Devotee History</div>
+
+    <div class="nav-group-label">System</div>
+    <div class="nav-item" onclick="logout()"><span class="ni">🚪</span> Logout</div>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main class="dash-main">
+
+    <!-- ──────────── OVERVIEW ──────────── -->
+    <div class="page-section active" id="page-overview">
+      <div class="dash-header">
+        <div>
+          <div class="dash-title">📊 Dashboard Overview</div>
+          <div class="dash-date" id="todayDate"></div>
+        </div>
+        <button class="btn btn-secondary" style="padding:8px 16px; font-size:0.8rem;" onclick="refreshData()">🔄 Refresh</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card saffron">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-label">Total Reservations</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="stat-confirmed">—</div>
+          <div class="stat-label">Confirmed</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-value" id="stat-pending">—</div>
+          <div class="stat-label">Pending Allocation</div>
+        </div>
+        <div class="stat-card maroon">
+          <div class="stat-icon">🛎️</div>
+          <div class="stat-value" id="stat-today-arr">—</div>
+          <div class="stat-label">Today's Arrivals</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon">🚪</div>
+          <div class="stat-value" id="stat-today-dep">—</div>
+          <div class="stat-label">Today's Departures</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">🛏️</div>
+          <div class="stat-value" id="stat-occupancy">—</div>
+          <div class="stat-label">Rooms Occupied</div>
+        </div>
+      </div>
+
+      <!-- Quick Panels -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📅 Today's Arrivals</div>
+          </div>
+          <div id="todayArrivals">
+            <div style="color:var(--text-light); font-size:0.85rem; text-align:center; padding:20px;">
+              Loading...
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">⏳ Pending Allocations</div>
+            <button class="btn btn-primary" style="padding:6px 14px; font-size:0.78rem;" onclick="showPage('allocate', document.querySelector('[onclick*=allocate]'))">Allocate Rooms →</button>
+          </div>
+          <div id="pendingList">
+            <div style="color:var(--text-light); font-size:0.85rem; text-align:center; padding:20px;">
+              Loading...
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Occupancy Bar Chart -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">📊 Room Category Occupancy</div></div>
+        <div class="mini-bar" id="occupancyChart">
+          <div class="bar-row">
+            <span class="bar-label">AC Rooms</span>
+            <div class="bar-track"><div class="bar-fill" id="bar-ac" style="width:0%; background:var(--saffron);">0%</div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Non-AC</span>
+            <div class="bar-track"><div class="bar-fill" id="bar-nonac" style="width:0%; background:var(--green);">0%</div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Guest House</span>
+            <div class="bar-track"><div class="bar-fill" id="bar-gh" style="width:0%; background:var(--gold);">0%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── ALL RESERVATIONS ──────────── -->
+    <div class="page-section" id="page-reservations">
+      <div class="dash-header">
+        <div class="dash-title">📋 All Reservations</div>
+        <button class="btn btn-green" style="padding:8px 16px; font-size:0.8rem;" onclick="exportCSV()">⬇️ Export CSV</button>
+      </div>
+
+      <div class="panel">
+        <div class="filter-bar">
+          <input type="text" id="srchName" placeholder="🔍 Search by name/ID/mobile" oninput="filterReservations()">
+          <select id="srchStatus" onchange="filterReservations()">
+            <option value="">All Status</option>
+            <option>Pending</option>
+            <option>Confirmed</option>
+            <option>Cancelled</option>
+          </select>
+          <input type="date" id="srchDate" onchange="filterReservations()">
+          <button class="btn btn-secondary" style="padding:8px 14px; font-size:0.8rem;" onclick="clearFilters()">✕ Clear</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="reservTable">
+            <thead>
+              <tr>
+                <th>Ref ID</th><th>Visitor Name</th><th>Mobile</th><th>Check-In</th>
+                <th>Check-Out</th><th>Nights</th><th>Rooms</th><th>Members</th>
+                <th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reservTableBody">
+              <tr><td colspan="10" style="text-align:center; padding:30px; color:var(--text-light);">Loading reservations...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── ROOM ALLOCATION ──────────── -->
+    <div class="page-section" id="page-allocate">
+      <div class="dash-header">
+        <div class="dash-title">🏠 Room Allocation</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title" style="margin-bottom:14px;">Pending Reservations — Awaiting Room Allocation</div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ref ID</th><th>Visitor</th><th>Check-In</th><th>Check-Out</th>
+                <th>Rooms Requested</th><th>Members</th><th>Transport</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="allocationTableBody">
+              <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-light);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── MANAGE ROOMS ──────────── -->
+    <div class="page-section" id="page-rooms">
+      <div class="dash-header">
+        <div class="dash-title">🛏️ Manage Rooms</div>
+        <button class="btn btn-primary" style="padding:8px 18px; font-size:0.85rem;" onclick="openAddRoomModal()">+ Add Room</button>
+      </div>
+
+      <div class="stat-grid" style="margin-bottom:20px;">
+        <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-value" id="r-available">—</div><div class="stat-label">Available</div></div>
+        <div class="stat-card maroon"><div class="stat-icon">🔴</div><div class="stat-value" id="r-occupied">—</div><div class="stat-label">Occupied</div></div>
+        <div class="stat-card gold"><div class="stat-icon">🔧</div><div class="stat-value" id="r-maintenance">—</div><div class="stat-label">Maintenance</div></div>
+        <div class="stat-card saffron"><div class="stat-icon">🏠</div><div class="stat-value" id="r-total">—</div><div class="stat-label">Total Rooms</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="filter-bar">
+          <select id="roomCatFilter" onchange="filterRooms()">
+            <option value="">All Categories</option>
+            <option>AC Room</option>
+            <option>Non-AC Room</option>
+            <option>Guest House Room</option>
+          </select>
+          <select id="roomStatusFilter" onchange="filterRooms()">
+            <option value="">All Status</option>
+            <option>Available</option>
+            <option>Occupied</option>
+            <option>Maintenance</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="roomsTable">
+            <thead>
+              <tr><th>Room No.</th><th>Category</th><th>Rate/Night</th><th>Status</th><th>Current Reservation</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="roomsTableBody">
+              <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-light);">Loading rooms...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── ARRIVALS & DEPARTURES REPORT ──────────── -->
+    <div class="page-section" id="page-rpt-arrivals">
+      <div class="dash-header"><div class="dash-title">📅 Arrivals &amp; Departures Report</div></div>
+      <div class="panel">
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="setReportTab(this,'arr-daily')">Daily</button>
+          <button class="tab-btn" onclick="setReportTab(this,'arr-monthly')">Month-to-Date</button>
+          <button class="tab-btn" onclick="setReportTab(this,'arr-upcoming')">Upcoming 7 Days</button>
+        </div>
+        <div class="filter-bar">
+          <input type="date" id="arrDate" onchange="loadArrivalsReport()">
+          <button class="btn btn-primary" style="padding:8px 14px; font-size:0.8rem;" onclick="loadArrivalsReport()">Load Report</button>
+          <button class="btn btn-green" style="padding:8px 14px; font-size:0.8rem;" onclick="exportReportCSV('arrivals')">⬇️ Export</button>
+        </div>
+        <div class="report-metric" id="arrMetrics"></div>
+        <div style="overflow-x:auto;">
+          <table class="data-table"><thead><tr>
+            <th>Ref ID</th><th>Visitor</th><th>Mobile</th>
+            <th>Check-In</th><th>Check-Out</th><th>Nights</th><th>Members</th><th>Rooms</th><th>Status</th>
+          </tr></thead><tbody id="arrTableBody"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-light);">Select date to load report</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── OCCUPANCY REPORT ──────────── -->
+    <div class="page-section" id="page-rpt-occupancy">
+      <div class="dash-header"><div class="dash-title">📈 Occupancy Report</div></div>
+      <div class="panel">
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="setReportTab(this,'occ-daily')">Daily</button>
+          <button class="tab-btn" onclick="setReportTab(this,'occ-monthly')">Monthly</button>
+          <button class="tab-btn" onclick="setReportTab(this,'occ-ytd')">Year-to-Date</button>
+        </div>
+        <div class="report-metric" id="occMetrics">
+          <div class="metric-box"><div class="metric-val" id="occ-total-rooms">—</div><div class="metric-lbl">Total Rooms</div></div>
+          <div class="metric-box"><div class="metric-val" id="occ-occupied">—</div><div class="metric-lbl">Occupied</div></div>
+          <div class="metric-box"><div class="metric-val" id="occ-pct">—%</div><div class="metric-lbl">Occupancy %</div></div>
+          <div class="metric-box"><div class="metric-val" id="occ-revenue">—</div><div class="metric-lbl">Est. Revenue</div></div>
+        </div>
+        <div class="mini-bar" style="margin-top:16px;" id="occBarChart"></div>
+      </div>
+    </div>
+
+    <!-- ──────────── TRANSPORT REPORT ──────────── -->
+    <div class="page-section" id="page-rpt-transport">
+      <div class="dash-header"><div class="dash-title">🚗 Transport Report</div></div>
+      <div class="panel">
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="setReportTab(this,'tr-daily')">Daily</button>
+          <button class="tab-btn" onclick="setReportTab(this,'tr-upcoming')">Upcoming</button>
+          <button class="tab-btn" onclick="setReportTab(this,'tr-monthly')">Monthly</button>
+        </div>
+        <div class="filter-bar">
+          <input type="date" id="trDate">
+          <button class="btn btn-primary" style="padding:8px 14px; font-size:0.8rem;" onclick="loadTransportReport()">Load Report</button>
+        </div>
+        <div class="report-metric" id="trMetrics"></div>
+        <div style="overflow-x:auto;">
+          <table class="data-table"><thead><tr>
+            <th>Ref ID</th><th>Visitor</th><th>Mobile</th><th>Check-In</th><th>Members</th><th>Transport Mode</th><th>Needs Pickup</th>
+          </tr></thead><tbody id="trTableBody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-light);">Select date to load report</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── POOJA REPORT ──────────── -->
+    <div class="page-section" id="page-rpt-pooja">
+      <div class="dash-header"><div class="dash-title">🙏 Pooja Arrangement Report</div></div>
+      <div class="panel">
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="setReportTab(this,'p-daily')">Daily</button>
+          <button class="tab-btn" onclick="setReportTab(this,'p-upcoming')">Upcoming</button>
+          <button class="tab-btn" onclick="setReportTab(this,'p-monthly')">Monthly</button>
+        </div>
+        <div class="filter-bar">
+          <input type="date" id="pDate">
+          <button class="btn btn-primary" style="padding:8px 14px; font-size:0.8rem;" onclick="loadPoojaReport()">Load Report</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table"><thead><tr>
+            <th>Ref ID</th><th>Visitor</th><th>Mobile</th><th>Check-In</th><th>Members</th><th>Pooja Required</th><th>Additional Notes</th>
+          </tr></thead><tbody id="pTableBody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-light);">Select date to load report</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── ADDITIONAL REQUIREMENTS REPORT ──────────── -->
+    <div class="page-section" id="page-rpt-additional">
+      <div class="dash-header"><div class="dash-title">📝 Additional Requirements Report</div></div>
+      <div class="panel">
+        <div style="overflow-x:auto;">
+          <table class="data-table"><thead><tr>
+            <th>Ref ID</th><th>Visitor</th><th>Check-In</th><th>Additional Requirements</th><th>Status</th>
+          </tr></thead><tbody id="addlTableBody"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-light);">Loading...</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── DEVOTEE HISTORY ──────────── -->
+    <div class="page-section" id="page-rpt-devotee">
+      <div class="dash-header"><div class="dash-title">👤 Devotee History</div></div>
+      <div class="panel">
+        <div class="filter-bar">
+          <input type="text" id="devSearch" placeholder="🔍 Search by name, mobile, city..." oninput="searchDevotee()">
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table"><thead><tr>
+            <th>Visitor Name</th><th>Mobile</th><th>City</th><th>State</th>
+            <th>Visits</th><th>Last Visit</th><th>Total Nights</th><th>Total Members</th>
+          </tr></thead><tbody id="devoteeTableBody"><tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-light);">Enter search to find devotee history</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── ALLOCATION MODAL ── -->
+<div class="modal-overlay" id="allocationModal">
+  <div class="modal-box">
+    <div class="modal-title">🏠 Allocate Room</div>
+    <div id="modalReservDetails" style="background:var(--cream); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px; font-size:0.85rem;"></div>
+
+    <div style="margin-bottom:12px;">
+      <div style="font-family:'Cinzel',serif; font-size:0.8rem; color:var(--maroon); margin-bottom:8px;">Select Available Room(s)</div>
+      <div class="room-grid-admin" id="modalRoomGrid"></div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.82rem; font-weight:600; color:var(--text-mid);">Or Enter Room Numbers Manually</label>
+      <input type="text" class="field-input" id="manualRoomInput" placeholder="e.g. 101, 102, 205" style="margin-top:6px;">
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="confirmAllocation()">✅ Confirm &amp; Send Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD ROOM MODAL ── -->
+<div class="modal-overlay" id="addRoomModal">
+  <div class="modal-box">
+    <div class="modal-title" id="addRoomTitle">🏠 Add New Room</div>
+    <div class="form-grid" style="gap:14px;">
+      <div class="field-group">
+        <label class="field-label">Room Number <span class="req">*</span></label>
+        <input type="text" class="field-input" id="nr-number" placeholder="e.g. 101">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Category <span class="req">*</span></label>
+        <select class="field-select" id="nr-category">
+          <option>AC Room</option>
+          <option>Non-AC Room</option>
+          <option>Guest House Room</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Rate per Night (₹) <span class="req">*</span></label>
+        <input type="number" class="field-input" id="nr-rate" placeholder="1200">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Status</label>
+        <select class="field-select" id="nr-status">
+          <option>Available</option>
+          <option>Maintenance</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+      <button class="btn btn-secondary" onclick="document.getElementById('addRoomModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRoom()">💾 Save Room</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/sheets.js"></script>
+<script src="../js/email.js"></script>
+<script>
+/* ══════════════════════════════════════
+   DEMO DATA (replace with real API calls)
+   ══════════════════════════════════════ */
+
+// Sample reservations data (loaded from Sheets in production)
+let allReservations = [
+  { id:'PST-20250301-A1B2C', fullName:'Rajesh Kumar Jain', mobile:'9876543210', email:'rajesh@example.com', city:'Bhopal', state:'Madhya Pradesh', checkIn:'2026-03-08', checkOut:'2026-03-11', totalNights:3, rooms:{ac:1,nonAc:0,guestHouse:0}, members:4, needTransport:'Yes', needPooja:'Yes', transportMode:'Train', additionalRequirements:'Wheel chair needed', paymentAmount:3600, status:'Pending', allocatedRooms:'' },
+  { id:'PST-20250301-D3E4F', fullName:'Sunita Mehta', mobile:'9123456789', email:'sunita@example.com', city:'Indore', state:'Madhya Pradesh', checkIn:'2026-03-06', checkOut:'2026-03-08', totalNights:2, rooms:{ac:0,nonAc:2,guestHouse:0}, members:6, needTransport:'No', needPooja:'Yes', transportMode:'Car', additionalRequirements:'', paymentAmount:2800, status:'Confirmed', allocatedRooms:'201, 202' },
+  { id:'PST-20250302-G5H6I', fullName:'Prakash Shah', mobile:'9988776655', email:'prakash@example.com', city:'Surat', state:'Gujarat', checkIn:'2026-03-10', checkOut:'2026-03-13', totalNights:3, rooms:{ac:0,nonAc:0,guestHouse:1}, members:2, needTransport:'Yes', needPooja:'No', transportMode:'Air', additionalRequirements:'Jain food only', paymentAmount:6000, status:'Pending', allocatedRooms:'' },
+  { id:'PST-20250303-J7K8L', fullName:'Anita Singhvi', mobile:'8877665544', email:'anita@example.com', city:'Jaipur', state:'Rajasthan', checkIn:'2026-03-06', checkOut:'2026-03-07', totalNights:1, rooms:{ac:1,nonAc:0,guestHouse:0}, members:3, needTransport:'No', needPooja:'Yes', transportMode:'Car', additionalRequirements:'', paymentAmount:1200, status:'Confirmed', allocatedRooms:'101' },
+];
+
+let allRooms = [
+  { id:'R001', number:'101', category:'AC Room', rate:1200, status:'Occupied', currentRes:'PST-20250303-J7K8L' },
+  { id:'R002', number:'102', category:'AC Room', rate:1200, status:'Available', currentRes:'' },
+  { id:'R003', number:'103', category:'AC Room', rate:1200, status:'Available', currentRes:'' },
+  { id:'R004', number:'104', category:'AC Room', rate:1200, status:'Maintenance', currentRes:'' },
+  { id:'R005', number:'201', category:'Non-AC Room', rate:700, status:'Occupied', currentRes:'PST-20250301-D3E4F' },
+  { id:'R006', number:'202', category:'Non-AC Room', rate:700, status:'Occupied', currentRes:'PST-20250301-D3E4F' },
+  { id:'R007', number:'203', category:'Non-AC Room', rate:700, status:'Available', currentRes:'' },
+  { id:'R008', number:'204', category:'Non-AC Room', rate:700, status:'Available', currentRes:'' },
+  { id:'R009', number:'205', category:'Non-AC Room', rate:700, status:'Available', currentRes:'' },
+  { id:'R010', number:'GH-1', category:'Guest House Room', rate:2000, status:'Available', currentRes:'' },
+  { id:'R011', number:'GH-2', category:'Guest House Room', rate:2000, status:'Available', currentRes:'' },
+  { id:'R012', number:'GH-3', category:'Guest House Room', rate:2000, status:'Available', currentRes:'' },
+];
+
+let currentAllocReservId = null;
+let selectedRooms = [];
+let editingRoomId = null;
+
+/* ══ NAVIGATION ══ */
+function showPage(name, el) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name)?.classList.add('active');
+  if (el) el.classList.add('active');
+
+  // Load data for page
+  if (name === 'overview')      loadOverview();
+  if (name === 'reservations')  renderReservTable(allReservations);
+  if (name === 'allocate')      renderAllocationTable();
+  if (name === 'rooms')         renderRoomsTable();
+  if (name === 'rpt-additional') loadAdditionalReport();
+  if (name === 'rpt-devotee')   renderDevoteeTable(allReservations);
+  if (name === 'rpt-occupancy') loadOccupancyReport();
+}
+
+/* ══ OVERVIEW ══ */
+function loadOverview() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const pending   = allReservations.filter(r => r.status === 'Pending');
+  const confirmed = allReservations.filter(r => r.status === 'Confirmed');
+  const todayArr  = allReservations.filter(r => r.checkIn === today);
+  const todayDep  = allReservations.filter(r => r.checkOut === today);
+  const occupied  = allRooms.filter(r => r.status === 'Occupied').length;
+
+  document.getElementById('stat-total').textContent     = allReservations.length;
+  document.getElementById('stat-confirmed').textContent = confirmed.length;
+  document.getElementById('stat-pending').textContent   = pending.length;
+  document.getElementById('stat-today-arr').textContent = todayArr.length;
+  document.getElementById('stat-today-dep').textContent = todayDep.length;
+  document.getElementById('stat-occupancy').textContent = `${occupied}/${allRooms.length}`;
+
+  // Today's arrivals
+  document.getElementById('todayArrivals').innerHTML = todayArr.length
+    ? todayArr.map(r => `<div style="padding:8px 0; border-bottom:1px dashed rgba(200,151,58,0.2); font-size:0.83rem;"><strong>${r.fullName}</strong> — ${r.members} members &nbsp;<span class="status-badge s-${r.status.toLowerCase()}">${r.status}</span></div>`).join('')
+    : '<div style="color:var(--text-light); font-size:0.85rem; text-align:center; padding:16px;">No arrivals today 🌿</div>';
+
+  // Pending list
+  document.getElementById('pendingList').innerHTML = pending.length
+    ? pending.slice(0,5).map(r => `<div style="padding:8px 0; border-bottom:1px dashed rgba(200,151,58,0.2); font-size:0.83rem;"><strong>${r.fullName}</strong><br><span style="color:var(--text-light);">${r.id} · ${formatDate(r.checkIn)}</span></div>`).join('')
+    : '<div style="color:var(--text-light); font-size:0.85rem; text-align:center; padding:16px;">All rooms allocated ✅</div>';
+
+  // Bars
+  const acTotal = allRooms.filter(r => r.category === 'AC Room').length;
+  const acOcc   = allRooms.filter(r => r.category === 'AC Room' && r.status === 'Occupied').length;
+  const naTotal = allRooms.filter(r => r.category === 'Non-AC Room').length;
+  const naOcc   = allRooms.filter(r => r.category === 'Non-AC Room' && r.status === 'Occupied').length;
+  const ghTotal = allRooms.filter(r => r.category === 'Guest House Room').length;
+  const ghOcc   = allRooms.filter(r => r.category === 'Guest House Room' && r.status === 'Occupied').length;
+
+  setBar('bar-ac', acTotal ? Math.round(acOcc/acTotal*100) : 0);
+  setBar('bar-nonac', naTotal ? Math.round(naOcc/naTotal*100) : 0);
+  setBar('bar-gh', ghTotal ? Math.round(ghOcc/ghTotal*100) : 0);
+}
+
+function setBar(id, pct) {
+  const el = document.getElementById(id);
+  if (el) { el.style.width = pct + '%'; el.textContent = pct + '%'; }
+}
+
+/* ══ RESERVATIONS TABLE ══ */
+function renderReservTable(data) {
+  const tbody = document.getElementById('reservTableBody');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--text-light);">No reservations found</td></tr>'; return; }
+
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td><code style="font-size:0.75rem; color:var(--maroon);">${r.id}</code></td>
+      <td><strong>${r.fullName}</strong><br><span style="color:var(--text-light);font-size:0.75rem;">${r.city}, ${r.state}</span></td>
+      <td>${r.mobile}</td>
+      <td>${formatDate(r.checkIn)}</td>
+      <td>${formatDate(r.checkOut)}</td>
+      <td style="text-align:center;">🌙${r.totalNights}</td>
+      <td style="font-size:0.78rem;">
+        ${r.rooms.ac>0?`❄️${r.rooms.ac} `:''}${r.rooms.nonAc>0?`🌬️${r.rooms.nonAc} `:''}${r.rooms.guestHouse>0?`🏡${r.rooms.guestHouse}`:''}
+      </td>
+      <td style="text-align:center;">👥${r.members}</td>
+      <td><span class="status-badge s-${r.status.toLowerCase()}">${r.status}</span></td>
+      <td>
+        <button onclick="openAllocationModal('${r.id}')" style="background:none;border:1px solid var(--saffron);color:var(--saffron);padding:4px 10px;border-radius:12px;font-size:0.72rem;cursor:pointer;">🏠 Allocate</button>
+        <button onclick="viewReservation('${r.id}')" style="background:none;border:1px solid var(--green);color:var(--green);padding:4px 10px;border-radius:12px;font-size:0.72rem;cursor:pointer;margin-left:4px;">👁 View</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterReservations() {
+  const q      = document.getElementById('srchName').value.toLowerCase();
+  const status = document.getElementById('srchStatus').value;
+  const date   = document.getElementById('srchDate').value;
+
+  const filtered = allReservations.filter(r => {
+    const matchQ = !q || r.fullName.toLowerCase().includes(q) || r.mobile.includes(q) || r.id.toLowerCase().includes(q);
+    const matchS = !status || r.status === status;
+    const matchD = !date || r.checkIn === date || r.checkOut === date;
+    return matchQ && matchS && matchD;
+  });
+  renderReservTable(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('srchName').value = '';
+  document.getElementById('srchStatus').value = '';
+  document.getElementById('srchDate').value = '';
+  renderReservTable(allReservations);
+}
+
+/* ══ ALLOCATION TABLE ══ */
+function renderAllocationTable() {
+  const pending = allReservations.filter(r => r.status === 'Pending');
+  const tbody = document.getElementById('allocationTableBody');
+
+  if (!pending.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--green);">✅ All reservations have been allocated!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pending.map(r => `
+    <tr>
+      <td><code style="font-size:0.75rem;">${r.id}</code></td>
+      <td><strong>${r.fullName}</strong><br><span style="font-size:0.75rem;color:var(--text-light);">${r.mobile}</span></td>
+      <td>${formatDate(r.checkIn)}</td>
+      <td>${formatDate(r.checkOut)}</td>
+      <td style="font-size:0.8rem;">${r.rooms.ac>0?`❄️ AC×${r.rooms.ac} `:''}${r.rooms.nonAc>0?`🌬️ Non-AC×${r.rooms.nonAc} `:''}${r.rooms.guestHouse>0?`🏡 GH×${r.rooms.guestHouse}`:''}</td>
+      <td style="text-align:center;">👥${r.members}</td>
+      <td>${r.needTransport === 'Yes' ? '✅ Yes' : '—'}</td>
+      <td><button class="btn btn-primary" style="padding:6px 14px; font-size:0.8rem;" onclick="openAllocationModal('${r.id}')">🏠 Allocate Room</button></td>
+    </tr>
+  `).join('');
+}
+
+/* ══ ALLOCATION MODAL ══ */
+function openAllocationModal(resId) {
+  currentAllocReservId = resId;
+  selectedRooms = [];
+  const r = allReservations.find(x => x.id === resId);
+  if (!r) return;
+
+  document.getElementById('modalReservDetails').innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.82rem;">
+      <div><span style="color:var(--text-light);">Visitor: </span><strong>${r.fullName}</strong></div>
+      <div><span style="color:var(--text-light);">Mobile: </span><strong>${r.mobile}</strong></div>
+      <div><span style="color:var(--text-light);">Check-In: </span><strong>${formatDate(r.checkIn)}</strong></div>
+      <div><span style="color:var(--text-light);">Check-Out: </span><strong>${formatDate(r.checkOut)}</strong></div>
+      <div><span style="color:var(--text-light);">Nights: </span><strong>🌙${r.totalNights}</strong></div>
+      <div><span style="color:var(--text-light);">Members: </span><strong>👥${r.members}</strong></div>
+      <div><span style="color:var(--text-light);">Rooms Requested: </span><strong>
+        ${r.rooms.ac>0?`❄️AC×${r.rooms.ac} `:''}${r.rooms.nonAc>0?`🌬️×${r.rooms.nonAc} `:''}${r.rooms.guestHouse>0?`🏡×${r.rooms.guestHouse}`:''}
+      </strong></div>
+      <div><span style="color:var(--text-light);">Email: </span><strong>${r.email}</strong></div>
+    </div>
+  `;
+
+  // Render available rooms
+  document.getElementById('modalRoomGrid').innerHTML = allRooms.map(room => `
+    <div class="room-chip ${room.status.toLowerCase()}" id="chip-${room.id}"
+      onclick="toggleRoomSelect('${room.id}','${room.status}')">
+      <div>${room.number}</div>
+      <div style="font-size:0.65rem; margin-top:2px;">${room.category.split(' ')[0]}</div>
+      <div style="font-size:0.65rem;">₹${room.rate}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('allocationModal').classList.add('open');
+}
+
+function toggleRoomSelect(roomId, status) {
+  if (status !== 'Available' && !selectedRooms.includes(roomId)) return;
+  const chip = document.getElementById('chip-' + roomId);
+  if (selectedRooms.includes(roomId)) {
+    selectedRooms = selectedRooms.filter(r => r !== roomId);
+    chip.classList.remove('selected');
+    chip.classList.add('available');
+  } else {
+    selectedRooms.push(roomId);
+    chip.classList.add('selected');
+    chip.classList.remove('available');
+  }
+}
+
+function closeModal() {
+  document.getElementById('allocationModal').classList.remove('open');
+  currentAllocReservId = null;
+  selectedRooms = [];
+}
+
+async function confirmAllocation() {
+  const manual = document.getElementById('manualRoomInput').value.trim();
+  let roomNums = [];
+
+  if (selectedRooms.length > 0) {
+    roomNums = selectedRooms.map(rid => allRooms.find(r => r.id === rid)?.number).filter(Boolean);
+  } else if (manual) {
+    roomNums = manual.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  if (!roomNums.length) { alert('Please select or enter at least one room number.'); return; }
+
+  const r = allReservations.find(x => x.id === currentAllocReservId);
+  if (!r) return;
+
+  // Update local data
+  r.status = 'Confirmed';
+  r.allocatedRooms = roomNums.join(', ');
+  selectedRooms.forEach(rid => {
+    const room = allRooms.find(x => x.id === rid);
+    if (room) { room.status = 'Occupied'; room.currentRes = currentAllocReservId; }
+  });
+
+  // Send to Sheets
+  await allocateRoom(currentAllocReservId, roomNums);
+
+  // Send email (requires EmailJS setup)
+  // await sendAllocationEmail(r, [], roomNums.join(', '));
+
+  closeModal();
+  alert(`✅ Room(s) ${roomNums.join(', ')} allocated to ${r.fullName}!\n\nConfirmation email will be sent to: ${r.email}\n\n(Set up EmailJS to enable auto-email)`);
+
+  // Refresh
+  renderAllocationTable();
+  loadOverview();
+}
+
+/* ══ ROOMS TABLE ══ */
+function renderRoomsTable(data) {
+  const rooms = data || allRooms;
+  const tbody = document.getElementById('roomsTableBody');
+
+  // Stats
+  document.getElementById('r-available').textContent  = rooms.filter(r=>r.status==='Available').length;
+  document.getElementById('r-occupied').textContent   = rooms.filter(r=>r.status==='Occupied').length;
+  document.getElementById('r-maintenance').textContent= rooms.filter(r=>r.status==='Maintenance').length;
+  document.getElementById('r-total').textContent      = rooms.length;
+
+  tbody.innerHTML = rooms.map(r => `
+    <tr>
+      <td><strong>${r.number}</strong></td>
+      <td>${r.category}</td>
+      <td>₹${r.rate.toLocaleString('en-IN')}/night</td>
+      <td><span class="status-badge ${r.status==='Available'?'s-confirmed':r.status==='Occupied'?'s-cancelled':'s-pending'}">${r.status}</span></td>
+      <td>${r.currentRes ? `<code style="font-size:0.72rem;">${r.currentRes}</code>` : '—'}</td>
+      <td>
+        <button onclick="editRoom('${r.id}')" style="background:none;border:1px solid var(--gold);color:var(--maroon);padding:4px 10px;border-radius:12px;font-size:0.72rem;cursor:pointer;">✏️ Edit</button>
+        <button onclick="deleteRoom('${r.id}')" style="background:none;border:1px solid #E53935;color:#E53935;padding:4px 10px;border-radius:12px;font-size:0.72rem;cursor:pointer;margin-left:4px;">🗑️ Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterRooms() {
+  const cat = document.getElementById('roomCatFilter').value;
+  const sts = document.getElementById('roomStatusFilter').value;
+  const filtered = allRooms.filter(r =>
+    (!cat || r.category === cat) && (!sts || r.status === sts)
+  );
+  renderRoomsTable(filtered);
+}
+
+function openAddRoomModal() {
+  editingRoomId = null;
+  document.getElementById('addRoomTitle').textContent = '🏠 Add New Room';
+  document.getElementById('nr-number').value = '';
+  document.getElementById('nr-rate').value = '';
+  document.getElementById('addRoomModal').classList.add('open');
+}
+
+function editRoom(id) {
+  editingRoomId = id;
+  const r = allRooms.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('addRoomTitle').textContent = '✏️ Edit Room';
+  document.getElementById('nr-number').value = r.number;
+  document.getElementById('nr-category').value = r.category;
+  document.getElementById('nr-rate').value = r.rate;
+  document.getElementById('nr-status').value = r.status;
+  document.getElementById('addRoomModal').classList.add('open');
+}
+
+function saveRoom() {
+  const num = document.getElementById('nr-number').value.trim();
+  const cat = document.getElementById('nr-category').value;
+  const rate= parseInt(document.getElementById('nr-rate').value) || 0;
+  const sts = document.getElementById('nr-status').value;
+
+  if (!num || !rate) { alert('Please fill Room Number and Rate.'); return; }
+
+  if (editingRoomId) {
+    const r = allRooms.find(x => x.id === editingRoomId);
+    if (r) { r.number=num; r.category=cat; r.rate=rate; r.status=sts; }
+  } else {
+    allRooms.push({ id:'R'+Date.now(), number:num, category:cat, rate, status:sts, currentRes:'' });
+  }
+
+  document.getElementById('addRoomModal').classList.remove('open');
+  renderRoomsTable();
+  alert(`Room ${num} ${editingRoomId?'updated':'added'} successfully!`);
+}
+
+function deleteRoom(id) {
+  const r = allRooms.find(x => x.id === id);
+  if (!r) return;
+  if (r.status === 'Occupied') { alert('Cannot delete an occupied room.'); return; }
+  if (!confirm(`Delete Room ${r.number}? This cannot be undone.`)) return;
+  allRooms = allRooms.filter(x => x.id !== id);
+  renderRoomsTable();
+}
+
+/* ══ REPORTS ══ */
+function loadArrivalsReport() {
+  const date = document.getElementById('arrDate').value;
+  if (!date) return;
+
+  const arrivals  = allReservations.filter(r => r.checkIn === date);
+  const departures= allReservations.filter(r => r.checkOut === date);
+  const tbody = document.getElementById('arrTableBody');
+
+  document.getElementById('arrMetrics').innerHTML = `
+    <div class="metric-box"><div class="metric-val">${arrivals.length}</div><div class="metric-lbl">Arrivals</div></div>
+    <div class="metric-box"><div class="metric-val">${departures.length}</div><div class="metric-lbl">Departures</div></div>
+    <div class="metric-box"><div class="metric-val">${arrivals.reduce((s,r)=>s+r.members,0)}</div><div class="metric-lbl">Arriving Members</div></div>
+  `;
+
+  const combined = [...arrivals.map(r=>({...r,_type:'Arrival'})), ...departures.map(r=>({...r,_type:'Departure'}))];
+  tbody.innerHTML = combined.length
+    ? combined.map(r => `<tr>
+        <td><code style="font-size:0.75rem;">${r.id}</code></td>
+        <td>${r.fullName}</td><td>${r.mobile}</td>
+        <td>${formatDate(r.checkIn)}</td><td>${formatDate(r.checkOut)}</td>
+        <td style="text-align:center;">${r.totalNights}</td>
+        <td style="text-align:center;">${r.members}</td>
+        <td style="font-size:0.78rem;">${r.rooms.ac>0?`❄️${r.rooms.ac} `:''}${r.rooms.nonAc>0?`🌬️${r.rooms.nonAc} `:''}${r.rooms.guestHouse>0?`🏡${r.rooms.guestHouse}`:''}</td>
+        <td><span class="status-badge s-${r.status.toLowerCase()}">${r.status}</span></td>
+      </tr>`).join('')
+    : '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-light);">No arrivals or departures on this date</td></tr>';
+}
+
+function loadOccupancyReport() {
+  const total = allRooms.length;
+  const occ   = allRooms.filter(r=>r.status==='Occupied').length;
+  const pct   = total ? Math.round(occ/total*100) : 0;
+  const revenue = allReservations.filter(r=>r.status==='Confirmed').reduce((s,r)=>s+r.paymentAmount,0);
+
+  document.getElementById('occ-total-rooms').textContent = total;
+  document.getElementById('occ-occupied').textContent    = occ;
+  document.getElementById('occ-pct').textContent         = pct + '%';
+  document.getElementById('occ-revenue').textContent     = '₹' + revenue.toLocaleString('en-IN');
+
+  // Bar chart
+  const cats = ['AC Room','Non-AC Room','Guest House Room'];
+  document.getElementById('occBarChart').innerHTML = cats.map(cat => {
+    const ct = allRooms.filter(r=>r.category===cat).length;
+    const co = allRooms.filter(r=>r.category===cat&&r.status==='Occupied').length;
+    const cp = ct ? Math.round(co/ct*100) : 0;
+    return `<div class="bar-row">
+      <span class="bar-label">${cat.split(' ')[0]}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${cp}%; background:var(--saffron);">${cp}% (${co}/${ct})</div></div>
+    </div>`;
+  }).join('');
+}
+
+function loadTransportReport() {
+  const date = document.getElementById('trDate').value;
+  const data = date
+    ? allReservations.filter(r => r.checkIn === date && r.needTransport === 'Yes')
+    : allReservations.filter(r => r.needTransport === 'Yes');
+
+  const tbody = document.getElementById('trTableBody');
+  document.getElementById('trMetrics').innerHTML = `
+    <div class="metric-box"><div class="metric-val">${data.length}</div><div class="metric-lbl">Need Transport</div></div>
+    <div class="metric-box"><div class="metric-val">${data.reduce((s,r)=>s+r.members,0)}</div><div class="metric-lbl">Total Members</div></div>
+  `;
+  tbody.innerHTML = data.length
+    ? data.map(r=>`<tr>
+        <td><code style="font-size:0.75rem;">${r.id}</code></td>
+        <td>${r.fullName}</td><td>${r.mobile}</td><td>${formatDate(r.checkIn)}</td>
+        <td style="text-align:center;">👥${r.members}</td>
+        <td>${r.transportMode}</td>
+        <td><span class="status-badge s-confirmed">✅ Yes</span></td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-light);">No transport requests found</td></tr>';
+}
+
+function loadPoojaReport() {
+  const date = document.getElementById('pDate').value;
+  const data = date
+    ? allReservations.filter(r => r.checkIn === date && r.needPooja === 'Yes')
+    : allReservations.filter(r => r.needPooja === 'Yes');
+
+  const tbody = document.getElementById('pTableBody');
+  tbody.innerHTML = data.length
+    ? data.map(r=>`<tr>
+        <td><code style="font-size:0.75rem;">${r.id}</code></td>
+        <td>${r.fullName}</td><td>${r.mobile}</td><td>${formatDate(r.checkIn)}</td>
+        <td style="text-align:center;">👥${r.members}</td>
+        <td><span class="status-badge s-confirmed">🙏 Yes</span></td>
+        <td>${r.additionalRequirements || '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-light);">No pooja requests found</td></tr>';
+}
+
+function loadAdditionalReport() {
+  const data = allReservations.filter(r => r.additionalRequirements);
+  const tbody = document.getElementById('addlTableBody');
+  tbody.innerHTML = data.length
+    ? data.map(r=>`<tr>
+        <td><code style="font-size:0.75rem;">${r.id}</code></td>
+        <td>${r.fullName}</td><td>${formatDate(r.checkIn)}</td>
+        <td>${r.additionalRequirements}</td>
+        <td><span class="status-badge s-${r.status.toLowerCase()}">${r.status}</span></td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-light);">No additional requirements noted</td></tr>';
+}
+
+function renderDevoteeTable(data) {
+  // Group by mobile number
+  const byMobile = {};
+  data.forEach(r => {
+    if (!byMobile[r.mobile]) {
+      byMobile[r.mobile] = { name:r.fullName, mobile:r.mobile, city:r.city, state:r.state, visits:0, lastVisit:'', totalNights:0, totalMembers:0 };
+    }
+    const d = byMobile[r.mobile];
+    d.visits++;
+    d.totalNights += r.totalNights || 0;
+    d.totalMembers += r.members || 0;
+    if (!d.lastVisit || r.checkIn > d.lastVisit) d.lastVisit = r.checkIn;
+  });
+
+  const devotees = Object.values(byMobile);
+  const tbody = document.getElementById('devoteeTableBody');
+  tbody.innerHTML = devotees.length
+    ? devotees.map(d=>`<tr>
+        <td><strong>${d.name}</strong></td><td>${d.mobile}</td>
+        <td>${d.city}</td><td>${d.state}</td>
+        <td style="text-align:center;"><strong>${d.visits}</strong></td>
+        <td>${formatDate(d.lastVisit)}</td>
+        <td style="text-align:center;">${d.totalNights}</td>
+        <td style="text-align:center;">${d.totalMembers}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-light);">No records found</td></tr>';
+}
+
+function searchDevotee() {
+  const q = document.getElementById('devSearch').value.toLowerCase();
+  const filtered = allReservations.filter(r =>
+    r.fullName.toLowerCase().includes(q) || r.mobile.includes(q) || r.city.toLowerCase().includes(q)
+  );
+  renderDevoteeTable(filtered);
+}
+
+function viewReservation(id) {
+  const r = allReservations.find(x=>x.id===id);
+  if (!r) return;
+  alert(`RESERVATION DETAILS\n\nRef ID: ${r.id}\nVisitor: ${r.fullName}\nMobile: ${r.mobile}\nEmail: ${r.email}\nCity: ${r.city}, ${r.state}\nCheck-In: ${formatDate(r.checkIn)}\nCheck-Out: ${formatDate(r.checkOut)}\nNights: ${r.totalNights}\nMembers: ${r.members}\nStatus: ${r.status}\nAllocated Rooms: ${r.allocatedRooms || 'Not yet allocated'}\nPayment: ₹${r.paymentAmount}\nTransport: ${r.transportMode} | Need pickup: ${r.needTransport}\nPooja: ${r.needPooja}\nAdditional: ${r.additionalRequirements||'—'}`);
+}
+
+/* ══ UTILITIES ══ */
+function setReportTab(btn, tabId) {
+  btn.closest('.panel').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function formatDate(str) {
+  if (!str) return '—';
+  return new Date(str).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+}
+
+function refreshData() { loadOverview(); }
+
+function exportCSV() {
+  const headers = ['Ref ID','Name','Mobile','Email','City','State','Check-In','Check-Out','Nights','AC Rooms','Non-AC Rooms','GH Rooms','Members','Status','Allocated Rooms','Payment'];
+  const rows = allReservations.map(r => [
+    r.id, r.fullName, r.mobile, r.email, r.city, r.state,
+    r.checkIn, r.checkOut, r.totalNights,
+    r.rooms.ac, r.rooms.nonAc, r.rooms.guestHouse,
+    r.members, r.status, r.allocatedRooms || '', r.paymentAmount
+  ]);
+  downloadCSV([headers, ...rows], 'PST_Reservations_' + new Date().toISOString().split('T')[0] + '.csv');
+}
+
+function exportReportCSV(type) {
+  alert('Export feature ready — connect to live data to download CSV');
+}
+
+function downloadCSV(rows, filename) {
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function logout() {
+  if (confirm('Logout from Admin Dashboard?')) {
+    sessionStorage.removeItem('adminAuth');
+    window.location.href = 'index.html';
+  }
+}
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('arrDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('trDate').value  = new Date().toISOString().split('T')[0];
+  document.getElementById('pDate').value   = new Date().toISOString().split('T')[0];
+  loadOverview();
+});
+</script>
+</body>
+</html>

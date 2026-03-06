@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login — Shri Parmagam Shravak Trust</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  .login-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .login-card {
+    background: var(--white);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius);
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px var(--shadow-warm);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--saffron), var(--gold), var(--saffron));
+  }
+  .login-icon { font-size: 3rem; margin-bottom: 12px; }
+  .login-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--maroon);
+    margin-bottom: 4px;
+  }
+  .login-subtitle { font-size: 0.8rem; color: var(--text-light); margin-bottom: 28px; }
+  .login-input {
+    width: 100%; padding: 12px 16px;
+    border: 1.5px solid var(--ivory-dark);
+    border-radius: var(--radius-sm);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    background: var(--ivory);
+    margin-bottom: 12px;
+    transition: all 0.3s;
+    outline: none;
+    text-align: center;
+    letter-spacing: 0.08em;
+  }
+  .login-input:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(232,99,10,0.1); }
+  .login-error { color: #E53935; font-size: 0.82rem; margin-bottom: 12px; display: none; }
+  .login-note { font-size: 0.72rem; color: var(--text-light); margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-om">🕉</div>
+  <div class="header-trust-name">Shri Parmagam Shravak Trust — Admin Portal</div>
+  <div class="header-hindi">प्रबंधन पोर्टल</div>
+</header>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Front Office Login</div>
+    <div class="login-subtitle">Authorized Personnel Only · अधिकृत कर्मचारी</div>
+
+    <input type="password" class="login-input" id="passwordInput"
+      placeholder="Enter Admin Password"
+      onkeydown="if(event.key==='Enter') doLogin()">
+
+    <div class="login-error" id="loginError">❌ Incorrect password. Please try again.</div>
+
+    <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="doLogin()">
+      🔓 Login to Dashboard
+    </button>
+
+    <div class="login-note">
+      For access assistance, contact system administrator.<br>
+      This portal is restricted to trust management only.
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  🕉 Shri Parmagam Shravak Trust, Sonagir — Admin Portal
+</footer>
+
+<script>
+// ⚠️ CHANGE THIS PASSWORD before going live
+const ADMIN_PASSWORD = 'Parmagam@2025';
+
+function doLogin() {
+  const pwd = document.getElementById('passwordInput').value;
+  if (pwd === ADMIN_PASSWORD) {
+    sessionStorage.setItem('adminAuth', 'true');
+    window.location.href = 'dashboard.html';
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+  }
+}
+</script>
+
+</body>
+</html>
