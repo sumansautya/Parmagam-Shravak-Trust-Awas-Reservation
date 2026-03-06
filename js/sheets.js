@@ -10,7 +10,7 @@
 
 const SHEETS_CONFIG = {
   // ↓ Replace with your Google Apps Script Web App URL after deployment
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1/exec',
 
   // Sheet names (must match exactly in Google Sheets)
   SHEETS: {
