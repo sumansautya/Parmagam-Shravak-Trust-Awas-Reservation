@@ -16,9 +16,9 @@
  */
 
 const EMAILJS_CONFIG = {
-  SERVICE_ID:  'service_dmb76ea',    // e.g. 'service_abc123'
-  TEMPLATE_ID: 'template_5olugzd',   // e.g. 'template_xyz789'
-  PUBLIC_KEY:  'Ef1ryuGyNj8sEMFOc'     // e.g. 'aBcDeFgHiJkLmNoP'
+  SERVICE_ID:  'YOUR_SERVICE_ID',    // e.g. 'service_abc123'
+  TEMPLATE_ID: 'YOUR_TEMPLATE_ID',   // e.g. 'template_xyz789'
+  PUBLIC_KEY:  'YOUR_PUBLIC_KEY'     // e.g. 'aBcDeFgHiJkLmNoP'
 };
 
 /**
@@ -32,20 +32,31 @@ const EMAILJS_CONFIG = {
  */
 async function sendAllocationEmail(r, members, allocatedRooms) {
   try {
-    // Build member list text
+    // Helper to read member field regardless of capitalisation from Google Sheets
+    const mval = (m, ...keys) => {
+      for (const k of keys) {
+        if (m[k] !== undefined && m[k] !== null && String(m[k]).trim() !== '') return String(m[k]).trim();
+      }
+      return '';
+    };
+
+    // Build member list text — handles Name/name, Gender/gender, Age/age etc.
     const memberLines = members.map((m, i) => {
-      const tag = (i === 0) ? '★ Primary Visitor' : m.relation || '';
-      return `${i+1}. ${m.name}  |  ${m.gender}  |  Age: ${m.age}  |  ${tag}`;
+      const name   = mval(m, 'Name','name');
+      const gender = mval(m, 'Gender','gender');
+      const age    = mval(m, 'Age','age');
+      const rel    = (i === 0) ? '★ Primary Visitor' : mval(m, 'Relation','relation','Is Primary');
+      return `${i+1}. ${name}  |  ${gender}  |  Age: ${age}  |  ${rel}`;
     }).join('\n');
 
     // Demographic counts
     const total    = members.length;
-    const male     = members.filter(m => m.gender === 'Male' || m.Gender === 'Male').length;
-    const female   = members.filter(m => m.gender === 'Female' || m.Gender === 'Female').length;
-    const children = members.filter(m => parseInt(m.age || m.Age) < 18).length;
-    const seniors  = members.filter(m => parseInt(m.age || m.Age) >= 60).length;
-    const snrM     = members.filter(m => parseInt(m.age || m.Age) >= 60 && (m.gender === 'Male' || m.Gender === 'Male')).length;
-    const snrF     = members.filter(m => parseInt(m.age || m.Age) >= 60 && (m.gender === 'Female' || m.Gender === 'Female')).length;
+    const male     = members.filter(m => mval(m,'Gender','gender') === 'Male').length;
+    const female   = members.filter(m => mval(m,'Gender','gender') === 'Female').length;
+    const children = members.filter(m => parseInt(mval(m,'Age','age')||0) < 18).length;
+    const seniors  = members.filter(m => parseInt(mval(m,'Age','age')||0) >= 60).length;
+    const snrM     = members.filter(m => parseInt(mval(m,'Age','age')||0) >= 60 && mval(m,'Gender','gender') === 'Male').length;
+    const snrF     = members.filter(m => parseInt(mval(m,'Age','age')||0) >= 60 && mval(m,'Gender','gender') === 'Female').length;
 
     // Room details for email
     const rooms = [];
