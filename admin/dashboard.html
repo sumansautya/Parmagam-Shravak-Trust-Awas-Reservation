@@ -181,7 +181,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">⏳ Pending Allocation</div>
-          <button class="btn btn-primary" style="padding:6px 12px;font-size:0.78rem;" onclick="nav('allocate',document.querySelector('[onclick*=allocate]'))">Go →</button>
+          <button class="btn btn-primary" style="padding:6px 12px;font-size:0.78rem;" onclick="goToAllocate()">Go →</button>
         </div>
         <div id="pendingDiv"><div style="color:var(--text-light);text-align:center;padding:20px;font-size:0.85rem;">Loading...</div></div>
       </div>
@@ -473,13 +473,21 @@ async function loadAll() {
   allReservations = reservations;
   allRooms        = rooms;
   renderOverview();
+  // Pre-render alloc table so it is ready when user navigates to it
+  renderAllocTable();
+  renderRoomsTable();
 }
 
 function showLoading() {
-  ['reservTbody','allocTbody','roomsTbody'].forEach(id => {
+  // Only show loading on initial page load — not on navigation
+  // allocTbody is NOT cleared here so "Go →" from overview works instantly
+  ['reservTbody','roomsTbody'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = '<tr class="loading-row"><td colspan="20">Loading from Google Sheets...</td></tr>';
   });
+  // For alloc table show a quick message
+  const at = document.getElementById('allocTbody');
+  if (at) at.innerHTML = '<tr class="loading-row"><td colspan="9">Loading...</td></tr>';
 }
 
 // ══ NAVIGATION ══
@@ -489,6 +497,7 @@ function nav(page, el) {
   document.getElementById('page-'+page)?.classList.add('active');
   if (el) el.classList.add('active');
 
+  // Render immediately from already-loaded data — never call showLoading() here
   if (page==='overview')      renderOverview();
   if (page==='reservations')  renderReservTable(allReservations);
   if (page==='allocate')      renderAllocTable();
@@ -496,6 +505,12 @@ function nav(page, el) {
   if (page==='rpt-occupancy') renderOccupancy();
   if (page==='rpt-addl')      renderAddlReport();
   if (page==='rpt-devotee')   renderDevotee(allReservations);
+}
+
+// Called from overview "Go →" button — navigates to allocation page
+function goToAllocate() {
+  const navEl = document.querySelector('.nav-item[onclick*=\'allocate\']');
+  nav('allocate', navEl);
 }
 
 // ══ OVERVIEW ══
