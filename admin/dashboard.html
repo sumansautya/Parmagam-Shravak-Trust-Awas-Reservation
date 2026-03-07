@@ -1115,6 +1115,17 @@ function fmtDateLong(str) {
   catch(e) { return str; }
 }
 
+function roomSummary(r) {
+  let s = '';
+  const ac = parseInt(val(r,'AC Rooms') || val(r,'acRooms') || 0);
+  const na = parseInt(val(r,'Non-AC Rooms') || val(r,'nonAcRooms') || 0);
+  const gh = parseInt(val(r,'GH Rooms') || val(r,'guestHouseRooms') || 0);
+  if (ac > 0) s += `❄️ AC×${ac} `;
+  if (na > 0) s += `🌬️ Non-AC×${na} `;
+  if (gh > 0) s += `🏡 GH×${gh}`;
+  return s.trim() || '—';
+}
+
 function setText(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
 
 function logout() {
