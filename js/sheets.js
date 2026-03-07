@@ -230,7 +230,31 @@ function doGet(e) {
       const hdrs  = rows[0];
       const reservations = rows.slice(1).map(r => {
         const obj = {};
-        hdrs.forEach((h,i) => obj[h] = r[i] !== undefined ? String(r[i]) : '');
+        hdrs.forEach((h,i) => {
+          let v = r[i];
+          const hdr = String(h).trim();
+          // Convert Date objects or long date strings to YYYY-MM-DD
+          if (v instanceof Date) {
+            const yr = v.getFullYear();
+            const mo = String(v.getMonth()+1).padStart(2,'0');
+            const dy = String(v.getDate()).padStart(2,'0');
+            v = yr+'-'+mo+'-'+dy;
+          } else if (typeof v === 'string' && v.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/)) {
+            const d = new Date(v);
+            if (!isNaN(d)) {
+              const yr = d.getFullYear();
+              const mo = String(d.getMonth()+1).padStart(2,'0');
+              const dy = String(d.getDate()).padStart(2,'0');
+              v = yr+'-'+mo+'-'+dy;
+            }
+          }
+          obj[hdr] = (v !== undefined && v !== null) ? String(v) : '';
+        });
+        // Fix Status — if blank, derive from Allocated Rooms
+        if (!obj['Status'] || obj['Status'].trim() === '' || obj['Status'] === 'No') {
+          const alloc = (obj['Allocated Rooms'] || '').trim();
+          obj['Status'] = (alloc && alloc !== '' && alloc !== 'Pending') ? 'Confirmed' : 'Pending';
+        }
         return obj;
       });
       return ok({reservations});
