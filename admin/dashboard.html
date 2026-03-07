@@ -470,10 +470,10 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadAll() {
   showLoading();
   const [reservations, rooms] = await Promise.all([fetchReservations(), fetchRooms()]);
-  allReservations = reservations;
-  allRooms        = rooms;
+  allReservations = reservations || [];
+  allRooms        = rooms || [];
+  console.log('Loaded reservations:', allReservations.length, allReservations.map(r=>({id:r['ID']||r.ID, status:r['Status']||r.Status})));
   renderOverview();
-  // Pre-render alloc table so it is ready when user navigates to it
   renderAllocTable();
   renderRoomsTable();
 }
@@ -606,8 +606,16 @@ function clearFilter() {
 
 // ══ ALLOCATION TABLE ══
 function renderAllocTable() {
-  const pending = allReservations.filter(r => val(r,'Status')==='Pending' || !val(r,'Status'));
+  // Show anything that is NOT confirmed or cancelled
+  const pending = allReservations.filter(r => {
+    const s = val(r,'Status').toLowerCase().trim();
+    return s !== 'confirmed' && s !== 'cancelled';
+  });
   const tbody   = document.getElementById('allocTbody');
+  if (!allReservations.length) {
+    tbody.innerHTML='<tr class="loading-row"><td colspan="9">⏳ Data still loading — please wait or click Refresh...</td></tr>';
+    return;
+  }
   if (!pending.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="9">✅ No pending allocations — all rooms assigned!</td></tr>'; return; }
   tbody.innerHTML = pending.map(r => `
     <tr>
@@ -1022,8 +1030,22 @@ function searchDevotee() {
   ));
 }
 
-function loadReservations() { renderReservTable(allReservations); }
-function loadAllocations()  { renderAllocTable(); }
+async function loadReservations() {
+  const tbody = document.getElementById('reservTbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="14">🔄 Refreshing...</td></tr>';
+  const reservations = await fetchReservations();
+  allReservations = reservations || [];
+  renderReservTable(allReservations);
+}
+async function loadAllocations() {
+  const tbody = document.getElementById('allocTbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="9">🔄 Refreshing from Google Sheets...</td></tr>';
+  const [reservations, rooms] = await Promise.all([fetchReservations(), fetchRooms()]);
+  allReservations = reservations || [];
+  allRooms        = rooms || [];
+  renderAllocTable();
+  renderOverview();
+}
 
 // ══ EXPORT ══
 function exportCSV() {
