@@ -105,16 +105,35 @@ async function sendAllocationEmail(r, members, allocatedRooms) {
     // Initialize EmailJS with public key
     emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
 
-    await emailjs.send(
+    // Validate config before sending
+    if (!EMAILJS_CONFIG.SERVICE_ID || EMAILJS_CONFIG.SERVICE_ID === 'YOUR_SERVICE_ID') {
+      return { success: false, error: 'EmailJS SERVICE_ID not configured in email.js' };
+    }
+    if (!EMAILJS_CONFIG.TEMPLATE_ID || EMAILJS_CONFIG.TEMPLATE_ID === 'YOUR_TEMPLATE_ID') {
+      return { success: false, error: 'EmailJS TEMPLATE_ID not configured in email.js' };
+    }
+    if (!EMAILJS_CONFIG.PUBLIC_KEY || EMAILJS_CONFIG.PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
+      return { success: false, error: 'EmailJS PUBLIC_KEY not configured in email.js' };
+    }
+
+    console.log('Sending via EmailJS...', {
+      service:  EMAILJS_CONFIG.SERVICE_ID,
+      template: EMAILJS_CONFIG.TEMPLATE_ID,
+      to:       templateParams.to_email,
+      params:   Object.keys(templateParams)
+    });
+
+    const response = await emailjs.send(
       EMAILJS_CONFIG.SERVICE_ID,
       EMAILJS_CONFIG.TEMPLATE_ID,
       templateParams
     );
 
+    console.log('EmailJS response:', response);
     return { success: true };
   } catch (error) {
     console.error('sendAllocationEmail error:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.text || error.message || String(error) };
   }
 }
 
