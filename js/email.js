@@ -16,9 +16,9 @@
  */
 
 const EMAILJS_CONFIG = {
-  SERVICE_ID:  'YOUR_SERVICE_ID',    // e.g. 'service_abc123'
-  TEMPLATE_ID: 'YOUR_TEMPLATE_ID',   // e.g. 'template_xyz789'
-  PUBLIC_KEY:  'YOUR_PUBLIC_KEY'     // e.g. 'aBcDeFgHiJkLmNoP'
+  SERVICE_ID:  'service_dmb76ea',    // e.g. 'service_abc123'
+  TEMPLATE_ID: 'template_5olugzd',   // e.g. 'template_xyz789'
+  PUBLIC_KEY:  'Ef1ryuGyNj8sEMFOc'     // e.g. 'aBcDeFgHiJkLmNoP'
 };
 
 /**
