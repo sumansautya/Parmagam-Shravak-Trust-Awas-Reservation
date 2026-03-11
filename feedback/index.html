@@ -1,1 +1,756 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guest Feedback — Shri Parmagam Shravak Trust, Sonagir</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --maroon:#7B0D00; --saffron:#E8630A; --gold:#C8973A; --gold-light:#E8C06A;
+  --ivory:#FDF8F0; --cream:#F9F2E4; --ivory-dark:#EFE4CC;
+  --white:#FFFFFF; --green:#2E7D32; --text-dark:#2A1A0A; --text-light:#7A5C3A;
+  --shadow:rgba(123,13,0,0.12); --radius:14px; --radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-dark);min-height:100vh;}
+
+/* DECORATIVE HEADER */
+.page-header{
+  background:linear-gradient(135deg,#5C0A00 0%,#8B1A00 40%,#A52800 70%,#7B1500 100%);
+  padding:28px 20px 24px; text-align:center; position:relative; overflow:hidden;
+}
+.page-header::before{
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C8973A' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.header-om{font-size:1.3rem;color:var(--gold-light);margin-bottom:6px;letter-spacing:0.2em;}
+.header-title{font-family:'Cinzel',serif;font-size:1.6rem;color:#FFFFFF;font-weight:700;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.header-subtitle{font-size:0.88rem;color:rgba(232,192,106,0.9);margin-top:4px;font-weight:500;}
+.header-contact{font-size:0.78rem;color:rgba(253,248,240,0.7);margin-top:6px;}
+
+/* PROGRESS BAR */
+.progress-wrap{background:rgba(0,0,0,0.2);height:4px;margin-top:16px;border-radius:2px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold-light),var(--saffron));border-radius:2px;transition:width 0.4s ease;width:0%;}
+
+/* FORM CONTAINER */
+.form-wrap{max-width:680px;margin:0 auto;padding:24px 16px 60px;}
+
+/* SECTION CARDS */
+.form-section{
+  background:var(--white);border-radius:var(--radius);
+  box-shadow:0 4px 20px var(--shadow);
+  margin-bottom:20px;overflow:hidden;
+  border:1px solid var(--ivory-dark);
+  animation:fadeUp 0.4s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.form-section:nth-child(1){animation-delay:0.05s;}
+.form-section:nth-child(2){animation-delay:0.1s;}
+.form-section:nth-child(3){animation-delay:0.15s;}
+.form-section:nth-child(4){animation-delay:0.2s;}
+.form-section:nth-child(5){animation-delay:0.25s;}
+
+.section-header{
+  background:linear-gradient(135deg,var(--maroon),#A52000);
+  padding:14px 20px; display:flex; align-items:center; gap:10px;
+}
+.section-icon{font-size:1.2rem;}
+.section-title{font-family:'Cinzel',serif;font-size:0.9rem;color:var(--gold-light);font-weight:600;letter-spacing:0.04em;}
+.section-body{padding:20px;}
+
+/* INTRO CARD */
+.intro-card{
+  background:linear-gradient(135deg,#FFF8E8,#FFF3D4);
+  border:1px solid var(--gold);border-radius:var(--radius);
+  padding:20px 24px;margin-bottom:24px;text-align:center;
+  box-shadow:0 2px 12px rgba(200,151,58,0.15);
+}
+.intro-om{font-size:1.8rem;margin-bottom:8px;}
+.intro-title{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--maroon);font-weight:700;margin-bottom:8px;}
+.intro-text{font-size:0.88rem;color:var(--text-light);line-height:1.6;}
+.intro-hindi{font-size:0.85rem;color:var(--text-light);margin-top:6px;line-height:1.6;}
+
+/* FIELDS */
+.field-group{margin-bottom:18px;}
+.field-group:last-child{margin-bottom:0;}
+.field-label{
+  display:block;font-size:0.85rem;font-weight:700;color:var(--text-dark);
+  margin-bottom:7px;
+}
+.field-label .hi{font-weight:400;color:var(--text-light);font-size:0.82rem;}
+.req{color:var(--saffron);margin-left:2px;}
+.field-input,.field-select,.field-textarea{
+  width:100%;padding:11px 14px;
+  border:1.5px solid var(--ivory-dark);border-radius:var(--radius-sm);
+  font-family:'Nunito',sans-serif;font-size:0.9rem;color:var(--text-dark);
+  background:var(--ivory);outline:none;transition:all 0.2s;
+}
+.field-input:focus,.field-select:focus,.field-textarea:focus{
+  border-color:var(--saffron);background:var(--white);
+  box-shadow:0 0 0 3px rgba(232,99,10,0.1);
+}
+.field-input.error,.field-select.error,.field-textarea.error{border-color:#E53935;}
+.field-textarea{resize:vertical;min-height:90px;}
+.field-error{font-size:0.75rem;color:#E53935;margin-top:4px;display:none;}
+.field-error.show{display:block;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:520px){.form-grid{grid-template-columns:1fr;}}
+
+/* STAR RATING */
+.star-group{margin-bottom:20px;}
+.star-label{font-size:0.85rem;font-weight:700;color:var(--text-dark);margin-bottom:10px;display:block;}
+.star-label .hi{font-weight:400;color:var(--text-light);font-size:0.82rem;}
+.star-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.star-option{cursor:pointer;}
+.star-option input{display:none;}
+.star-option .star-face{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 14px;border-radius:var(--radius-sm);
+  border:2px solid var(--ivory-dark);background:var(--ivory);
+  transition:all 0.2s;font-size:0.78rem;color:var(--text-light);font-weight:600;
+  min-width:72px;
+}
+.star-option input:checked + .star-face,
+.star-option:hover .star-face{
+  border-color:var(--gold);background:linear-gradient(135deg,#FFF8E0,#FFF3CC);
+  color:var(--maroon);transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(200,151,58,0.25);
+}
+.star-option .star-face .emoji{font-size:1.5rem;}
+.star-error{font-size:0.75rem;color:#E53935;margin-top:6px;display:none;}
+.star-error.show{display:block;}
+
+/* VISIT COUNT */
+.visit-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;}
+.visit-opt{cursor:pointer;}
+.visit-opt input{display:none;}
+.visit-opt .visit-face{
+  padding:10px 8px;text-align:center;border-radius:var(--radius-sm);
+  border:2px solid var(--ivory-dark);background:var(--ivory);
+  font-size:0.82rem;font-weight:600;color:var(--text-light);transition:all 0.2s;
+}
+.visit-opt input:checked + .visit-face{
+  border-color:var(--saffron);background:linear-gradient(135deg,#FFF3E8,#FFE8CC);
+  color:var(--maroon);
+}
+
+/* SUBMIT */
+.submit-wrap{text-align:center;margin-top:28px;}
+.btn-submit{
+  background:linear-gradient(135deg,var(--saffron),#C45A00);
+  color:white;border:none;padding:15px 48px;
+  font-family:'Cinzel',serif;font-size:1rem;font-weight:600;
+  border-radius:50px;cursor:pointer;transition:all 0.3s;
+  box-shadow:0 6px 24px rgba(232,99,10,0.35);letter-spacing:0.05em;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(232,99,10,0.45);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* SUCCESS */
+.success-screen{
+  display:none;text-align:center;padding:48px 24px;
+  background:var(--white);border-radius:var(--radius);
+  box-shadow:0 4px 20px var(--shadow);
+}
+.success-icon{font-size:4rem;margin-bottom:16px;}
+.success-title{font-family:'Cinzel',serif;font-size:1.3rem;color:var(--maroon);margin-bottom:12px;}
+.success-text{color:var(--text-light);font-size:0.9rem;line-height:1.6;}
+
+/* NOTE BOX */
+.note-box{
+  background:linear-gradient(135deg,#FFF8E0,#FFF0CC);
+  border:1px solid var(--gold);border-radius:var(--radius-sm);
+  padding:14px 16px;margin-bottom:20px;font-size:0.83rem;
+  color:var(--text-light);line-height:1.6;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="header-om">🕉 ॐ नमः सिद्धेभ्यः 🕉</div>
+  <div class="header-title">Shri Parmagam Shravak Trust, Sonagir</div>
+  <div class="header-subtitle">श्री परमागम श्रावक ट्रस्ट, सोनागिर</div>
+  <div class="header-contact">📞 8887417076 &nbsp;|&nbsp; 7987164958 &nbsp;|&nbsp; Shri Kund Kund Nagar, Sonagir — 473885</div>
+  <div class="progress-wrap"><div class="progress-fill" id="progressBar"></div></div>
+</div>
+
+<div class="form-wrap">
+
+  <!-- INTRO -->
+  <div class="intro-card">
+    <div class="intro-om">🙏</div>
+    <div class="intro-title">Guest Feedback Form &nbsp;/&nbsp; गेस्ट फीडबैक फॉर्म</div>
+    <div class="intro-text">Our primary objective is to make your experience joyful and memorable. Your valuable feedback helps us serve you and all future pilgrims better.</div>
+    <div class="intro-hindi">हमारा मुख्य उद्देश्य, आपके अनुभव को आनंदमय करना है। हमें इसके लिए आपका महत्वपूर्ण सुझाव की जरूरत है कृपया नीचे दिए गए फॉर्म को पूरा करें।</div>
+  </div>
+
+  <div id="mainForm">
+
+  <!-- AUTO-FILL NOTICE BANNER -->
+  <div id="autofill-banner" style="
+    display:none;background:linear-gradient(135deg,#E8F5E9,#F1F8E9);
+    border:1.5px solid #66BB6A;border-radius:10px;
+    padding:12px 18px;margin-bottom:20px;
+    font-size:0.83rem;color:#2E7D32;line-height:1.5;
+  ">
+    ✅ Loading your details...
+  </div>
+
+  <!-- SECTION 1: PERSONAL INFO -->
+  <div class="form-section">
+    <div class="section-header">
+      <span class="section-icon">👤</span>
+      <span class="section-title">Personal Information &nbsp;/&nbsp; व्यक्तिगत विवरण</span>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Full Name <span class="hi">/ पूरा नाम</span> <span class="req">*</span></label>
+          <input type="text" class="field-input" id="fb-name" placeholder="Your full name">
+          <div class="field-error" id="err-fb-name">Full name is required</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Mobile Number <span class="hi">/ मोबाइल नंबर</span> <span class="req">*</span></label>
+          <input type="tel" class="field-input" id="fb-mobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric">
+          <div class="field-error" id="err-fb-mobile">Valid mobile number required</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Address <span class="hi">/ पता</span> <span class="req">*</span></label>
+        <textarea class="field-textarea" id="fb-address" placeholder="Your complete address" rows="2"></textarea>
+        <div class="field-error" id="err-fb-address">Address is required</div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">City/Town/Village <span class="hi">/ शहर/नगर/गाँव</span> <span class="req">*</span></label>
+          <input type="text" class="field-input" id="fb-city" placeholder="City">
+          <div class="field-error" id="err-fb-city">City is required</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">State <span class="hi">/ राज्य</span> <span class="req">*</span></label>
+          <select class="field-select" id="fb-state">
+            <option value="">— Select State —</option>
+            <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
+            <option>Bihar</option><option>Chhattisgarh</option><option>Goa</option>
+            <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option>
+            <option>Jharkhand</option><option>Karnataka</option><option>Kerala</option>
+            <option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option>
+            <option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option>
+            <option>Odisha</option><option>Punjab</option><option>Rajasthan</option>
+            <option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option>
+            <option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option>
+            <option>West Bengal</option>
+            <option>Delhi</option><option>Jammu & Kashmir</option><option>Ladakh</option>
+            <option>Chandigarh</option><option>Puducherry</option>
+            <option>Other / अन्य</option>
+          </select>
+          <div class="field-error" id="err-fb-state">State is required</div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Email Address <span class="hi">/ ईमेल पता</span></label>
+          <input type="email" class="field-input" id="fb-email" placeholder="your@email.com">
+          <div class="field-error" id="err-fb-email">Valid email required</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Reservation Ref ID <span class="hi">/ आरक्षण संख्या</span></label>
+          <input type="text" class="field-input" id="fb-refid" placeholder="PST-XXXXXXXX (if known)" style="text-transform:uppercase;">
+        </div>
+      </div>
+      <!-- Stay dates row — shown only when auto-filled from email link -->
+      <div class="form-grid" id="stay-dates-row" style="display:none;">
+        <div class="field-group">
+          <label class="field-label">Check-In Date <span class="hi">/ आगमन तिथि</span></label>
+          <input type="date" class="field-input" id="fb-cin" readonly
+            style="background:#F0EAD8;color:#5A3E1B;cursor:default;border-color:#C8973A;"
+            title="Auto-filled from your reservation">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Check-Out Date <span class="hi">/ प्रस्थान तिथि</span></label>
+          <input type="date" class="field-input" id="fb-cout" readonly
+            style="background:#F0EAD8;color:#5A3E1B;cursor:default;border-color:#C8973A;"
+            title="Auto-filled from your reservation">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: OCCUPATION -->
+  <div class="form-section">
+    <div class="section-header">
+      <span class="section-icon">💼</span>
+      <span class="section-title">Occupation & Visit Details &nbsp;/&nbsp; पेशा और यात्रा विवरण</span>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Occupation <span class="hi">/ पेशा</span> <span class="req">*</span></label>
+          <select class="field-select" id="fb-occ">
+            <option value="">— Select —</option>
+            <option>Business / व्यापार</option>
+            <option>Government Service / सरकारी सेवा</option>
+            <option>Private Service / निजी सेवा</option>
+            <option>Professional / पेशेवर</option>
+            <option>Retired / सेवानिवृत्त</option>
+            <option>Student / विद्यार्थी</option>
+            <option>Other / अन्य</option>
+          </select>
+          <div class="field-error" id="err-fb-occ">Occupation is required</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Organisation / Department <span class="hi">/ संगठन/विभाग</span></label>
+          <input type="text" class="field-input" id="fb-org" placeholder="Organisation name (if applicable)">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Designation <span class="hi">/ पदनाम</span></label>
+          <input type="text" class="field-input" id="fb-desig" placeholder="Your designation (if applicable)">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Last Visited Kund Kund Nagar <span class="hi">/ पिछली यात्रा</span></label>
+          <input type="date" class="field-input" id="fb-lastvisit">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" style="margin-bottom:10px;">How many times have you visited? <span class="hi">/ आप कितनी बार आए हैं?</span></label>
+        <div class="visit-options">
+          <label class="visit-opt"><input type="radio" name="visitCount" value="First Time"><div class="visit-face">🌟 First Time<br><span style="font-size:0.7rem;font-weight:400;">पहली बार</span></div></label>
+          <label class="visit-opt"><input type="radio" name="visitCount" value="2-3 Times"><div class="visit-face">✌️ 2-3 Times<br><span style="font-size:0.7rem;font-weight:400;">2-3 बार</span></div></label>
+          <label class="visit-opt"><input type="radio" name="visitCount" value="4-5 Times"><div class="visit-face">🖐️ 4-5 Times<br><span style="font-size:0.7rem;font-weight:400;">4-5 बार</span></div></label>
+          <label class="visit-opt"><input type="radio" name="visitCount" value="More than 5"><div class="visit-face">🏅 5+ Times<br><span style="font-size:0.7rem;font-weight:400;">5 से अधिक</span></div></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: RATINGS -->
+  <div class="form-section">
+    <div class="section-header">
+      <span class="section-icon">⭐</span>
+      <span class="section-title">Your Experience &nbsp;/&nbsp; आपका अनुभव</span>
+    </div>
+    <div class="section-body">
+
+      <div class="note-box">
+        ℹ️ Please rate each aspect of your stay: &nbsp;<strong>⭐ Excellent</strong> &nbsp;|&nbsp; <strong>👍 Good</strong> &nbsp;|&nbsp; <strong>😐 Average</strong> &nbsp;|&nbsp; <strong>👎 Poor</strong>
+      </div>
+
+      <!-- Overall Experience -->
+      <div class="star-group">
+        <span class="star-label">Overall Experience <span class="hi">/ समग्र अनुभव</span> <span class="req">*</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-overall" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-overall" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-overall" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-overall" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+        <div class="star-error" id="err-r-overall">Please rate your overall experience</div>
+      </div>
+
+      <!-- Room Cleanliness -->
+      <div class="star-group">
+        <span class="star-label">Room Cleanliness <span class="hi">/ कमरे की साफ-सफाई</span> <span class="req">*</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-room" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-room" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-room" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-room" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+        <div class="star-error" id="err-r-room">Please rate room cleanliness</div>
+      </div>
+
+      <!-- Bathroom Cleanliness -->
+      <div class="star-group">
+        <span class="star-label">Bathroom Cleanliness <span class="hi">/ बाथरूम की सफाई</span> <span class="req">*</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-bath" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-bath" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-bath" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-bath" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+        <div class="star-error" id="err-r-bath">Please rate bathroom cleanliness</div>
+      </div>
+
+      <!-- Food Quality -->
+      <div class="star-group">
+        <span class="star-label">Quality of Food at Bhojnalaya <span class="hi">/ भोजनालय में भोजन की गुणवत्ता</span> <span class="req">*</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-food" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-food" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-food" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-food" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+        <div class="star-error" id="err-r-food">Please rate food quality</div>
+      </div>
+
+      <!-- Staff Behaviour -->
+      <div class="star-group">
+        <span class="star-label">Staff Behaviour <span class="hi">/ कर्मचारियों का व्यवहार</span> <span class="req">*</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-staff" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-staff" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-staff" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-staff" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+        <div class="star-error" id="err-r-staff">Please rate staff behaviour</div>
+      </div>
+
+      <!-- Temple Premises -->
+      <div class="star-group">
+        <span class="star-label">Temple Premises & Surroundings <span class="hi">/ मंदिर परिसर एवं आसपास</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-temple" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-temple" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-temple" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-temple" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+      </div>
+
+      <!-- Pooja Arrangements -->
+      <div class="star-group">
+        <span class="star-label">Pooja Arrangements <span class="hi">/ पूजा व्यवस्था</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-pooja" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-pooja" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-pooja" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-pooja" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+      </div>
+
+      <!-- Value for Money -->
+      <div class="star-group">
+        <span class="star-label">Value for Money <span class="hi">/ पैसे का मूल्य</span> <span class="req">*</span></span>
+        <div class="star-row">
+          <label class="star-option"><input type="radio" name="r-value" value="Excellent"><div class="star-face"><span class="emoji">🌟</span>Excellent</div></label>
+          <label class="star-option"><input type="radio" name="r-value" value="Good"><div class="star-face"><span class="emoji">👍</span>Good</div></label>
+          <label class="star-option"><input type="radio" name="r-value" value="Average"><div class="star-face"><span class="emoji">😐</span>Average</div></label>
+          <label class="star-option"><input type="radio" name="r-value" value="Poor"><div class="star-face"><span class="emoji">👎</span>Poor</div></label>
+        </div>
+        <div class="star-error" id="err-r-value">Please rate value for money</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 4: SUGGESTIONS -->
+  <div class="form-section">
+    <div class="section-header">
+      <span class="section-icon">💡</span>
+      <span class="section-title">Suggestions & Recommendations &nbsp;/&nbsp; सुझाव और अनुशंसाएं</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <label class="field-label">Suggestions for Improvement <span class="hi">/ किसी भी सुधार के लिए सुझाव</span></label>
+        <textarea class="field-textarea" id="fb-suggestions" placeholder="Please share any suggestions for improvement..." rows="4"></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">What did you like most? <span class="hi">/ आपको सबसे अच्छा क्या लगा?</span></label>
+        <textarea class="field-textarea" id="fb-liked" placeholder="Tell us what you enjoyed most about your visit..." rows="3"></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label" style="margin-bottom:12px;">Would you recommend us to others? <span class="hi">/ क्या आप हमें दूसरों को सुझाएंगे?</span> <span class="req">*</span></label>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <label style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 20px;border:2px solid var(--ivory-dark);border-radius:var(--radius-sm);background:var(--ivory);font-weight:600;font-size:0.88rem;transition:all 0.2s;" id="rec-yes">
+            <input type="radio" name="recommend" value="Yes" style="accent-color:var(--green);"> 👍 Yes, Definitely! / हाँ, अवश्य!
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 20px;border:2px solid var(--ivory-dark);border-radius:var(--radius-sm);background:var(--ivory);font-weight:600;font-size:0.88rem;transition:all 0.2s;" id="rec-maybe">
+            <input type="radio" name="recommend" value="Maybe"> 🤔 Maybe / शायद
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 20px;border:2px solid var(--ivory-dark);border-radius:var(--radius-sm);background:var(--ivory);font-weight:600;font-size:0.88rem;transition:all 0.2s;" id="rec-no">
+            <input type="radio" name="recommend" value="No"> 👎 No / नहीं
+          </label>
+        </div>
+        <div class="field-error" id="err-recommend">Please select an option</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT NOTE -->
+  <div class="note-box" style="text-align:center;">
+    <em>For any further information, please contact our Admin person Mr. Subhash on <strong>8827417276</strong> &nbsp;|&nbsp; किसी भी जानकारी के लिए श्री सुभाष शर्मा मोबाइल नंबर <strong>8827417276</strong></em>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-wrap">
+    <button class="btn-submit" id="submitFeedbackBtn" onclick="submitFeedback()">
+      🙏 Submit Feedback &nbsp;/&nbsp; फीडबैक जमा करें
+    </button>
+  </div>
+
+  </div><!-- end mainForm -->
+
+  <!-- SUCCESS SCREEN -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">🙏</div>
+    <div class="success-title">Jai Jinendra! Thank You!</div>
+    <div class="success-text">
+      Your feedback has been submitted successfully.<br>
+      <em>आपका फीडबैक सफलतापूर्वक जमा हो गया है।</em><br><br>
+      Your valuable feedback will help us serve all devotees better at Shri Kund Kund Nagar, Sonagir.<br><br>
+      <strong style="color:var(--maroon);">🕉 May Lord Jinendra bless you and your family! 🕉</strong>
+    </div>
+  </div>
+
+</div><!-- end form-wrap -->
+
+<script>
+// ── Auto-fill from URL params (sent in feedback email link) ──
+(function autoFillFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  const fill = (id, val, lock) => {
+    if (!val) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = val;
+    if (lock) {
+      el.readOnly = true;
+      el.style.background = '#F0EAD8';
+      el.style.color = '#5A3E1B';
+      el.style.cursor = 'default';
+      el.style.borderColor = '#C8973A';
+      el.title = 'Auto-filled from your reservation — cannot be changed';
+    }
+  };
+  const fillSelect = (id, val, lock) => {
+    if (!val) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    // Try to match option text (state/occupation may have different casing)
+    for (let opt of el.options) {
+      if (opt.value.toLowerCase() === val.toLowerCase() ||
+          opt.text.toLowerCase().includes(val.toLowerCase())) {
+        el.value = opt.value; break;
+      }
+    }
+    if (lock) {
+      el.disabled = true;
+      el.style.background = '#F0EAD8';
+      el.style.color = '#5A3E1B';
+      el.style.cursor = 'default';
+      el.style.borderColor = '#C8973A';
+      el.title = 'Auto-filled from your reservation — cannot be changed';
+    }
+  };
+
+  const name   = p.get('name')   || '';
+  const mobile = p.get('mobile') || '';
+  const email  = p.get('email')  || '';
+  const addr   = p.get('addr')   || '';
+  const city   = p.get('city')   || '';
+  const state  = p.get('state')  || '';
+  const occ    = p.get('occ')    || '';
+  const org    = p.get('org')    || '';
+  const refId  = p.get('ref')    || '';
+  const cin    = p.get('cin')    || '';
+  const cout   = p.get('cout')   || '';
+
+  // Fill & lock all reservation fields
+  fill('fb-name',   name,   !!name);
+  fill('fb-mobile', mobile, !!mobile);
+  fill('fb-email',  email,  !!email);
+  fill('fb-address',addr,   !!addr);
+  fill('fb-city',   city,   !!city);
+  fill('fb-refid',  refId,  !!refId);
+  fill('fb-org',    org,    !!org);
+  fillSelect('fb-state', state, !!state);
+  fillSelect('fb-occ',   occ,   !!occ);
+
+  // Fill stay dates and show notice banner
+  if (name || refId) {
+    document.addEventListener('DOMContentLoaded', function() {
+      // Fill check-in / check-out dates
+      if (cin)  { fill('fb-cin',  cin,  true); }
+      if (cout) { fill('fb-cout', cout, true); }
+      if (cin || cout) {
+        const row = document.getElementById('stay-dates-row');
+        if (row) row.style.display = 'grid';
+      }
+      // Show auto-fill notice banner
+      const banner = document.getElementById('autofill-banner');
+      if (banner) {
+        let info = '';
+        if (name)  info += `<strong>${name}</strong>`;
+        if (refId) info += ` &nbsp;|&nbsp; Ref: <strong>${refId}</strong>`;
+        if (cin && cout) info += ` &nbsp;|&nbsp; Stay: <strong>${cin}</strong> → <strong>${cout}</strong>`;
+        banner.innerHTML = `✅ Your reservation details have been auto-filled and locked. Please only fill the ratings &amp; suggestions below. &nbsp;&nbsp;${info}`;
+        banner.style.display = 'block';
+      }
+    });
+  }
+})();
+
+// ── Progress bar ──
+function updateProgress() {
+  const fields = ['fb-name','fb-mobile','fb-address','fb-city','fb-state','fb-occ'];
+  const ratings = ['r-overall','r-room','r-bath','r-food','r-staff','r-value'];
+  let filled = 0, total = fields.length + ratings.length + 1;
+
+  fields.forEach(id => { if (document.getElementById(id)?.value?.trim()) filled++; });
+  ratings.forEach(n => { if (document.querySelector(`[name="${n}"]:checked`)) filled++; });
+  if (document.querySelector('[name="recommend"]:checked')) filled++;
+
+  document.getElementById('progressBar').style.width = Math.round(filled/total*100) + '%';
+}
+
+document.querySelectorAll('input,select,textarea').forEach(el => {
+  el.addEventListener('change', updateProgress);
+  el.addEventListener('input', updateProgress);
+});
+
+// Mobile numbers only
+document.getElementById('fb-mobile').addEventListener('input', function() {
+  this.value = this.value.replace(/\D/g,'').slice(0,10);
+});
+
+// ── Validation ──
+function validateFeedback() {
+  let valid = true, firstErr = null;
+
+  function check(id, condition, errId) {
+    const el = document.getElementById(id);
+    const err = document.getElementById(errId || 'err-'+id);
+    if (!condition) {
+      el?.classList.add('error'); if(err){err.classList.add('show');}
+      valid = false; if (!firstErr && el) firstErr = el;
+    } else {
+      el?.classList.remove('error'); if(err){err.classList.remove('show');}
+    }
+  }
+
+  const name = document.getElementById('fb-name')?.value?.trim();
+  const mob  = document.getElementById('fb-mobile')?.value?.trim();
+  const addr = document.getElementById('fb-address')?.value?.trim();
+  const city = document.getElementById('fb-city')?.value?.trim();
+  const email= document.getElementById('fb-email')?.value?.trim();
+
+  check('fb-name',    name?.length >= 2);
+  check('fb-mobile',  /^[6-9]\d{9}$/.test(mob));
+  check('fb-address', addr?.length >= 5);
+  check('fb-city',    city?.length >= 2);
+  check('fb-state',   document.getElementById('fb-state')?.value);
+  check('fb-occ',     document.getElementById('fb-occ')?.value);
+  if (email) check('fb-email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+
+  // Required ratings
+  ['overall','room','bath','food','staff','value'].forEach(r => {
+    const checked = document.querySelector(`[name="r-${r}"]:checked`);
+    const err = document.getElementById(`err-r-${r}`);
+    if (!checked) {
+      valid = false;
+      if (err) err.classList.add('show');
+      if (!firstErr) firstErr = document.querySelector(`[name="r-${r}"]`);
+    } else {
+      if (err) err.classList.remove('show');
+    }
+  });
+
+  // Recommend
+  const rec = document.querySelector('[name="recommend"]:checked');
+  const recErr = document.getElementById('err-recommend');
+  if (!rec) {
+    valid = false; if(recErr) recErr.classList.add('show');
+    if (!firstErr) firstErr = document.getElementById('rec-yes');
+  } else { if(recErr) recErr.classList.remove('show'); }
+
+  if (firstErr) firstErr.scrollIntoView({ behavior:'smooth', block:'center' });
+  return valid;
+}
+
+// ── Collect form data ──
+function collectData() {
+  const g  = id => document.getElementById(id)?.value?.trim() || '';
+  const rd = name => document.querySelector(`[name="${name}"]:checked`)?.value || '';
+  // Also read URL params as fallback for locked/disabled selects
+  const p  = new URLSearchParams(window.location.search);
+  const gs = id => {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    // disabled selects don't submit, so fall back to URL param
+    if (el.disabled) {
+      return el.value || p.get(id === 'fb-state' ? 'state' : id === 'fb-occ' ? 'occ' : '') || '';
+    }
+    return el.value?.trim() || '';
+  };
+  return {
+    timestamp:    new Date().toLocaleString('en-IN', { timeZone:'Asia/Kolkata' }),
+    refId:        g('fb-refid')   || p.get('ref')    || '',
+    name:         g('fb-name')    || p.get('name')   || '',
+    mobile:       g('fb-mobile')  || p.get('mobile') || '',
+    email:        g('fb-email')   || p.get('email')  || '',
+    address:      g('fb-address') || p.get('addr')   || '',
+    city:         g('fb-city')    || p.get('city')   || '',
+    state:        gs('fb-state')  || p.get('state')  || '',
+    occupation:   gs('fb-occ')    || p.get('occ')    || '',
+    organisation: g('fb-org')     || p.get('org')    || '',
+    designation:  g('fb-desig'),
+    checkIn:      g('fb-cin')     || p.get('cin')    || '',
+    checkOut:     g('fb-cout')    || p.get('cout')   || '',
+    lastVisit:    g('fb-lastvisit'),
+    visitCount:   rd('visitCount'),
+    rOverall:     rd('r-overall'),
+    rRoom:        rd('r-room'),
+    rBath:        rd('r-bath'),
+    rFood:        rd('r-food'),
+    rStaff:       rd('r-staff'),
+    rTemple:      rd('r-temple'),
+    rPooja:       rd('r-pooja'),
+    rValue:       rd('r-value'),
+    suggestions:  g('fb-suggestions'),
+    liked:        g('fb-liked'),
+    recommend:    rd('recommend'),
+    overallScore: calcScore()
+  };
+}
+
+function calcScore() {
+  const map = { Excellent:4, Good:3, Average:2, Poor:1 };
+  const ratings = ['r-overall','r-room','r-bath','r-food','r-staff','r-value'];
+  let total = 0, count = 0;
+  ratings.forEach(n => {
+    const v = document.querySelector(`[name="${n}"]:checked`)?.value;
+    if (v && map[v]) { total += map[v]; count++; }
+  });
+  if (!count) return 0;
+  return Math.round((total/count/4)*100);
+}
+
+// ── Submit to Google Sheets ──
+async function submitFeedback() {
+  if (!validateFeedback()) return;
+
+  const btn = document.getElementById('submitFeedbackBtn');
+  btn.innerHTML = '<span class="spinner"></span> Submitting...';
+  btn.disabled = true;
+
+  const data = collectData();
+
+  try {
+    await fetch(FEEDBACK_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'submitFeedback', feedback: data }),
+      mode: 'no-cors'
+    });
+  } catch(e) {
+    console.log('Submit note:', e.message);
+  }
+
+  // Show success regardless (no-cors means we can't read response)
+  document.getElementById('mainForm').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Config — same Apps Script URL ──
+const FEEDBACK_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
+</script>
+</body>
+</html>
