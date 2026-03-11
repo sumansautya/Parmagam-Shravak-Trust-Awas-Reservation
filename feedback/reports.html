@@ -1,1 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback Reports — Shri Parmagam Shravak Trust</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+*{box-sizing:border-box;}
+body{background:#F5EDD8;font-family:'Nunito',sans-serif;}
+
+.page-header{
+  background:linear-gradient(135deg,#5C0A00,#8B1A00,#A52800);
+  padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.page-header h1{font-family:'Cinzel',serif;font-size:1.2rem;color:#E8C06A;}
+.page-header .back-btn{
+  background:rgba(255,255,255,0.15);border:1px solid rgba(232,192,106,0.4);
+  color:#FDF8F0;padding:8px 16px;border-radius:20px;text-decoration:none;
+  font-size:0.83rem;font-family:'Nunito',sans-serif;cursor:pointer;transition:all 0.2s;
+}
+.page-header .back-btn:hover{background:rgba(255,255,255,0.25);}
+
+.main{padding:24px;max-width:1400px;margin:0 auto;}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+.stat-card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 12px rgba(123,13,0,0.1);text-align:center;border-top:3px solid transparent;}
+.stat-card.c1{border-top-color:#E8630A;} .stat-card.c2{border-top-color:#2E7D32;}
+.stat-card.c3{border-top-color:#C8973A;} .stat-card.c4{border-top-color:#7B0D00;}
+.stat-card.c5{border-top-color:#1565C0;} .stat-card.c6{border-top-color:#6A1B9A;}
+.stat-icon{font-size:1.6rem;margin-bottom:4px;}
+.stat-val{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:700;color:#2A1A0A;line-height:1;}
+.stat-lbl{font-size:0.73rem;color:#7A5C3A;margin-top:4px;}
+
+/* SCORE GAUGE */
+.gauge-wrap{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 12px rgba(123,13,0,0.1);margin-bottom:24px;}
+.gauge-title{font-family:'Cinzel',serif;font-size:0.95rem;color:#7B0D00;margin-bottom:16px;}
+.gauge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+.gauge-item{background:#F9F2E4;border-radius:10px;padding:14px;}
+.gauge-lbl{font-size:0.78rem;font-weight:700;color:#2A1A0A;margin-bottom:8px;}
+.gauge-bar{height:24px;background:#EFE4CC;border-radius:6px;overflow:hidden;}
+.gauge-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:0.72rem;font-weight:700;color:#fff;transition:width 1s ease;min-width:30px;}
+.gauge-sub{font-size:0.72rem;color:#7A5C3A;margin-top:5px;}
+
+/* FILTERS */
+.filter-panel{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 12px rgba(123,13,0,0.1);margin-bottom:20px;}
+.filter-title{font-family:'Cinzel',serif;font-size:0.85rem;color:#7B0D00;margin-bottom:12px;}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.filter-group{display:flex;flex-direction:column;gap:4px;}
+.filter-group label{font-size:0.75rem;font-weight:700;color:#7A5C3A;}
+.filter-group input,.filter-group select{
+  padding:8px 12px;border:1.5px solid #EFE4CC;border-radius:8px;
+  font-family:'Nunito',sans-serif;font-size:0.85rem;background:#F9F2E4;outline:none;
+  transition:border-color 0.2s;
+}
+.filter-group input:focus,.filter-group select:focus{border-color:#E8630A;}
+.btn{padding:9px 18px;border:none;border-radius:20px;font-family:'Nunito',sans-serif;font-size:0.83rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(135deg,#E8630A,#C45A00);color:#fff;}
+.btn-secondary{background:#EFE4CC;color:#7B0D00;border:1px solid #C8973A;}
+.btn-green{background:linear-gradient(135deg,#2E7D32,#1B5E20);color:#fff;}
+
+/* TAB BAR */
+.tab-bar{display:flex;gap:0;border-bottom:2px solid #EFE4CC;margin-bottom:20px;overflow-x:auto;}
+.tab-btn{padding:8px 18px;background:none;border:none;font-family:'Nunito',sans-serif;font-size:0.85rem;cursor:pointer;color:#7A5C3A;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all 0.2s;}
+.tab-btn.active{color:#E8630A;border-bottom-color:#E8630A;font-weight:700;}
+
+/* TABLE */
+.panel{background:#fff;border-radius:12px;padding:22px;box-shadow:0 2px 12px rgba(123,13,0,0.1);}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.panel-title{font-family:'Cinzel',serif;font-size:0.95rem;color:#7B0D00;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+th{background:linear-gradient(135deg,#7B0D00,#5C0A00);color:#E8C06A;padding:10px 12px;text-align:left;font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.04em;white-space:nowrap;}
+td{padding:10px 12px;border-bottom:1px solid #EFE4CC;vertical-align:middle;}
+tr:hover td{background:#F9F2E4;}
+tr:last-child td{border:none;}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.72rem;font-weight:700;}
+.r-excellent{background:#E8F5E9;color:#2E7D32;}
+.r-good{background:#E3F2FD;color:#1565C0;}
+.r-average{background:#FFF8E1;color:#F57F17;}
+.r-poor{background:#FFEBEE;color:#C62828;}
+.score-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;}
+.score-hi{background:#E8F5E9;color:#2E7D32;}
+.score-mid{background:#FFF8E1;color:#F57F17;}
+.score-lo{background:#FFEBEE;color:#C62828;}
+.empty-row td,.loading-row td{text-align:center;padding:28px;color:#7A5C3A;font-style:italic;}
+
+/* MONTHLY CHART */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+@media(max-width:768px){.chart-grid{grid-template-columns:1fr;}}
+.chart-card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 12px rgba(123,13,0,0.1);}
+.chart-title{font-family:'Cinzel',serif;font-size:0.85rem;color:#7B0D00;margin-bottom:12px;}
+.donut-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:0.78rem;margin-bottom:4px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<script>
+  if (sessionStorage.getItem('adminAuth') !== 'true') window.location.href = 'index.html';
+</script>
+
+<div class="page-header">
+  <h1>💬 Feedback Reports — Shri Parmagam Shravak Trust</h1>
+  <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+</div>
+
+<div class="main">
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card c1"><div class="stat-icon">📝</div><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Feedbacks</div></div>
+    <div class="stat-card c2"><div class="stat-icon">⭐</div><div class="stat-val" id="s-score">—</div><div class="stat-lbl">Avg. Score %</div></div>
+    <div class="stat-card c3"><div class="stat-icon">🌟</div><div class="stat-val" id="s-excellent">—</div><div class="stat-lbl">Excellent Ratings</div></div>
+    <div class="stat-card c4"><div class="stat-icon">👍</div><div class="stat-val" id="s-recommend">—</div><div class="stat-lbl">Would Recommend</div></div>
+    <div class="stat-card c5"><div class="stat-icon">🔁</div><div class="stat-val" id="s-repeat">—</div><div class="stat-lbl">Repeat Visitors</div></div>
+    <div class="stat-card c6"><div class="stat-icon">📅</div><div class="stat-val" id="s-today">—</div><div class="stat-lbl">Today's Feedbacks</div></div>
+  </div>
+
+  <!-- SCORE GAUGES BY CATEGORY -->
+  <div class="gauge-wrap">
+    <div class="gauge-title">📊 Average Rating by Category</div>
+    <div class="gauge-grid" id="gaugeGrid">
+      <div style="color:#7A5C3A;font-size:0.85rem;">Loading...</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-panel">
+    <div class="filter-title">🔍 Filter & Search Feedback</div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>From Date</label>
+        <input type="date" id="f-from">
+      </div>
+      <div class="filter-group">
+        <label>To Date</label>
+        <input type="date" id="f-to">
+      </div>
+      <div class="filter-group">
+        <label>Period</label>
+        <select id="f-period" onchange="setPeriod()">
+          <option value="">Custom</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="year">This Year</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Overall Rating</label>
+        <select id="f-rating">
+          <option value="">All Ratings</option>
+          <option>Excellent</option><option>Good</option>
+          <option>Average</option><option>Poor</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Recommend?</label>
+        <select id="f-rec">
+          <option value="">All</option>
+          <option>Yes</option><option>Maybe</option><option>No</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" id="f-search" placeholder="Name / City / Mobile">
+      </div>
+      <button class="btn btn-primary" onclick="applyFilter()">🔍 Apply</button>
+      <button class="btn btn-secondary" onclick="clearFilter()">✕ Clear</button>
+      <button class="btn btn-green" onclick="exportCSV()">⬇️ Export CSV</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="setTab(this,'tab-list')">📋 All Feedback</button>
+    <button class="tab-btn" onclick="setTab(this,'tab-summary')">📊 Summary Analysis</button>
+    <button class="tab-btn" onclick="setTab(this,'tab-suggestions')">💡 Suggestions</button>
+    <button class="tab-btn" onclick="setTab(this,'tab-trends')">📈 Trends</button>
+  </div>
+
+  <!-- TAB: ALL FEEDBACK LIST -->
+  <div id="tab-list">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">All Feedback Records</div>
+        <div id="listCount" style="font-size:0.78rem;color:#7A5C3A;"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Date & Time</th><th>Name</th><th>City / State</th>
+            <th>Overall</th><th>Room</th><th>Bathroom</th><th>Food</th><th>Staff</th>
+            <th>Value</th><th>Score</th><th>Recommend</th><th>Visits</th><th>View</th>
+          </tr></thead>
+          <tbody id="listTbody"><tr class="loading-row"><td colspan="14">Loading feedback from Google Sheets...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SUMMARY ANALYSIS -->
+  <div id="tab-summary" style="display:none;">
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">🌟 Overall Experience Distribution</div>
+        <div class="donut-wrap" id="chart-overall"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">👍 Would Recommend Distribution</div>
+        <div class="donut-wrap" id="chart-recommend"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title" style="margin-bottom:16px;">📊 Rating Breakdown — All Categories</div>
+      <div id="breakdownTable"></div>
+    </div>
+  </div>
+
+  <!-- TAB: SUGGESTIONS -->
+  <div id="tab-suggestions" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">💡 Visitor Suggestions & Comments</div></div>
+      <div id="suggestionsList"></div>
+    </div>
+  </div>
+
+  <!-- TAB: TRENDS -->
+  <div id="tab-trends" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">📈 Monthly Feedback Trend</div></div>
+      <div id="trendTable"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DETAIL MODAL -->
+<div id="detailModal" style="position:fixed;inset:0;background:rgba(26,10,0,0.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+  <div style="background:#fff;border-radius:14px;padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.3);">
+    <div style="font-family:'Cinzel',serif;font-size:1rem;color:#7B0D00;margin-bottom:16px;">📋 Feedback Detail</div>
+    <div id="detailContent"></div>
+    <div style="text-align:right;margin-top:16px;">
+      <button class="btn btn-secondary" onclick="document.getElementById('detailModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
+const TODAY = new Date().toISOString().split('T')[0];
+let allFeedback = [];
+let filtered    = [];
+
+document.addEventListener('DOMContentLoaded', loadFeedback);
+
+async function loadFeedback() {
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=getFeedback&t=' + Date.now());
+    const data = await res.json();
+    allFeedback = data.feedback || [];
+  } catch(e) {
+    console.error('loadFeedback error:', e);
+    allFeedback = [];
+  }
+  filtered = [...allFeedback];
+  renderAll();
+}
+
+function renderAll() {
+  renderStats(filtered);
+  renderGauges(filtered);
+  renderList(filtered);
+  renderSummary(filtered);
+  renderSuggestions(filtered);
+  renderTrends(allFeedback);
+}
+
+// ── STATS ──
+function renderStats(data) {
+  const total    = data.length;
+  const scores   = data.map(f => parseFloat(f['Overall Score %']||0)).filter(s=>s>0);
+  const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const excellent= data.filter(f=>f['Overall']==='Excellent').length;
+  const recommend= data.filter(f=>f['Recommend']==='Yes').length;
+  const repeat   = data.filter(f=>f['Visit Count']&&f['Visit Count']!=='First Time').length;
+  const todayFb  = data.filter(f=>f['Timestamp']&&f['Timestamp'].includes(
+    new Date().toLocaleDateString('en-IN')
+  )).length;
+
+  setText('s-total',     total);
+  setText('s-score',     avgScore+'%');
+  setText('s-excellent', excellent);
+  setText('s-recommend', recommend);
+  setText('s-repeat',    repeat);
+  setText('s-today',     todayFb);
+}
+
+// ── GAUGES ──
+function renderGauges(data) {
+  const cats = [
+    ['Overall','Overall'],['Room Clean','Room Cleanliness'],
+    ['Bathroom Clean','Bathroom Cleanliness'],['Food Quality','Food Quality'],
+    ['Staff Behaviour','Staff Behaviour'],['Value for Money','Value for Money'],
+    ['Temple Premises','Temple Premises'],['Pooja Arrangement','Pooja Arrangement']
+  ];
+  const scoreMap = {Excellent:100,Good:75,Average:50,Poor:25};
+  const colors   = {100:'#2E7D32',75:'#1565C0',50:'#F57F17',25:'#C62828'};
+
+  document.getElementById('gaugeGrid').innerHTML = cats.map(([key, label]) => {
+    const vals = data.map(f=>f[key]).filter(Boolean);
+    if (!vals.length) return `<div class="gauge-item"><div class="gauge-lbl">${label}</div><div class="gauge-sub">No data</div></div>`;
+    const avg = Math.round(vals.reduce((s,v)=>(s + (scoreMap[v]||0)),0) / vals.length);
+    const color = avg >= 75 ? '#2E7D32' : avg >= 50 ? '#1565C0' : avg >= 25 ? '#F57F17' : '#C62828';
+    const label2 = avg >= 75 ? 'Good+' : avg >= 50 ? 'Average' : 'Needs Work';
+    return `<div class="gauge-item">
+      <div class="gauge-lbl">${label}</div>
+      <div class="gauge-bar"><div class="gauge-fill" style="width:${avg}%;background:${color};">${avg}%</div></div>
+      <div class="gauge-sub">${label2} · ${vals.length} responses</div>
+    </div>`;
+  }).join('');
+}
+
+// ── LIST ──
+function renderList(data) {
+  const tbody = document.getElementById('listTbody');
+  document.getElementById('listCount').textContent = `${data.length} record(s)`;
+  if (!data.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="14">No feedback records found</td></tr>'; return; }
+  tbody.innerHTML = data.map((f,i) => `
+    <tr>
+      <td style="color:#7A5C3A;font-size:0.75rem;">${i+1}</td>
+      <td style="font-size:0.75rem;white-space:nowrap;">${f['Timestamp']||'—'}</td>
+      <td><strong>${f['Name']||'—'}</strong><br><span style="font-size:0.72rem;color:#7A5C3A;">${f['Mobile']||''}</span></td>
+      <td style="font-size:0.78rem;">${f['City']||'—'}<br><span style="color:#7A5C3A;">${f['State']||''}</span></td>
+      <td>${badge(f['Overall'])}</td>
+      <td>${badge(f['Room Clean'])}</td>
+      <td>${badge(f['Bathroom Clean'])}</td>
+      <td>${badge(f['Food Quality'])}</td>
+      <td>${badge(f['Staff Behaviour'])}</td>
+      <td>${badge(f['Value for Money'])}</td>
+      <td>${scorePill(f['Overall Score %'])}</td>
+      <td><span style="font-weight:700;color:${f['Recommend']==='Yes'?'#2E7D32':f['Recommend']==='No'?'#C62828':'#F57F17'}">${f['Recommend']||'—'}</span></td>
+      <td style="font-size:0.78rem;">${f['Visit Count']||'—'}</td>
+      <td><button class="btn btn-secondary" style="padding:4px 10px;font-size:0.72rem;" onclick="viewDetail(${i})">👁 View</button></td>
+    </tr>`).join('');
+}
+
+// ── SUMMARY ──
+function renderSummary(data) {
+  const ratings = ['Excellent','Good','Average','Poor'];
+  const cols = {Excellent:'#2E7D32',Good:'#1565C0',Average:'#F57F17',Poor:'#C62828'};
+  const emojis = {Excellent:'🌟',Good:'👍',Average:'😐',Poor:'👎'};
+
+  // Overall pie
+  const overall = ratings.map(r => ({r, count: data.filter(f=>f['Overall']===r).length}));
+  const oTotal  = overall.reduce((s,x)=>s+x.count,0)||1;
+  document.getElementById('chart-overall').innerHTML =
+    `<div>${overall.map(o=>`
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${cols[o.r]};"></div>
+        <span style="font-weight:700;color:${cols[o.r]}">${emojis[o.r]} ${o.r}</span>
+        <span style="color:#7A5C3A;margin-left:4px;">${o.count} (${Math.round(o.count/oTotal*100)}%)</span>
+      </div>`).join('')}
+    </div>`;
+
+  // Recommend pie
+  const recs = ['Yes','Maybe','No'];
+  const recCols = {Yes:'#2E7D32',Maybe:'#F57F17',No:'#C62828'};
+  const recData = recs.map(r => ({r, count: data.filter(f=>f['Recommend']===r).length}));
+  const rTotal  = recData.reduce((s,x)=>s+x.count,0)||1;
+  document.getElementById('chart-recommend').innerHTML =
+    `<div>${recData.map(o=>`
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${recCols[o.r]};"></div>
+        <span style="font-weight:700;color:${recCols[o.r]}">${o.r}</span>
+        <span style="color:#7A5C3A;margin-left:4px;">${o.count} (${Math.round(o.count/rTotal*100)}%)</span>
+      </div>`).join('')}
+    </div>`;
+
+  // Breakdown table
+  const catKeys = [
+    ['Overall','Overall Experience'],['Room Clean','Room Cleanliness'],
+    ['Bathroom Clean','Bathroom Cleanliness'],['Food Quality','Food at Bhojnalaya'],
+    ['Staff Behaviour','Staff Behaviour'],['Temple Premises','Temple Premises'],
+    ['Pooja Arrangement','Pooja Arrangement'],['Value for Money','Value for Money']
+  ];
+  document.getElementById('breakdownTable').innerHTML = `
+    <div style="overflow-x:auto;"><table>
+      <thead><tr><th>Category</th>${ratings.map(r=>`<th>${emojis[r]} ${r}</th>`).join('')}<th>Total</th></tr></thead>
+      <tbody>${catKeys.map(([key,label])=>{
+        const total = data.filter(f=>f[key]).length;
+        return `<tr>
+          <td><strong>${label}</strong></td>
+          ${ratings.map(r=>{
+            const cnt = data.filter(f=>f[key]===r).length;
+            const pct = total ? Math.round(cnt/total*100) : 0;
+            return `<td><span class="badge r-${r.toLowerCase()}">${cnt}</span><span style="font-size:0.72rem;color:#7A5C3A;margin-left:4px;">${pct}%</span></td>`;
+          }).join('')}
+          <td style="font-weight:700;">${total}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+}
+
+// ── SUGGESTIONS ──
+function renderSuggestions(data) {
+  const withSugg = data.filter(f => (f['Suggestions']||'').trim() || (f['Liked Most']||'').trim());
+  document.getElementById('suggestionsList').innerHTML = withSugg.length
+    ? withSugg.map(f => `
+        <div style="border-bottom:1px dashed #EFE4CC;padding:14px 0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+            <span style="font-weight:700;">${f['Name']||'Anonymous'}</span>
+            <span style="font-size:0.75rem;color:#7A5C3A;">${f['City']||''} · ${f['Timestamp']||''}</span>
+          </div>
+          ${f['Liked Most'] ? `<div style="background:#E8F5E9;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:0.85rem;"><strong style="color:#2E7D32;">👍 Liked:</strong> ${f['Liked Most']}</div>` : ''}
+          ${f['Suggestions'] ? `<div style="background:#FFF8E1;border-radius:8px;padding:10px 14px;font-size:0.85rem;"><strong style="color:#F57F17;">💡 Suggestion:</strong> ${f['Suggestions']}</div>` : ''}
+        </div>`).join('')
+    : '<div style="text-align:center;padding:24px;color:#7A5C3A;">No suggestions recorded yet</div>';
+}
+
+// ── TRENDS ──
+function renderTrends(data) {
+  const monthly = {};
+  data.forEach(f => {
+    const ts = f['Timestamp'] || '';
+    // Extract month/year from Indian date format or ISO
+    let key = '';
+    try {
+      const parts = ts.split(/[,\s\/\-]/);
+      if (ts.includes('-') && ts.length >= 7) {
+        key = ts.slice(0,7); // YYYY-MM
+      } else if (parts.length >= 3) {
+        key = parts[2]?.slice(0,4) + '-' + String(parts[1]).padStart(2,'0');
+      }
+    } catch(e){}
+    if (!key || key.length < 7) return;
+    if (!monthly[key]) monthly[key] = {count:0, scores:[], excellent:0, recommend:0};
+    monthly[key].count++;
+    const score = parseFloat(f['Overall Score %']||0);
+    if (score>0) monthly[key].scores.push(score);
+    if (f['Overall']==='Excellent') monthly[key].excellent++;
+    if (f['Recommend']==='Yes') monthly[key].recommend++;
+  });
+
+  const keys = Object.keys(monthly).sort().reverse();
+  document.getElementById('trendTable').innerHTML = keys.length ? `
+    <div style="overflow-x:auto;"><table>
+      <thead><tr><th>Month</th><th>Total Feedbacks</th><th>Avg Score</th><th>Excellent %</th><th>Recommend %</th></tr></thead>
+      <tbody>${keys.map(k => {
+        const m = monthly[k];
+        const avg = m.scores.length ? Math.round(m.scores.reduce((a,b)=>a+b,0)/m.scores.length) : 0;
+        const excPct = Math.round(m.excellent/m.count*100);
+        const recPct = Math.round(m.recommend/m.count*100);
+        return `<tr>
+          <td><strong>${k}</strong></td>
+          <td style="text-align:center;">${m.count}</td>
+          <td>${scorePill(avg+'%')}</td>
+          <td><span style="color:#2E7D32;font-weight:700;">${excPct}%</span></td>
+          <td><span style="color:#1565C0;font-weight:700;">${recPct}%</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>` : '<div style="text-align:center;padding:24px;color:#7A5C3A;">No data yet</div>';
+}
+
+// ── FILTER ──
+function setPeriod() {
+  const p = document.getElementById('f-period').value;
+  const now = new Date();
+  let from = '', to = TODAY;
+  if (p==='today')   { from=TODAY; }
+  else if (p==='week')    { const d=new Date(); d.setDate(d.getDate()-6); from=d.toISOString().split('T')[0]; }
+  else if (p==='month')   { from=TODAY.slice(0,7)+'-01'; }
+  else if (p==='quarter') { const q=Math.floor(now.getMonth()/3); const m=q*3; const d=new Date(now.getFullYear(),m,1); from=d.toISOString().split('T')[0]; }
+  else if (p==='year')    { from=now.getFullYear()+'-01-01'; }
+  else if (p==='all')     { from=''; to=''; }
+  document.getElementById('f-from').value = from;
+  document.getElementById('f-to').value   = to;
+}
+
+function applyFilter() {
+  const from   = document.getElementById('f-from').value;
+  const to     = document.getElementById('f-to').value;
+  const rating = document.getElementById('f-rating').value;
+  const rec    = document.getElementById('f-rec').value;
+  const search = document.getElementById('f-search').value.toLowerCase();
+
+  filtered = allFeedback.filter(f => {
+    // Date range — try to extract date from timestamp
+    if (from || to) {
+      const ts = f['Timestamp'] || '';
+      let fdate = '';
+      try {
+        // Indian format: DD/MM/YYYY or ISO
+        if (ts.includes('-') && ts.length >= 10) fdate = ts.slice(0,10);
+        else { const d=new Date(ts); if(!isNaN(d)) fdate=d.toISOString().split('T')[0]; }
+      } catch(e) {}
+      if (from && fdate && fdate < from) return false;
+      if (to   && fdate && fdate > to)   return false;
+    }
+    if (rating && f['Overall'] !== rating) return false;
+    if (rec    && f['Recommend'] !== rec)  return false;
+    if (search) {
+      const hay = (f['Name']+'|'+f['City']+'|'+f['Mobile']+'|'+f['Ref ID']).toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+  renderAll();
+}
+
+function clearFilter() {
+  ['f-from','f-to','f-search'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-period').value='';
+  document.getElementById('f-rating').value='';
+  document.getElementById('f-rec').value='';
+  filtered = [...allFeedback];
+  renderAll();
+}
+
+// ── VIEW DETAIL ──
+function viewDetail(idx) {
+  const f = filtered[idx];
+  if (!f) return;
+  const rows = [
+    ['Ref ID', f['Ref ID']], ['Date', f['Timestamp']], ['Name', f['Name']],
+    ['Mobile', f['Mobile']], ['Email', f['Email']], ['City', f['City']], ['State', f['State']],
+    ['Occupation', f['Occupation']], ['Organisation', f['Organisation']],
+    ['Visit Count', f['Visit Count']], ['Last Visit', f['Last Visit']],
+    ['Overall Experience', f['Overall']], ['Room Cleanliness', f['Room Clean']],
+    ['Bathroom Cleanliness', f['Bathroom Clean']], ['Food Quality', f['Food Quality']],
+    ['Staff Behaviour', f['Staff Behaviour']], ['Temple Premises', f['Temple Premises']],
+    ['Pooja Arrangement', f['Pooja Arrangement']], ['Value for Money', f['Value for Money']],
+    ['Overall Score', f['Overall Score %']+'%'], ['Would Recommend', f['Recommend']],
+    ['Liked Most', f['Liked Most']], ['Suggestions', f['Suggestions']],
+  ];
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.83rem;margin-bottom:12px;">
+      ${rows.filter(r=>r[1]).map(r=>`
+        <div style="padding:5px 0;border-bottom:1px dashed rgba(200,151,58,0.2);">
+          <div style="font-size:0.72rem;color:#7A5C3A;">${r[0]}</div>
+          <div style="font-weight:600;">${badge(r[1]) !== r[1] ? badge(r[1]) : r[1]}</div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('detailModal').style.display='flex';
+}
+
+// ── EXPORT ──
+function exportCSV() {
+  const hdrs = ['Timestamp','Ref ID','Name','Mobile','City','State','Email','Occupation',
+    'Visit Count','Overall','Room Clean','Bathroom Clean','Food Quality','Staff Behaviour',
+    'Temple Premises','Pooja Arrangement','Value for Money','Overall Score %',
+    'Recommend','Suggestions','Liked Most'];
+  const rows = filtered.map(f => hdrs.map(h=>`"${(f[h]||'').replace(/"/g,'""')}"`).join(','));
+  const csv  = [hdrs.join(','), ...rows].join('\n');
+  const a    = document.createElement('a');
+  a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'PST_Feedback_' + TODAY + '.csv';
+  a.click();
+}
+
+// ── TABS ──
+function setTab(btn, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['tab-list','tab-summary','tab-suggestions','tab-trends'].forEach(id=>{
+    document.getElementById(id).style.display = id===tabId ? 'block' : 'none';
+  });
+}
+
+// ── HELPERS ──
+function badge(val) {
+  if (!val) return '—';
+  const cls = {Excellent:'r-excellent',Good:'r-good',Average:'r-average',Poor:'r-poor'};
+  return cls[val] ? `<span class="badge ${cls[val]}">${val}</span>` : val;
+}
+
+function scorePill(val) {
+  const n = parseFloat(val)||0;
+  const cls = n>=75?'score-hi':n>=50?'score-mid':'score-lo';
+  return `<span class="score-pill ${cls}">${n}%</span>`;
+}
+
+function setText(id, v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+</script>
+</body>
+</html>
 
