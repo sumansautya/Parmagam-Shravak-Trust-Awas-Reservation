@@ -158,6 +158,7 @@ function renderReview(d) {
         <div class="review-row"><span class="review-label">Email</span><span class="review-value">${d.email}</span></div>
         <div class="review-row"><span class="review-label">Gender / Age</span><span class="review-value">${d.gender} &nbsp;/&nbsp; ${d.age} years</span></div>
         <div class="review-row"><span class="review-label">Occupation</span><span class="review-value">${d.occupation}${d.organization ? ` — ${d.organization}` : ''}</span></div>
+        ${d.designation ? `<div class="review-row"><span class="review-label">Designation</span><span class="review-value">${d.designation}</span></div>` : ''}
         ${d.aadhaarPan ? `<div class="review-row"><span class="review-label">Aadhaar/PAN</span><span class="review-value">••••••••${d.aadhaarPan.slice(-4)}</span></div>` : ''}
       </div>
     </div>
@@ -182,12 +183,14 @@ function renderReview(d) {
       </div>
     </div>
 
-    <!-- Payment -->
+    <!-- Payment Notice -->
     <div class="form-section">
-      <div class="section-title"><span class="icon">💳</span> Payment Details</div>
+      <div class="section-title"><span class="icon">💳</span> Payment Information</div>
       <div class="review-block">
-        <div class="review-row"><span class="review-label">Amount Paid</span><span class="review-value" style="color:var(--green); font-size:1rem; font-weight:700;">₹${parseFloat(d.paymentAmount).toLocaleString('en-IN')}</span></div>
-        <div class="review-row"><span class="review-label">Screenshot</span><span class="review-value">${sessionStorage.getItem('paymentFileName') || 'Uploaded ✅'}</span></div>
+        <div class="alert alert-warn" style="margin:0;">
+          💳 Payment details will be sent to your email after room confirmation.<br>
+          <span style="font-size:0.82rem;">You will be required to pay one night's advance to confirm your booking.</span>
+        </div>
       </div>
     </div>
 
