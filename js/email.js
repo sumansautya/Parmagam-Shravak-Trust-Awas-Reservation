@@ -187,7 +187,7 @@ function formatDateLong(dateStr) {
    SUBJECT LINE:
    ✅ Room Confirmed — Ref {{reservation_id}} — Shri Parmagam Shravak Trust
 
-   EMAIL BODY (plain text or HTML — both work):
+   EMAIL BODY (copy this exactly into your EmailJS template):
 
 🕉 ॐ नमः सिद्धेभ्यः 🕉
 
@@ -201,7 +201,7 @@ CONFIRMED. Please find your complete booking details below.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESERVATION CONFIRMATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reference ID    : {{reservation_id}}
+Reference ID     : {{reservation_id}}
 Allocated Room(s): {{allocated_rooms}}
 Confirmation Date: {{allocation_date}}
 
@@ -232,6 +232,12 @@ Pooja Arrangement   : {{need_pooja}}
 Additional Requests : {{additional_req}}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{{payment_instructions}}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{{room_policy}}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 For any queries, please contact us:
 📞 {{trust_mobile1}} / {{trust_mobile2}}
 
@@ -241,5 +247,6 @@ Shri Parmagam Shravak Trust
 🕉 Jai Jinendra — Safe Journey! 🕉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-════════════════════════════════════════════════════════════════ */
+   ════════════════════════════════════════════════════════════════ */
+
 
