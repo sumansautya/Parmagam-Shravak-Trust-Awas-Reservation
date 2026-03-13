@@ -126,20 +126,7 @@ function calcNights() {
 }
 
 // ── FILE UPLOAD ──
-function handleFileUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('File size must be under 5MB.'); return; }
-  formState.paymentFile = file;
-  const area = document.getElementById('uploadArea');
-  area.classList.add('has-file');
-  area.innerHTML = `
-    <div class="upload-icon">✅</div>
-    <p><strong>${file.name}</strong></p>
-    <p style="color:var(--green);">${(file.size/1024).toFixed(1)} KB · Click to change</p>
-  `;
-  document.getElementById('err-paymentFile')?.classList.remove('visible');
-}
+// handleFileUpload removed — payment collected after confirmation
 
 // ── MEMBERS ──
 function renderMembers() {
@@ -316,7 +303,6 @@ function validateField(id) {
     case 'mobile':        valid = /^[6-9]\d{9}$/.test(val); break;
     case 'email':         valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); break;
     case 'age':           valid = val !== '' && parseInt(val) >= 1 && parseInt(val) <= 120; break;
-    case 'paymentAmount': valid = val !== '' && parseFloat(val) > 0; break;
     case 'aadhaarPan':
       if (!val) return true;
       valid = /^\d{12}$/.test(val.replace(/\s/g,'')) || /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(val.toUpperCase());
@@ -340,86 +326,142 @@ function validateForm() {
     valid = false;
     if (!firstErrorEl && el) firstErrorEl = el;
   }
+  function ok(el, errId) {
+    el?.classList.remove('error');
+    if (errId) document.getElementById(errId)?.classList.remove('visible');
+  }
+  function fail(el, errId) {
+    el?.classList.add('error');
+    if (errId) document.getElementById(errId)?.classList.add('visible');
+    flag(el);
+  }
+  function chk(id, condition, errId) {
+    const el = document.getElementById(id);
+    if (!condition) fail(el, errId || ('err-' + id));
+    else ok(el, errId || ('err-' + id));
+  }
 
-  // Section 1
-  ['fullName','address','city','mobile','email','age'].forEach(f => {
-    if (!validateField(f)) flag(document.getElementById(f));
-  });
-  const stateEl = document.getElementById('state');
-  if (!stateEl.value) {
-    stateEl.classList.add('error');
-    document.getElementById('err-state')?.classList.add('visible');
-    flag(stateEl);
-  } else { stateEl.classList.remove('error'); document.getElementById('err-state')?.classList.remove('visible'); }
+  // ── Section 1: Personal Info ──
+  const name   = document.getElementById('fullName')?.value?.trim() || '';
+  const addr   = document.getElementById('address')?.value?.trim()  || '';
+  const city   = document.getElementById('city')?.value?.trim()     || '';
+  const mob    = document.getElementById('mobile')?.value?.trim()   || '';
+  const email  = document.getElementById('email')?.value?.trim()    || '';
+  const age    = document.getElementById('age')?.value?.trim()      || '';
+  const state  = document.getElementById('state')?.value            || '';
+  const adh    = document.getElementById('aadhaarPan')?.value?.trim()|| '';
 
-  if (!formState.gender) { document.getElementById('err-gender')?.classList.add('visible'); flag(document.getElementById('genderGroup')); }
-  else { document.getElementById('err-gender')?.classList.remove('visible'); }
+  chk('fullName',  name.length >= 2);
+  chk('address',   addr.length >= 5);
+  chk('city',      city.length >= 2);
+  chk('mobile',    /^[6-9][0-9]{9}$/.test(mob));
+  chk('email',     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  chk('age',       age !== '' && parseInt(age) >= 1 && parseInt(age) <= 120);
+  chk('state',     state !== '', 'err-state');
 
-  if (!formState.occupation) { document.getElementById('err-occupation')?.classList.add('visible'); flag(document.getElementById('occupationGroup')); }
-  else { document.getElementById('err-occupation')?.classList.remove('visible'); }
+  if (!formState.gender) {
+    document.getElementById('err-gender')?.classList.add('visible');
+    flag(document.getElementById('genderGroup'));
+  } else {
+    document.getElementById('err-gender')?.classList.remove('visible');
+  }
 
-  if (!validateField('aadhaarPan')) flag(document.getElementById('aadhaarPan'));
+  if (!formState.occupation) {
+    document.getElementById('err-occupation')?.classList.add('visible');
+    flag(document.getElementById('occupationGroup'));
+  } else {
+    document.getElementById('err-occupation')?.classList.remove('visible');
+  }
 
-  // Section 2
-  const ci = document.getElementById('checkIn').value;
-  const co = document.getElementById('checkOut').value;
+  // Aadhaar/PAN optional — validate format only if filled
+  if (adh) {
+    const adhValid = /^[0-9]{12}$/.test(adh.replace(/\s/g,'')) || /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(adh.toUpperCase());
+    chk('aadhaarPan', adhValid);
+  } else {
+    ok(document.getElementById('aadhaarPan'), 'err-aadhaarPan');
+  }
+
+  // ── Section 2: Stay & Rooms ──
+  const ci    = document.getElementById('checkIn')?.value  || '';
+  const co    = document.getElementById('checkOut')?.value || '';
   const today = new Date().toISOString().split('T')[0];
-  if (!ci || ci < today) { document.getElementById('checkIn').classList.add('error'); document.getElementById('err-checkIn')?.classList.add('visible'); flag(document.getElementById('checkIn')); }
-  else { document.getElementById('checkIn').classList.remove('error'); document.getElementById('err-checkIn')?.classList.remove('visible'); }
-  if (!co || co <= ci) { document.getElementById('checkOut').classList.add('error'); document.getElementById('err-checkOut')?.classList.add('visible'); flag(document.getElementById('checkOut')); }
-  else { document.getElementById('checkOut').classList.remove('error'); document.getElementById('err-checkOut')?.classList.remove('visible'); }
+
+  if (!ci || ci < today) fail(document.getElementById('checkIn'),  'err-checkIn');
+  else                   ok( document.getElementById('checkIn'),   'err-checkIn');
+
+  if (!co || co <= ci)   fail(document.getElementById('checkOut'), 'err-checkOut');
+  else                   ok( document.getElementById('checkOut'),  'err-checkOut');
 
   const { ac, nonAc, guestHouse } = formState.rooms;
-  if (ac + nonAc + guestHouse === 0) { document.getElementById('err-rooms').style.display='block'; flag(document.getElementById('err-rooms')); }
-  else { document.getElementById('err-rooms').style.display='none'; }
+  if (ac + nonAc + guestHouse === 0) {
+    document.getElementById('err-rooms').style.display = 'block';
+    flag(document.getElementById('err-rooms'));
+  } else {
+    document.getElementById('err-rooms').style.display = 'none';
+  }
 
-  if (!formState.transport) { document.getElementById('err-transport')?.classList.add('visible'); flag(document.getElementById('transportGroup')); }
-  else { document.getElementById('err-transport')?.classList.remove('visible'); }
-  if (!formState.needTransport) { document.getElementById('err-needTransport')?.classList.add('visible'); flag(document.getElementById('transportYes')); }
-  else { document.getElementById('err-needTransport')?.classList.remove('visible'); }
-  if (!formState.needPooja) { document.getElementById('err-needPooja')?.classList.add('visible'); flag(document.getElementById('poojaYes')); }
-  else { document.getElementById('err-needPooja')?.classList.remove('visible'); }
+  if (!formState.transport) {
+    document.getElementById('err-transport')?.classList.add('visible');
+    flag(document.getElementById('transportGroup'));
+  } else {
+    document.getElementById('err-transport')?.classList.remove('visible');
+  }
 
-  // Section 3 — Members (was Section 4)
-  // Section 3
+  // needTransport & needPooja: valid if 'Yes' OR 'No' (any non-empty value)
+  if (!formState.needTransport || formState.needTransport === '') {
+    document.getElementById('err-needTransport')?.classList.add('visible');
+    flag(document.getElementById('transportYes'));
+  } else {
+    document.getElementById('err-needTransport')?.classList.remove('visible');
+  }
+
+  if (!formState.needPooja || formState.needPooja === '') {
+    document.getElementById('err-needPooja')?.classList.add('visible');
+    flag(document.getElementById('poojaYes'));
+  } else {
+    document.getElementById('err-needPooja')?.classList.remove('visible');
+  }
+
+  // ── Section 3: Members ──
   formState.members.forEach((_, i) => {
-    const idx = i + 1;
-    const nEl  = document.getElementById(`m${idx}-name`);
-    const gEl  = document.getElementById(`m${idx}-gender`);
-    const aEl  = document.getElementById(`m${idx}-age`);
-    const rEl  = document.getElementById(`m${idx}-relation`);
-    const mEl  = document.getElementById(`m${idx}-mobile`);
-    const age  = parseInt(aEl?.value || '0');
-    if (!nEl?.value?.trim()) { nEl?.classList.add('error'); document.getElementById(`m${idx}-err-name`)?.classList.add('visible'); flag(nEl); }
-    else { nEl?.classList.remove('error'); document.getElementById(`m${idx}-err-name`)?.classList.remove('visible'); }
-    if (!gEl?.value) { gEl?.classList.add('error'); document.getElementById(`m${idx}-err-gender`)?.classList.add('visible'); flag(gEl); }
-    else { gEl?.classList.remove('error'); document.getElementById(`m${idx}-err-gender`)?.classList.remove('visible'); }
-    if (!aEl?.value || parseInt(aEl.value) < 0) { aEl?.classList.add('error'); document.getElementById(`m${idx}-err-age`)?.classList.add('visible'); flag(aEl); }
-    else { aEl?.classList.remove('error'); document.getElementById(`m${idx}-err-age`)?.classList.remove('visible'); }
-    if (!rEl?.value) { rEl?.classList.add('error'); document.getElementById(`m${idx}-err-relation`)?.classList.add('visible'); flag(rEl); }
-    else { rEl?.classList.remove('error'); document.getElementById(`m${idx}-err-relation`)?.classList.remove('visible'); }
-    // Mobile mandatory only if age > 18
-    if (age > 18) {
-      if (!mEl?.value?.trim() || !/^[6-9]\d{9}$/.test(mEl.value.trim())) {
-        mEl?.classList.add('error');
-        document.getElementById(`m${idx}-err-mobile`)?.classList.add('visible');
-        flag(mEl);
-      } else {
-        mEl?.classList.remove('error');
-        document.getElementById(`m${idx}-err-mobile`)?.classList.remove('visible');
-      }
+    const idx  = i + 1;
+    const nEl  = document.getElementById('m' + idx + '-name');
+    const gEl  = document.getElementById('m' + idx + '-gender');
+    const aEl  = document.getElementById('m' + idx + '-age');
+    const rEl  = document.getElementById('m' + idx + '-relation');
+    const mEl  = document.getElementById('m' + idx + '-mobile');
+    const mAge = parseInt(aEl?.value || '0');
+
+    if (!nEl?.value?.trim()) fail(nEl, 'm' + idx + '-err-name');
+    else ok(nEl, 'm' + idx + '-err-name');
+
+    if (!gEl?.value) fail(gEl, 'm' + idx + '-err-gender');
+    else ok(gEl, 'm' + idx + '-err-gender');
+
+    if (!aEl?.value || parseInt(aEl.value) < 0 || parseInt(aEl.value) > 120)
+      fail(aEl, 'm' + idx + '-err-age');
+    else ok(aEl, 'm' + idx + '-err-age');
+
+    if (!rEl?.value) fail(rEl, 'm' + idx + '-err-relation');
+    else ok(rEl, 'm' + idx + '-err-relation');
+
+    // Mobile mandatory only for age > 18
+    if (mAge > 18) {
+      const mobVal = mEl?.value?.trim() || '';
+      if (!mobVal || !/^[6-9][0-9]{9}$/.test(mobVal))
+        fail(mEl, 'm' + idx + '-err-mobile');
+      else ok(mEl, 'm' + idx + '-err-mobile');
     } else {
-      mEl?.classList.remove('error');
-      document.getElementById(`m${idx}-err-mobile`)?.classList.remove('visible');
+      ok(mEl, 'm' + idx + '-err-mobile');
     }
   });
 
-  // Scroll precisely to first error — NOT querySelector which can grab wrong elements
+  // ── Scroll to first error ──
   if (firstErrorEl) {
     firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     firstErrorEl.style.transition = 'box-shadow 0.3s';
     firstErrorEl.style.boxShadow  = '0 0 0 5px rgba(229,57,53,0.35)';
-    setTimeout(() => { firstErrorEl.style.boxShadow = ''; }, 2500);
+    setTimeout(() => { if(firstErrorEl) firstErrorEl.style.boxShadow = ''; }, 2500);
   }
 
   return valid;
