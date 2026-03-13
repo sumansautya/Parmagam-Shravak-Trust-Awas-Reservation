@@ -9,8 +9,14 @@
  * ══════════════════════════════════════════════════
  */
 
+// ══════════════════════════════════════════════════════════
+// ⚠️  IMPORTANT: Replace s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1 with your
+//     actual deployed Google Apps Script Web App URL
+//     Get it from: Apps Script → Deploy → Manage Deployments
+//     It looks like: https://script.google.com/macros/s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1/exec
+// ══════════════════════════════════════════════════════════
 const SHEETS_CONFIG = {
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec'
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1/exec'
 };
 
 // ── Submit new reservation (called from review.html) ──
@@ -64,12 +70,18 @@ async function submitReservation(formData) {
 
     const payload = JSON.stringify({ action: 'submitReservation', reservation, members });
 
-    await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
+    // Use POST with text/plain + no-cors (required for Apps Script cross-origin)
+    // We encode data as text/plain to avoid CORS preflight
+    const response = await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: payload,
       mode: 'no-cors'
     });
+    // no-cors always returns opaque response — cannot read status
+    // Apps Script will save data if URL is correct and script is deployed
+    console.log('submitReservation sent. ID:', submissionId);
+    console.log('URL used:', SHEETS_CONFIG.APPS_SCRIPT_URL.slice(0,80));
 
     return { success: true, id: submissionId };
   } catch (error) {
@@ -82,12 +94,19 @@ async function submitReservation(formData) {
 async function fetchReservations() {
   try {
     const url = SHEETS_CONFIG.APPS_SCRIPT_URL + '?action=getReservations&t=' + Date.now();
+    console.log('Fetching reservations from:', url.slice(0,80) + '...');
     const res  = await fetch(url);
-    const data = await res.json();
+    console.log('Response status:', res.status, res.ok ? '✅' : '❌');
+    const text = await res.text();
+    console.log('Raw response (first 200):', text.slice(0,200));
+    let data;
+    try { data = JSON.parse(text); }
+    catch(pe) { console.error('JSON parse error:', pe.message); throw new Error('Invalid JSON from Apps Script: ' + text.slice(0,100)); }
+    if (data.error) { console.error('Apps Script error:', data.error); }
     return data.reservations || [];
   } catch (e) {
-    console.error('fetchReservations error:', e);
-    return [];
+    console.error('fetchReservations error:', e.message);
+    throw e;
   }
 }
 
@@ -207,7 +226,7 @@ function generateId() {
    9. Who has access: Anyone
    10. Click Deploy → Authorize → Copy the URL
    11. Paste the URL into APPS_SCRIPT_URL above
-   12. Also paste it in admin/dashboard.html where it says YOUR_SCRIPT_ID_HERE
+   12. Also paste it in admin/dashboard.html where it says s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1
 
 ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 
