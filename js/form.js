@@ -174,6 +174,8 @@ function buildPrimaryMemberCard() {
         <input type="text" class="field-input" id="pm-mobile" readonly style="background:var(--ivory-dark);cursor:not-allowed;"></div>
       <div class="field-group"><label class="field-label">Aadhaar/PAN</label>
         <input type="text" class="field-input" id="pm-aadhaar" readonly style="background:var(--ivory-dark);cursor:not-allowed;"></div>
+      <div class="field-group"><label class="field-label">Designation / पदनाम</label>
+        <input type="text" class="field-input" id="pm-desig" readonly style="background:var(--ivory-dark);cursor:not-allowed;"></div>
     </div>
     <div style="font-size:0.75rem;color:var(--text-light);margin-top:8px;font-style:italic;">ℹ️ Update your details in Section 1 — Personal Information</div>
   </div>`;
@@ -198,7 +200,7 @@ function buildMemberCard(index) {
         </select>
         <span class="field-error" id="m${index}-err-gender">Gender is required</span></div>
       <div class="field-group"><label class="field-label">Age <span class="req">*</span></label>
-        <input type="number" class="field-input" id="m${index}-age" placeholder="Age" min="0" max="120" inputmode="numeric" oninput="updateMemberData(${index-1},'age',this.value);updateMemberSummary()">
+        <input type="number" class="field-input" id="m${index}-age" placeholder="Age" min="0" max="120" inputmode="numeric" oninput="updateMemberData(${index-1},'age',this.value);updateMemberSummary();checkMemberMobileReq(${index})">
         <span class="field-error" id="m${index}-err-age">Valid age required</span></div>
       <div class="field-group"><label class="field-label">Relation with Head <span class="req">*</span></label>
         <select class="field-select" id="m${index}-relation" onchange="updateMemberData(${index-1},'relation',this.value)">
@@ -208,12 +210,24 @@ function buildMemberCard(index) {
           <option>Relative / रिश्तेदार</option><option>Friend / मित्र</option>
         </select>
         <span class="field-error" id="m${index}-err-relation">Relation is required</span></div>
-      <div class="field-group"><label class="field-label">Aadhaar Number</label>
+      <div class="field-group">
+        <label class="field-label">Mobile Number <span id="m${index}-mobile-req-label" style="display:none;" class="req">*</span> <span style="font-size:0.75rem;color:var(--text-light);">(Mandatory if Age &gt; 18)</span></label>
+        <input type="tel" class="field-input" id="m${index}-mobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric"
+          oninput="updateMemberData(${index-1},'mobile',this.value)"
+          onchange="checkMemberMobileReq(${index})">
+        <span class="field-error" id="m${index}-err-mobile">Mobile is required for members above 18 years</span>
+      </div>
+      <div class="field-group"><label class="field-label">Aadhaar Number <span style="font-size:0.75rem;color:var(--text-light);">(Optional)</span></label>
         <input type="text" class="field-input" id="m${index}-aadhaar" placeholder="12-digit Aadhaar (optional)" maxlength="12" inputmode="numeric" oninput="updateMemberData(${index-1},'aadhaar',this.value)"></div>
-      <div class="field-group"><label class="field-label">Mobile Number</label>
-        <input type="tel" class="field-input" id="m${index}-mobile" placeholder="Mobile (optional)" maxlength="10" inputmode="numeric" oninput="updateMemberData(${index-1},'mobile',this.value)"></div>
     </div>
   </div>`;
+}
+
+// Show/hide mobile req marker based on age field value
+function checkMemberMobileReq(index) {
+  const age = parseInt(document.getElementById(`m${index}-age`)?.value || '0');
+  const lbl = document.getElementById(`m${index}-mobile-req-label`);
+  if (lbl) lbl.style.display = age > 18 ? 'inline' : 'none';
 }
 
 function addMember() {
@@ -261,6 +275,7 @@ function syncPrimaryMember() {
   set('pm-age',     document.getElementById('age')?.value || '');
   set('pm-mobile',  document.getElementById('mobile')?.value || '');
   set('pm-aadhaar', document.getElementById('aadhaarPan')?.value || '');
+  set('pm-desig',   document.getElementById('designation')?.value || '');
 }
 
 function updateMemberSummary() {
@@ -283,7 +298,8 @@ function getAllMembersData() {
     name: document.getElementById('fullName')?.value?.trim() || '',
     gender: formState.gender, age: document.getElementById('age')?.value || '',
     relation: 'Self', aadhaar: document.getElementById('aadhaarPan')?.value?.trim() || '',
-    mobile: document.getElementById('mobile')?.value?.trim() || ''
+    mobile: document.getElementById('mobile')?.value?.trim() || '',
+    designation: document.getElementById('designation')?.value?.trim() || ''
   }, ...formState.members];
 }
 
@@ -365,20 +381,38 @@ function validateForm() {
   if (!formState.needPooja) { document.getElementById('err-needPooja')?.classList.add('visible'); flag(document.getElementById('poojaYes')); }
   else { document.getElementById('err-needPooja')?.classList.remove('visible'); }
 
-  // Section 3 — Payment amount required, screenshot OPTIONAL
-  if (!validateField('paymentAmount')) flag(document.getElementById('paymentAmount'));
-
-  // Section 4
+  // Section 3 — Members (was Section 4)
+  // Section 3
   formState.members.forEach((_, i) => {
     const idx = i + 1;
-    const nEl = document.getElementById(`m${idx}-name`);
-    const gEl = document.getElementById(`m${idx}-gender`);
-    const aEl = document.getElementById(`m${idx}-age`);
-    const rEl = document.getElementById(`m${idx}-relation`);
+    const nEl  = document.getElementById(`m${idx}-name`);
+    const gEl  = document.getElementById(`m${idx}-gender`);
+    const aEl  = document.getElementById(`m${idx}-age`);
+    const rEl  = document.getElementById(`m${idx}-relation`);
+    const mEl  = document.getElementById(`m${idx}-mobile`);
+    const age  = parseInt(aEl?.value || '0');
     if (!nEl?.value?.trim()) { nEl?.classList.add('error'); document.getElementById(`m${idx}-err-name`)?.classList.add('visible'); flag(nEl); }
+    else { nEl?.classList.remove('error'); document.getElementById(`m${idx}-err-name`)?.classList.remove('visible'); }
     if (!gEl?.value) { gEl?.classList.add('error'); document.getElementById(`m${idx}-err-gender`)?.classList.add('visible'); flag(gEl); }
+    else { gEl?.classList.remove('error'); document.getElementById(`m${idx}-err-gender`)?.classList.remove('visible'); }
     if (!aEl?.value || parseInt(aEl.value) < 0) { aEl?.classList.add('error'); document.getElementById(`m${idx}-err-age`)?.classList.add('visible'); flag(aEl); }
+    else { aEl?.classList.remove('error'); document.getElementById(`m${idx}-err-age`)?.classList.remove('visible'); }
     if (!rEl?.value) { rEl?.classList.add('error'); document.getElementById(`m${idx}-err-relation`)?.classList.add('visible'); flag(rEl); }
+    else { rEl?.classList.remove('error'); document.getElementById(`m${idx}-err-relation`)?.classList.remove('visible'); }
+    // Mobile mandatory only if age > 18
+    if (age > 18) {
+      if (!mEl?.value?.trim() || !/^[6-9]\d{9}$/.test(mEl.value.trim())) {
+        mEl?.classList.add('error');
+        document.getElementById(`m${idx}-err-mobile`)?.classList.add('visible');
+        flag(mEl);
+      } else {
+        mEl?.classList.remove('error');
+        document.getElementById(`m${idx}-err-mobile`)?.classList.remove('visible');
+      }
+    } else {
+      mEl?.classList.remove('error');
+      document.getElementById(`m${idx}-err-mobile`)?.classList.remove('visible');
+    }
   });
 
   // Scroll precisely to first error — NOT querySelector which can grab wrong elements
@@ -434,6 +468,7 @@ async function submitForm() {
     age:                    document.getElementById('age').value,
     occupation:             formState.occupation,
     organization:           document.getElementById('organization').value.trim(),
+    designation:            document.getElementById('designation')?.value.trim() || '',
     checkIn:                document.getElementById('checkIn').value,
     checkOut:               document.getElementById('checkOut').value,
     totalNights:            parseInt(document.getElementById('nightsCount').textContent) || 0,
