@@ -13,8 +13,7 @@ const formState = {
   needTransport: '',
   needPooja: '',
   rooms: { ac: 0, nonAc: 0, guestHouse: 0 },
-  members: [],
-  paymentFile: null
+  members: []
 };
 
 const ROOM_RATES = { ac: 1200, nonAc: 700, guestHouse: 2000 };
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderMembers();
 
-  ['fullName','address','city','mobile','email','age','paymentAmount'].forEach(id => {
+  ['fullName','address','city','mobile','email','age'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('blur', () => validateField(id));
   });
@@ -477,19 +476,17 @@ async function submitForm() {
     needTransport:          formState.needTransport,
     needPooja:              formState.needPooja,
     additionalRequirements: document.getElementById('additionalReq').value.trim(),
-    paymentAmount:          document.getElementById('paymentAmount').value,
+
     members:                getAllMembersData()
   };
 
   sessionStorage.setItem('reservationData', JSON.stringify(formData));
-  sessionStorage.setItem('paymentFileName', formState.paymentFile?.name || '');
-
   window.location.href = 'review.html';
 }
 
 // ── STEP INDICATOR ──
 function updateStepIndicator() {
-  [['sec1','step1dot'],['sec2','step2dot'],['sec3','step3dot'],['sec4','step4dot']].forEach(([s,d]) => {
+  [['sec1','step1dot'],['sec2','step2dot'],['sec3','step3dot']].forEach(([s,d]) => {
     const sec = document.getElementById(s), dot = document.getElementById(d);
     if (!sec || !dot) return;
     const r = sec.getBoundingClientRect();
