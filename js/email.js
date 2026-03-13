@@ -99,7 +99,41 @@ async function sendAllocationEmail(r, members, allocatedRooms) {
       // Trust contact
       trust_mobile1:    '8887417076',
       trust_mobile2:    '7987164958',
-      trust_address:    'Shri Kund Kund Nagar, Pichorkhed, Sonagir — 473885, Dist. Datia (M.P.)'
+      trust_address:    'Shri Kund Kund Nagar, Pichorkhed, Sonagir — 473885, Dist. Datia (M.P.)',
+
+      payment_instructions: [
+        '💳 ADVANCE PAYMENT REQUIRED',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        'To confirm your booking, please pay ONE NIGHT advance:',
+        '  • AC Room: ₹1,200  |  Non-AC Room: ₹700  |  Guest House: ₹2,000',
+        '',
+        'Pay via UPI (QR): SHRI SHRAVAK BHOJNALAY — TID: 82089080',
+        'Or Bank Transfer:',
+        '  Bank: HDFC Bank, Govindganj, Datia',
+        '  A/c:  50100845160186  |  IFSC: HDFC0011116',
+        '',
+        '⚠️ CANCELLATION POLICY:',
+        'The advance amount is non-refundable if you cancel within',
+        '48 hours of your check-in date. Cancellations made more than',
+        '48 hours before check-in will be fully refunded.'
+      ].join('\n'),
+
+      room_policy: [
+        '📋 ROOM & STAY POLICY',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        '🛏️  ROOM OCCUPANCY:',
+        '  • Max 3 adults per room, OR 2 adults + 2 children (up to 12 years).',
+        '  • Extra adult in same room: ₹300 per additional guest per night.',
+        '',
+        '🚗  PICK-UP / DROP CHARGES (per car, max 6 passengers):',
+        '  • Sonagir Railway Station : ₹300',
+        '  • Datia Station / Bus Stand: ₹600',
+        '  • Jhansi                   : ₹1,500',
+        '  • Gwalior                  : ₹2,000',
+        '',
+        '  Car make & model will be confirmed at time of booking.',
+        '  Please indicate pick-up requirement in your reservation form.'
+      ].join('\n')
     };
 
     // Initialize EmailJS with public key
@@ -207,4 +241,5 @@ Shri Parmagam Shravak Trust
 🕉 Jai Jinendra — Safe Journey! 🕉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   ════════════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════════════════ */
+
