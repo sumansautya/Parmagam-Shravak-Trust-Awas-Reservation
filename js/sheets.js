@@ -10,7 +10,7 @@
  */
 
 const SHEETS_CONFIG = {
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1/exec'
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec'
 };
 
 // ── Submit new reservation (called from review.html) ──
@@ -33,6 +33,7 @@ async function submitReservation(formData) {
       age:                  formData.age,
       occupation:           formData.occupation,
       organization:         formData.organization || '',
+      designation:          formData.designation || '',
       checkIn:              formData.checkIn,
       checkOut:             formData.checkOut,
       totalNights:          formData.totalNights,
@@ -43,7 +44,7 @@ async function submitReservation(formData) {
       needTransport:        formData.needTransport,
       needPooja:            formData.needPooja,
       additionalRequirements: formData.additionalRequirements || '',
-      paymentAmount:        formData.paymentAmount,
+      paymentAmount:        '',
       status:               'Pending',
       allocatedRooms:       '',
       allocationDate:       '',
@@ -306,7 +307,7 @@ function doPost(e) {
       resSheet.appendRow([
         r.id, r.timestamp, r.fullName, r.address, r.city, r.state,
         r.mobile, r.email, r.aadhaarPan, r.gender, r.age, r.occupation,
-        r.organization, r.checkIn, r.checkOut, r.totalNights,
+        r.organization, r.designation, r.checkIn, r.checkOut, r.totalNights,
         r.acRooms, r.nonAcRooms, r.guestHouseRooms, r.transportMode,
         r.needTransport, r.needPooja, r.additionalRequirements,
         r.paymentAmount, r.status, r.allocatedRooms, r.allocationDate, r.emailSent
