@@ -84,8 +84,7 @@
   <div class="step-indicator" id="stepIndicator">
     <div class="step-dot active" id="step1dot">👤 Personal Info</div>
     <div class="step-dot" id="step2dot">🏠 Stay & Rooms</div>
-    <div class="step-dot" id="step3dot">💳 Payment</div>
-    <div class="step-dot" id="step4dot">👨‍👩‍👧 Members</div>
+    <div class="step-dot" id="step3dot">👨‍👩‍👧 Members</div>
   </div>
 
   <form id="reservationForm" novalidate>
@@ -216,9 +215,15 @@
         </div>
 
         <!-- Organization -->
-        <div class="field-group full">
+        <div class="field-group">
           <label class="field-label">Organization Name <span class="hindi">/ संगठन का नाम</span></label>
           <input type="text" class="field-input" id="organization" placeholder="Your organization (if applicable)">
+        </div>
+
+        <!-- Designation — NEW -->
+        <div class="field-group">
+          <label class="field-label">Designation <span class="hindi">/ पदनाम</span></label>
+          <input type="text" class="field-input" id="designation" placeholder="Your designation (if applicable)">
         </div>
 
       </div><!-- /form-grid -->
@@ -375,63 +380,9 @@
     </div><!-- /sec2 -->
 
     <!-- ═══════════════════════════════════════
-         SECTION 3 — PAYMENT DETAILS
+         SECTION 3 — ACCOMPANYING MEMBERS
     ═══════════════════════════════════════ -->
     <div class="form-section" id="sec3">
-      <div class="section-title">
-        <span class="icon">💳</span>
-        Payment Details
-        <span style="font-size:0.75rem; color:var(--text-light); font-family:'Nunito',sans-serif; font-weight:400; margin-left:4px;">/ भुगतान विवरण</span>
-      </div>
-      <div class="section-subtitle">Pay via UPI or Bank Transfer and upload screenshot · UPI या बैंक ट्रांसफर द्वारा भुगतान करें</div>
-
-      <div class="payment-box">
-        <!-- QR Code -->
-        <div class="qr-box">
-          <img src="qr-code.png" alt="UPI QR Code" style="width:120px; height:120px; border-radius:8px;">
-          <div class="qr-label">SHRI SHRAVAK BHOJNALAY</div>
-          <div style="font-size:0.72rem; color:var(--text-light); margin-top:4px;">TID: 82089080</div>
-          <div style="font-size:0.72rem; color:var(--saffron); font-weight:700; margin-top:6px;">Scan QR to Pay</div>
-          <div style="font-size:0.68rem; color:var(--text-light); margin-top:4px;">
-            💡 Replace with actual QR image
-          </div>
-        </div>
-
-        <!-- Bank Details -->
-        <div>
-          <div class="bank-details">
-            <h4>🏦 Bank Transfer Details / बैंक हस्तांतरण</h4>
-            <div class="bank-row"><span>Bank Name</span><strong>HDFC Bank Govindganj Datia</strong></div>
-            <div class="bank-row"><span>Account No.</span><strong>50100845160186</strong></div>
-            <div class="bank-row"><span>IFSC Code</span><strong>HDFC0011116</strong></div>
-          </div>
-
-          <div class="form-grid">
-            <div class="field-group full">
-              <label class="field-label">Deposited Amount (in ₹) <span class="hindi">/ जमा राशि</span><span class="req">*</span></label>
-              <input type="number" class="field-input" id="paymentAmount" placeholder="Enter amount paid" min="0" inputmode="numeric">
-              <span class="field-error" id="err-paymentAmount">Please enter the amount you have paid</span>
-            </div>
-
-            <div class="field-group full">
-              <label class="field-label">Upload Payment Screenshot <span class="hindi">/ स्क्रीनशॉट अपलोड करें</span><span class="req">*</span></label>
-              <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('paymentFile').click()">
-                <div class="upload-icon">📸</div>
-                <p><strong>Click to upload</strong> or drag &amp; drop</p>
-                <p>JPG, PNG, PDF · Max 5MB</p>
-              </div>
-              <input type="file" id="paymentFile" accept="image/*,.pdf" style="display:none;" onchange="handleFileUpload(this)">
-              <span class="field-error" id="err-paymentFile">Please upload your payment screenshot</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div><!-- /sec3 -->
-
-    <!-- ═══════════════════════════════════════
-         SECTION 4 — ACCOMPANYING MEMBERS
-    ═══════════════════════════════════════ -->
-    <div class="form-section" id="sec4">
       <div class="section-title">
         <span class="icon">👨‍👩‍👧</span>
         Accompanying Members
