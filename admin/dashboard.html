@@ -152,7 +152,9 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
   <div class="nav-item" onclick="nav('rpt-pooja',this)"><span class="ni">🙏</span> Pooja</div>
   <div class="nav-item" onclick="nav('rpt-addl',this)"><span class="ni">📝</span> Additional Requests</div>
   <div class="nav-item" onclick="nav('rpt-devotee',this)"><span class="ni">👤</span> Devotee History</div>
-  <a href="../feedback/reports.html" target="_blank" class="nav-item" style="text-decoration:none;display:block;color:inherit;"><span class="ni">💬</span> Feedback Reports ↗</a>
+  <div class="nav-item" onclick="nav('rpt-feedback',this)"><span class="ni">💬</span> Feedback Reports</div>
+  <div class="nav-item" onclick="nav('rpt-payments',this)"><span class="ni">💳</span> Payments</div>
+  <a href="invoice.html" target="_blank" class="nav-item" style="text-decoration:none;display:block;color:inherit;"><span class="ni">🧾</span> Invoice / Billing ↗</a>
   <div class="nav-group-label">System</div>
   <div class="nav-item" onclick="logout()"><span class="ni">🚪</span> Logout</div>
 </nav>
@@ -367,13 +369,100 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
   <div class="page-section" id="page-rpt-devotee">
     <div class="dash-header"><div class="dash-title">👤 Devotee History</div></div>
     <div class="panel">
-      <div class="filter-bar">
-        <input type="text" id="dev-search" placeholder="🔍 Search name, mobile, city..." oninput="searchDevotee()">
+      <div class="filter-bar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input type="text" id="dev-search" placeholder="🔍 Filter by name, mobile, city..." oninput="filterDevotee()" style="flex:1;min-width:200px;">
+        <span id="dev-count" style="font-size:0.8rem;color:var(--text-light);"></span>
       </div>
       <div style="overflow-x:auto;"><table class="data-table"><thead><tr>
-        <th>Visitor Name</th><th>Mobile</th><th>City</th><th>State</th>
-        <th>Total Visits</th><th>Last Visit</th><th>Total Nights</th>
-      </tr></thead><tbody id="devTbody"><tr class="empty-row"><td colspan="7">Type to search devotee history</td></tr></tbody></table></div>
+        <th>#</th><th>Visitor Name</th><th>Mobile</th><th>City</th><th>State</th>
+        <th>Total Visits</th><th>Last Check-In</th><th>Total Nights</th><th>Status</th>
+      </tr></thead><tbody id="devTbody"><tr class="loading-row"><td colspan="9">Loading...</td></tr></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ── FEEDBACK REPORTS ── -->
+  <div class="page-section" id="page-rpt-feedback">
+    <div class="dash-header">
+      <div class="dash-title">💬 Feedback Reports</div>
+      <div class="dash-actions">
+        <button class="btn-dash" onclick="exportFeedbackCSV()">⬇️ Export CSV</button>
+        <button class="btn-dash btn-primary-dash" onclick="loadFeedback()">🔄 Refresh</button>
+      </div>
+    </div>
+    <!-- STAT CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
+      <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-num" id="fb-total">—</div><div class="stat-label">Total Feedbacks</div></div>
+      <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-num" id="fb-score">—</div><div class="stat-label">Avg Score</div></div>
+      <div class="stat-card"><div class="stat-icon">🌟</div><div class="stat-num" id="fb-excellent">—</div><div class="stat-label">Excellent</div></div>
+      <div class="stat-card"><div class="stat-icon">👍</div><div class="stat-num" id="fb-recommend">—</div><div class="stat-label">Recommend</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num" id="fb-today">—</div><div class="stat-label">Today</div></div>
+    </div>
+    <!-- GAUGES -->
+    <div class="panel" style="margin-bottom:16px;">
+      <div style="font-family:'Cinzel',serif;font-size:0.88rem;color:var(--maroon);margin-bottom:14px;">📊 Rating by Category</div>
+      <div id="fb-gauges" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;"></div>
+    </div>
+    <!-- FILTERS -->
+    <div class="panel" style="margin-bottom:16px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div><label style="font-size:0.75rem;font-weight:700;color:var(--text-light);display:block;margin-bottom:4px;">Period</label>
+          <select id="fb-period" onchange="applyFbFilter()" style="padding:8px 12px;border:1.5px solid var(--ivory-dark);border-radius:8px;background:var(--ivory);font-family:'Nunito',sans-serif;font-size:0.83rem;">
+            <option value="all">All Time</option><option value="today">Today</option>
+            <option value="week">This Week</option><option value="month">This Month</option><option value="year">This Year</option>
+          </select>
+        </div>
+        <div><label style="font-size:0.75rem;font-weight:700;color:var(--text-light);display:block;margin-bottom:4px;">Rating</label>
+          <select id="fb-rating" onchange="applyFbFilter()" style="padding:8px 12px;border:1.5px solid var(--ivory-dark);border-radius:8px;background:var(--ivory);font-family:'Nunito',sans-serif;font-size:0.83rem;">
+            <option value="">All Ratings</option><option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option>
+          </select>
+        </div>
+        <div><label style="font-size:0.75rem;font-weight:700;color:var(--text-light);display:block;margin-bottom:4px;">Recommend</label>
+          <select id="fb-rec" onchange="applyFbFilter()" style="padding:8px 12px;border:1.5px solid var(--ivory-dark);border-radius:8px;background:var(--ivory);font-family:'Nunito',sans-serif;font-size:0.83rem;">
+            <option value="">All</option><option>Yes</option><option>Maybe</option><option>No</option>
+          </select>
+        </div>
+        <div><label style="font-size:0.75rem;font-weight:700;color:var(--text-light);display:block;margin-bottom:4px;">Search</label>
+          <input type="text" id="fb-search" placeholder="Name / City / Mobile" oninput="applyFbFilter()" style="padding:8px 12px;border:1.5px solid var(--ivory-dark);border-radius:8px;background:var(--ivory);font-family:'Nunito',sans-serif;font-size:0.83rem;">
+        </div>
+      </div>
+    </div>
+    <!-- TABLE -->
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-family:'Cinzel',serif;font-size:0.88rem;color:var(--maroon);">All Feedback Records</div>
+        <div id="fb-count" style="font-size:0.78rem;color:var(--text-light);"></div>
+      </div>
+      <div style="overflow-x:auto;"><table class="data-table"><thead><tr>
+        <th>#</th><th>Date</th><th>Name</th><th>City</th><th>Overall</th>
+        <th>Room</th><th>Food</th><th>Staff</th><th>Score</th><th>Recommend</th><th>Ref ID</th>
+      </tr></thead><tbody id="fbTbody"><tr class="loading-row"><td colspan="11">Loading feedback data...</td></tr></tbody></table></div>
+    </div>
+    <!-- SUGGESTIONS -->
+    <div class="panel" style="margin-top:16px;">
+      <div style="font-family:'Cinzel',serif;font-size:0.88rem;color:var(--maroon);margin-bottom:14px;">💡 Suggestions & Comments</div>
+      <div id="fb-suggestions"></div>
+    </div>
+  </div>
+
+  <!-- ── PAYMENTS ── -->
+  <div class="page-section" id="page-rpt-payments">
+    <div class="dash-header">
+      <div class="dash-title">💳 Payment Records</div>
+      <div class="dash-actions">
+        <button class="btn-dash btn-primary-dash" onclick="loadPayments()">🔄 Refresh</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-num" id="pay-total">—</div><div class="stat-label">Total Received</div></div>
+      <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-num" id="pay-count">—</div><div class="stat-label">Payments</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num" id="pay-pending">—</div><div class="stat-label">Pending Balance</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num" id="pay-today">—</div><div class="stat-label">Today Received</div></div>
+    </div>
+    <div class="panel">
+      <div style="overflow-x:auto;"><table class="data-table"><thead><tr>
+        <th>#</th><th>Date</th><th>Ref ID</th><th>Visitor</th><th>Mobile</th>
+        <th>Check-In</th><th>Rooms</th><th>Mode</th><th>Txn Ref</th><th>Amount</th><th>Invoice</th>
+      </tr></thead><tbody id="payTbody"><tr class="loading-row"><td colspan="11">Loading payment records...</td></tr></tbody></table></div>
     </div>
   </div>
 
@@ -468,15 +557,68 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAll();
 });
 
+// Extra data stores
+let allFeedback      = [];
+let filteredFeedback = [];
+let allPayments      = [];
+
 async function loadAll() {
   showLoading();
-  const [reservations, rooms] = await Promise.all([fetchReservations(), fetchRooms()]);
-  allReservations = reservations || [];
-  allRooms        = rooms || [];
-  console.log('Loaded reservations:', allReservations.length, allReservations.map(r=>({id:r['ID']||r.ID, status:r['Status']||r.Status})));
-  renderOverview();
-  renderAllocTable();
-  renderRoomsTable();
+  try {
+    const [reservations, rooms] = await Promise.all([fetchReservations(), fetchRooms()]);
+    allReservations = reservations || [];
+    allRooms        = rooms || [];
+    hideDataError();
+    renderOverview();
+    renderAllocTable();
+    renderRoomsTable();
+  } catch(err) {
+    console.error('❌ loadAll failed:', err);
+    showDataError('Could not load data. Error: ' + err.message);
+  }
+}
+
+async function loadFeedback() {
+  document.getElementById('fbTbody').innerHTML = '<tr class="loading-row"><td colspan="11">Loading...</td></tr>';
+  try {
+    const res = await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL + '?action=getFeedback&t=' + Date.now());
+    const data = await res.json();
+    allFeedback = data.feedback || [];
+    filteredFeedback = [...allFeedback];
+  } catch(e) { console.error('loadFeedback:', e); allFeedback = []; filteredFeedback = []; }
+  renderFeedback(filteredFeedback);
+}
+
+async function loadPayments() {
+  document.getElementById('payTbody').innerHTML = '<tr class="loading-row"><td colspan="11">Loading...</td></tr>';
+  try {
+    const res = await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL + '?action=getPayments&t=' + Date.now());
+    const data = await res.json();
+    allPayments = data.payments || [];
+  } catch(e) { console.error('loadPayments:', e); allPayments = []; }
+  renderPayments(allPayments);
+}
+
+function showDataError(msg) {
+  let el = document.getElementById('dataErrorBanner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dataErrorBanner';
+    el.style.cssText = 'background:#FFEBEE;border:1.5px solid #E53935;border-radius:10px;padding:14px 20px;margin:16px 24px;font-size:0.88rem;color:#B71C1C;';
+    document.querySelector('.main-content')?.prepend(el);
+  }
+  el.innerHTML = '❌ <strong>Data Load Error</strong><br>' + msg +
+    '<br><br><strong>Steps to fix:</strong><br>' +
+    '1. Check your Apps Script URL in <code>js/sheets.js</code><br>' +
+    '2. Make sure Apps Script is deployed as Web App with "Anyone" access<br>' +
+    '3. Redeploy as New Version after any code changes<br>' +
+    '4. Check the Apps Script Executions log for errors';
+  el.style.display = 'block';
+}
+
+function hideDataError() {
+  const el = document.getElementById('dataErrorBanner');
+  if (el) el.style.display = 'none';
 }
 
 function showLoading() {
@@ -506,6 +648,8 @@ function nav(page, el) {
   if (page==='rpt-occupancy') renderOccupancy();
   if (page==='rpt-addl')      renderAddlReport();
   if (page==='rpt-devotee')   renderDevotee(allReservations);
+  if (page==='rpt-feedback')  { if(!allFeedback.length) loadFeedback(); else renderFeedback(filteredFeedback); }
+  if (page==='rpt-payments')  { if(!allPayments.length) loadPayments(); else renderPayments(allPayments); }
 }
 
 // Called from overview "Go →" button — navigates to allocation page
@@ -1034,33 +1178,208 @@ function renderAddlReport() {
 }
 
 function renderDevotee(data) {
-  const byMobile = {};
+  // Group ALL reservations by mobile number
+  const byKey = {};
   data.forEach(r => {
-    const mob = val(r,'Mobile');
-    if (!byMobile[mob]) byMobile[mob] = { name:val(r,'Full Name'), mobile:mob, city:val(r,'City'), state:val(r,'State'), visits:0, lastVisit:'', nights:0 };
-    const d = byMobile[mob];
+    const mob  = val(r,'Mobile') || val(r,'Full Name') || 'unknown';
+    const name = val(r,'Full Name');
+    const key  = mob;
+    if (!byKey[key]) byKey[key] = { name, mobile:mob, city:val(r,'City'), state:val(r,'State'), visits:0, lastVisit:'', nights:0, statuses:[] };
+    const d = byKey[key];
     d.visits++;
     d.nights += parseInt(val(r,'Nights'))||0;
-    if (!d.lastVisit || toISO(val(r,'Check-In')) > d.lastVisit) d.lastVisit = toISO(val(r,'Check-In'));
+    const ci = toISO(val(r,'Check-In'));
+    if (!d.lastVisit || ci > d.lastVisit) { d.lastVisit = ci; d.name = name; }
+    d.statuses.push(val(r,'Status'));
   });
-  const list = Object.values(byMobile);
+  const list = Object.values(byKey).sort((a,b)=> b.visits - a.visits);
+  const el = document.getElementById('dev-count');
+  if (el) el.textContent = list.length + ' devotee(s)';
   document.getElementById('devTbody').innerHTML = list.length
-    ? list.map(d=>`<tr>
-        <td><strong>${d.name}</strong></td><td>${d.mobile}</td>
-        <td>${d.city}</td><td>${d.state}</td>
-        <td style="text-align:center;font-weight:700;">${d.visits}</td>
-        <td>${fmtDate(d.lastVisit)}</td>
-        <td style="text-align:center;">${d.nights}</td>
-      </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="7">No records</td></tr>';
+    ? list.map((d,i)=>{
+        const hasConf = d.statuses.some(s=>s==='Confirmed');
+        return `<tr>
+          <td style="color:var(--text-light);font-size:0.75rem;">${i+1}</td>
+          <td><strong>${d.name}</strong></td>
+          <td>${d.mobile}</td>
+          <td>${d.city}</td><td>${d.state}</td>
+          <td style="text-align:center;font-weight:700;color:var(--saffron);">${d.visits}</td>
+          <td>${fmtDate(d.lastVisit)}</td>
+          <td style="text-align:center;">${d.nights}</td>
+          <td><span class="badge ${hasConf?'s-confirmed':'s-pending'}">${hasConf?'Confirmed':'Pending'}</span></td>
+        </tr>`;
+      }).join('')
+    : '<tr class="empty-row"><td colspan="9">No records found</td></tr>';
 }
 
-function searchDevotee() {
-  const q = document.getElementById('dev-search').value.toLowerCase();
-  if (!q) { document.getElementById('devTbody').innerHTML='<tr class="empty-row"><td colspan="7">Type to search</td></tr>'; return; }
+function filterDevotee() {
+  const q = document.getElementById('dev-search').value.toLowerCase().trim();
+  if (!q) { renderDevotee(allReservations); return; }
   renderDevotee(allReservations.filter(r =>
-    val(r,'Full Name').toLowerCase().includes(q) || val(r,'Mobile').includes(q) || val(r,'City').toLowerCase().includes(q)
+    val(r,'Full Name').toLowerCase().includes(q) ||
+    val(r,'Mobile').includes(q) ||
+    val(r,'City').toLowerCase().includes(q) ||
+    val(r,'State').toLowerCase().includes(q)
   ));
+}
+
+// ══ FEEDBACK ══
+function renderFeedback(data) {
+  // Stats
+  const scores    = data.map(f=>parseFloat(f['Overall Score %']||0)).filter(s=>s>0);
+  const avgScore  = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const excellent = data.filter(f=>f['Overall']==='Excellent').length;
+  const recommend = data.filter(f=>f['Recommend']==='Yes').length;
+  const todayStr  = new Date().toLocaleDateString('en-IN');
+  const todayFb   = data.filter(f=>(f['Timestamp']||'').includes(todayStr)).length;
+  setText('fb-total',     data.length);
+  setText('fb-score',     avgScore+'%');
+  setText('fb-excellent', excellent);
+  setText('fb-recommend', recommend);
+  setText('fb-today',     todayFb);
+  const countEl = document.getElementById('fb-count');
+  if (countEl) countEl.textContent = data.length + ' record(s)';
+
+  // Gauges
+  const cats = [
+    ['Overall','Overall Exp.'],['Room Clean','Room'],['Bathroom Clean','Bathroom'],
+    ['Food Quality','Food'],['Staff Behaviour','Staff'],['Value for Money','Value'],
+    ['Temple Premises','Temple'],['Pooja Arrangement','Pooja']
+  ];
+  const scoreMap = {Excellent:100, Good:75, Average:50, Poor:25};
+  const gaugeEl = document.getElementById('fb-gauges');
+  if (gaugeEl) {
+    gaugeEl.innerHTML = cats.map(([key,label]) => {
+      const vals = data.map(f=>f[key]).filter(Boolean);
+      if (!vals.length) return `<div style="background:var(--ivory);border-radius:8px;padding:10px 12px;"><div style="font-size:0.75rem;font-weight:700;color:var(--text-dark);margin-bottom:6px;">${label}</div><div style="font-size:0.72rem;color:var(--text-light);">No data</div></div>`;
+      const avg = Math.round(vals.reduce((s,v)=>(s+(scoreMap[v]||0)),0)/vals.length);
+      const color = avg>=75?'#2E7D32':avg>=50?'#1565C0':avg>=25?'#F57F17':'#C62828';
+      return `<div style="background:var(--ivory);border-radius:8px;padding:10px 12px;">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--text-dark);margin-bottom:6px;">${label}</div>
+        <div style="height:18px;background:#EFE4CC;border-radius:4px;overflow:hidden;">
+          <div style="width:${avg}%;height:100%;background:${color};display:flex;align-items:center;padding-left:6px;">
+            <span style="font-size:0.65rem;font-weight:700;color:#fff;">${avg}%</span>
+          </div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-light);margin-top:4px;">${vals.length} responses</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Badge helper
+  const rBadge = v => {
+    if (!v) return '—';
+    const cls = {Excellent:'s-confirmed',Good:'',Average:'s-pending',Poor:'s-cancelled'};
+    const style = {Excellent:'background:#E8F5E9;color:#2E7D32',Good:'background:#E3F2FD;color:#1565C0',Average:'background:#FFF8E1;color:#F57F17',Poor:'background:#FFEBEE;color:#C62828'};
+    return `<span class="badge" style="${style[v]||''};padding:2px 8px;font-size:0.7rem;">${v||'—'}</span>`;
+  };
+
+  // Table
+  const tbody = document.getElementById('fbTbody');
+  if (!data.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="11">No feedback records found</td></tr>'; }
+  else {
+    tbody.innerHTML = data.map((f,i)=>`<tr>
+      <td style="color:var(--text-light);font-size:0.72rem;">${i+1}</td>
+      <td style="font-size:0.75rem;white-space:nowrap;">${(f['Timestamp']||'—').split(',')[0]}</td>
+      <td><strong>${f['Name']||'—'}</strong><br><span style="font-size:0.7rem;color:var(--text-light);">${f['Mobile']||''}</span></td>
+      <td style="font-size:0.78rem;">${f['City']||'—'}</td>
+      <td>${rBadge(f['Overall'])}</td>
+      <td>${rBadge(f['Room Clean'])}</td>
+      <td>${rBadge(f['Food Quality'])}</td>
+      <td>${rBadge(f['Staff Behaviour'])}</td>
+      <td><span class="badge" style="background:${parseFloat(f['Overall Score %']||0)>=75?'#E8F5E9':parseFloat(f['Overall Score %']||0)>=50?'#FFF8E1':'#FFEBEE'};color:${parseFloat(f['Overall Score %']||0)>=75?'#2E7D32':parseFloat(f['Overall Score %']||0)>=50?'#F57F17':'#C62828'};padding:2px 8px;">${f['Overall Score %']||0}%</span></td>
+      <td style="font-weight:700;color:${f['Recommend']==='Yes'?'#2E7D32':f['Recommend']==='No'?'#C62828':'#F57F17'};">${f['Recommend']||'—'}</td>
+      <td style="font-size:0.72rem;color:var(--text-light);">${f['Ref ID']||'—'}</td>
+    </tr>`).join('');
+  }
+
+  // Suggestions
+  const suggEl = document.getElementById('fb-suggestions');
+  if (suggEl) {
+    const withSugg = data.filter(f=>(f['Suggestions']||'').trim()||(f['Liked Most']||'').trim());
+    suggEl.innerHTML = withSugg.length
+      ? withSugg.map(f=>`
+          <div style="border-bottom:1px dashed var(--ivory-dark);padding:12px 0;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px;">
+              <strong>${f['Name']||'Anonymous'}</strong>
+              <span style="font-size:0.73rem;color:var(--text-light);">${f['City']||''} · ${(f['Timestamp']||'').split(',')[0]}</span>
+            </div>
+            ${f['Liked Most']?`<div style="background:#E8F5E9;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:0.82rem;"><strong style="color:#2E7D32;">👍 Liked:</strong> ${f['Liked Most']}</div>`:''}
+            ${f['Suggestions']?`<div style="background:#FFF8E1;border-radius:6px;padding:8px 12px;font-size:0.82rem;"><strong style="color:#F57F17;">💡 Suggestion:</strong> ${f['Suggestions']}</div>`:''}
+          </div>`).join('')
+      : '<div style="text-align:center;padding:20px;color:var(--text-light);font-style:italic;">No suggestions yet</div>';
+  }
+}
+
+function applyFbFilter() {
+  const period = document.getElementById('fb-period').value;
+  const rating = document.getElementById('fb-rating').value;
+  const rec    = document.getElementById('fb-rec').value;
+  const search = document.getElementById('fb-search').value.toLowerCase();
+  const today  = new Date(); today.setHours(0,0,0,0);
+
+  filteredFeedback = allFeedback.filter(f => {
+    if (period && period !== 'all') {
+      const ts = f['Timestamp']||'';
+      let fd = null;
+      try { fd = new Date(ts); if(isNaN(fd)) fd=null; } catch(e){}
+      if (!fd) { try { const parts=ts.split(/[\/\s,]+/); if(parts.length>=3) fd=new Date(parts[1]+'/'+parts[0]+'/'+parts[2]); } catch(e){} }
+      if (fd) {
+        fd.setHours(0,0,0,0);
+        const diff = Math.floor((today-fd)/(1000*60*60*24));
+        if (period==='today' && diff!==0) return false;
+        if (period==='week'  && diff>6)   return false;
+        if (period==='month' && diff>30)  return false;
+        if (period==='year'  && diff>365) return false;
+      }
+    }
+    if (rating && f['Overall']!==rating) return false;
+    if (rec    && f['Recommend']!==rec)  return false;
+    if (search) {
+      const hay = ((f['Name']||'')+'|'+(f['City']||'')+'|'+(f['Mobile']||'')+'|'+(f['Ref ID']||'')).toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+  renderFeedback(filteredFeedback);
+}
+
+function exportFeedbackCSV() {
+  const hdrs = ['Timestamp','Ref ID','Name','Mobile','City','State','Overall','Room Clean','Bathroom Clean','Food Quality','Staff Behaviour','Value for Money','Overall Score %','Recommend','Suggestions','Liked Most'];
+  const rows = filteredFeedback.map(f=>hdrs.map(h=>`"${(f[h]||'').replace(/"/g,'""')}"`).join(','));
+  const csv  = [hdrs.join(','),...rows].join('\n');
+  const a    = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'PST_Feedback_'+TODAY+'.csv'; a.click();
+}
+
+// ══ PAYMENTS ══
+function renderPayments(data) {
+  const total    = data.reduce((s,p)=>s+parseFloat(p['Advance Amount']||p['Amount']||0),0);
+  const todayStr = new Date().toLocaleDateString('en-IN');
+  const todayAmt = data.filter(p=>(p['Timestamp']||'').includes(todayStr)).reduce((s,p)=>s+parseFloat(p['Advance Amount']||p['Amount']||0),0);
+  setText('pay-total',   '₹'+total.toLocaleString('en-IN'));
+  setText('pay-count',   data.length);
+  setText('pay-today',   '₹'+todayAmt.toLocaleString('en-IN'));
+  // Pending: reservations confirmed but no payment record
+  const paidIds = new Set(data.map(p=>p['Reservation ID']||p['Ref ID']));
+  const pending = allReservations.filter(r=>val(r,'Status')==='Confirmed' && !paidIds.has(val(r,'ID'))).length;
+  setText('pay-pending', pending + ' unpaid');
+
+  const tbody = document.getElementById('payTbody');
+  if (!data.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="11">No payment records found</td></tr>'; return; }
+  tbody.innerHTML = data.map((p,i)=>`<tr>
+    <td style="font-size:0.72rem;color:var(--text-light);">${i+1}</td>
+    <td style="font-size:0.75rem;white-space:nowrap;">${(p['Timestamp']||p['Payment Date']||'—').split(',')[0]}</td>
+    <td style="font-weight:700;font-size:0.8rem;color:var(--maroon);">${p['Reservation ID']||p['Ref ID']||'—'}</td>
+    <td><strong>${p['Visitor Name']||'—'}</strong></td>
+    <td style="font-size:0.78rem;">${p['Mobile']||'—'}</td>
+    <td style="font-size:0.78rem;">${fmtDate(p['Check-In'])}</td>
+    <td style="font-size:0.78rem;">${p['Room Details']||'—'}</td>
+    <td><span class="badge s-confirmed" style="font-size:0.7rem;">${p['Payment Mode']||'—'}</span></td>
+    <td style="font-size:0.75rem;color:var(--text-light);">${p['Transaction Ref']||'—'}</td>
+    <td style="font-weight:700;color:var(--green);font-size:0.9rem;">₹${parseFloat(p['Advance Amount']||p['Amount']||0).toLocaleString('en-IN')}</td>
+    <td><a href="invoice.html?ref=${encodeURIComponent(p['Reservation ID']||p['Ref ID']||'')}" target="_blank" style="font-size:0.75rem;color:var(--saffron);text-decoration:none;font-weight:700;">🧾 View</a></td>
+  </tr>`).join('');
 }
 
 async function loadReservations() {
