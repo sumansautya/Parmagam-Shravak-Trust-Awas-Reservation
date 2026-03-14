@@ -14,7 +14,6 @@
  * 5. Replace the 3 values below with your actual IDs
  * ══════════════════════════════════════════════════
  */
-
 const EMAILJS_CONFIG = {
   SERVICE_ID:  'service_dmb76ea',    // e.g. 'service_abc123'
   TEMPLATE_ID: 'template_5olugzd',   // e.g. 'template_xyz789'
@@ -117,6 +116,8 @@ async function sendAllocationEmail(r, members, allocatedRooms) {
         '48 hours of your check-in date. Cancellations made more than',
         '48 hours before check-in will be fully refunded.'
       ].join('\n'),
+
+      payment_link: 'https://sumansautya.github.io/Parmagam-Shravak-Trust-Awas-Reservation/payment/?ref=' + (r.id || r['ID'] || ''),
 
       room_policy: [
         '📋 ROOM & STAY POLICY',
@@ -234,6 +235,10 @@ Additional Requests : {{additional_req}}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {{payment_instructions}}
 
+🔗 PAY ONLINE (Quick & Easy):
+{{payment_link}}
+(Click the link, enter your Reference ID and pay via UPI or Bank Transfer)
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {{room_policy}}
 
@@ -248,5 +253,6 @@ Shri Parmagam Shravak Trust
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
    ════════════════════════════════════════════════════════════════ */
+
 
 
