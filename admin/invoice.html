@@ -112,7 +112,11 @@ input[type=number].edit-field{text-align:right;}
 </style>
 </head>
 <body>
-<script>if(sessionStorage.getItem('adminAuth')!=='true')window.location.href='index.html';</script>
+<script>
+// Accept either sessionStorage (same tab) or localStorage token (new tab from dashboard)
+const _auth = sessionStorage.getItem('adminAuth')==='true' || localStorage.getItem('pstAdminToken')==='pst2025admin';
+if (!_auth) window.location.href = 'index.html';
+</script>
 
 <div class="page-header">
   <h1>🧾 Invoice & Checkout Billing</h1>
