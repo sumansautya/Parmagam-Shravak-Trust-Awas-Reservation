@@ -103,10 +103,69 @@ input[type=number].edit-field{text-align:right;}
 .action-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
 
 @media print {
-  .page-header,.search-wrap,.action-bar{display:none !important;}
-  body{background:#fff;}
-  .invoice-box{box-shadow:none;border:1px solid #ccc;}
-  .main-wrap{padding:0;}
+  /* Hide all UI chrome */
+  .page-header,.search-wrap,.action-bar,
+  #extraChargesTable + button,
+  button[onclick*="addExtraRow"],
+  button[onclick*="removeExtraRow"],
+  td button, .edit-field + *,
+  .inv-section-title span { display:none !important; }
+
+  /* Page setup — fit everything on one A4 page */
+  @page { size:A4 portrait; margin:8mm 10mm 8mm 10mm; }
+  html, body { background:#fff !important; font-size:10px !important; }
+  .main-wrap { padding:0 !important; max-width:100% !important; }
+  .invoice-box { box-shadow:none !important; border:1px solid #ddd !important; page-break-inside:avoid; }
+
+  /* Compact header */
+  .inv-header { padding:10px 14px !important; }
+  .inv-om { font-size:0.85rem !important; margin-bottom:2px !important; }
+  .inv-trust-name { font-size:0.95rem !important; }
+  .inv-trust-sub, .inv-contact { font-size:0.65rem !important; margin-top:1px !important; }
+  .inv-tag { padding:4px 10px !important; font-size:0.72rem !important; right:10px !important; }
+
+  /* Compact meta */
+  .inv-meta { padding:8px 14px !important; }
+  .meta-label { font-size:0.65rem !important; }
+  .meta-val { font-size:0.78rem !important; }
+
+  /* Compact body */
+  .inv-body { padding:8px 14px !important; }
+  .inv-section-title { font-size:0.72rem !important; padding-bottom:3px !important; margin-top:8px !important; margin-bottom:5px !important; }
+  .inv-section-title:first-child { margin-top:0 !important; }
+
+  /* Guest info grid */
+  .guest-grid { gap:2px !important; }
+  .guest-item { padding:2px 0 !important; }
+  .guest-key { font-size:0.62rem !important; }
+  .guest-val { font-size:0.75rem !important; }
+
+  /* Tables */
+  .bill-table { font-size:0.72rem !important; }
+  .bill-table th { padding:5px 8px !important; font-size:0.62rem !important; }
+  .bill-table td { padding:5px 8px !important; }
+  .bill-table tfoot td { padding:5px 8px !important; font-size:0.75rem !important; }
+
+  /* Extra charges — keep edit fields readable in print */
+  .edit-field { border:none !important; background:transparent !important; font-size:0.72rem !important; padding:0 !important; }
+  input.edit-field { -webkit-appearance:none; appearance:none; }
+
+  /* Payment received section */
+  #paymentsReceived div { padding:4px 8px !important; font-size:0.72rem !important; margin-bottom:3px !important; }
+
+  /* Notes */
+  #invNotes { border:none !important; font-size:0.72rem !important; resize:none !important; }
+
+  /* Terms */
+  .terms-box { font-size:0.62rem !important; padding:6px 10px !important; line-height:1.4 !important; }
+
+  /* Signatures */
+  .sig-row { margin-top:12px !important; padding-top:8px !important; }
+  .sig-line { height:20px !important; }
+  .sig-label { font-size:0.62rem !important; }
+
+  /* Pay status badges */
+  .pay-status { font-size:0.65rem !important; padding:2px 6px !important; }
 }
 @media(max-width:600px){.guest-grid{grid-template-columns:1fr;}.inv-tag{display:none;}}
 </style>
@@ -156,8 +215,7 @@ if (!_auth) window.location.href = 'index.html';
 
     <div class="action-bar">
       <button class="btn btn-green" onclick="window.print()">🖨️ Print Invoice</button>
-      <button class="btn btn-blue" onclick="saveInvoice()">💾 Save to Sheet</button>
-      <button class="btn btn-primary" onclick="recalc()">🔄 Recalculate</button>
+      <button class="btn btn-blue" id="saveBtn" onclick="saveInvoice()">💾 Save to Sheet</button>
     </div>
 
     <div class="invoice-box" id="invoicePrint">
@@ -453,8 +511,76 @@ function removeExtraRow(btn) {
   recalc();
 }
 
-function saveInvoice() {
-  alert('Invoice saved! (Connect to Apps Script submitInvoice action to persist to Google Sheets)');
+async function saveInvoice() {
+  if (!currentRes) { alert('No reservation loaded.'); return; }
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = '⏳ Saving...';
+  btn.disabled = true;
+
+  // Collect extra charges
+  const extras = [];
+  document.querySelectorAll('#extraItems tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input');
+    const desc = inputs[0]?.value?.trim();
+    const amt  = parseFloat(inputs[1]?.value)||0;
+    if (desc && amt > 0) extras.push(desc + ': ₹' + amt);
+  });
+
+  const nights   = parseInt(currentRes['Nights'])||1;
+  let roomTotal  = 0;
+  if (parseInt(currentRes['AC Rooms'])>0)     roomTotal += 1200*parseInt(currentRes['AC Rooms'])*nights;
+  if (parseInt(currentRes['Non-AC Rooms'])>0) roomTotal += 700 *parseInt(currentRes['Non-AC Rooms'])*nights;
+  if (parseInt(currentRes['GH Rooms'])>0)     roomTotal += 2000*parseInt(currentRes['GH Rooms'])*nights;
+  const extraTotal = extras.reduce((s,e) => s + parseFloat(e.split('₹')[1]||0), 0);
+  const grandTotal = roomTotal + extraTotal;
+  const adv        = parseFloat(document.getElementById('advancePaid').textContent.replace(/[₹,]/g,''))||0;
+  const balance    = Math.max(0, grandTotal - adv);
+
+  const invoice = {
+    timestamp:      new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'}),
+    invoiceNo:      document.getElementById('inv-number').textContent,
+    reservationId:  currentRes['ID'] || currentRes['Ref ID'] || '',
+    visitorName:    currentRes['Full Name'] || '',
+    mobile:         currentRes['Mobile'] || '',
+    city:           currentRes['City'] || '',
+    state:          currentRes['State'] || '',
+    checkIn:        currentRes['Check-In'] || '',
+    checkOut:       currentRes['Check-Out'] || '',
+    nights:         currentRes['Nights'] || '',
+    allocatedRooms: currentRes['Allocated Rooms'] || '',
+    acRooms:        currentRes['AC Rooms'] || '0',
+    nonAcRooms:     currentRes['Non-AC Rooms'] || '0',
+    ghRooms:        currentRes['GH Rooms'] || '0',
+    roomCharges:    roomTotal,
+    extraCharges:   extraTotal,
+    extraDetails:   extras.join(' | '),
+    grandTotal:     grandTotal,
+    advancePaid:    adv,
+    balanceDue:     balance,
+    notes:          document.getElementById('invNotes')?.value?.trim() || '',
+    invoiceDate:    new Date().toISOString().split('T')[0]
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method:  'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body:    JSON.stringify({action: 'saveInvoice', invoice}),
+      mode:    'no-cors'
+    });
+    btn.textContent = '✅ Saved!';
+    btn.style.background = 'linear-gradient(135deg,#2E7D32,#1B5E20)';
+    setTimeout(() => {
+      btn.textContent = '💾 Save to Sheet';
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 2500);
+    console.log('Invoice saved:', invoice.invoiceNo);
+  } catch(e) {
+    btn.textContent = '❌ Error — Retry';
+    btn.disabled = false;
+    console.error('Save error:', e);
+  }
 }
 
 function clearInvoice() {
