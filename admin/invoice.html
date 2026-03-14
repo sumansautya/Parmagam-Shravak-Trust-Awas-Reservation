@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice — Shri Parmagam Shravak Trust</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--maroon:#7B0D00;--saffron:#E8630A;--gold:#C8973A;--gold-light:#E8C06A;--ivory:#FDF8F0;--cream:#F9F2E4;--ivory-dark:#EFE4CC;--white:#FFFFFF;--green:#2E7D32;--text-dark:#2A1A0A;--text-light:#7A5C3A;--shadow:rgba(123,13,0,0.12);--radius:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-dark);}
+
+/* HEADER */
+.page-header{background:linear-gradient(135deg,#5C0A00,#8B1A00,#A52800);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.page-header h1{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold-light);}
+.back-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(232,192,106,0.4);color:#FDF8F0;padding:8px 16px;border-radius:20px;text-decoration:none;font-size:0.82rem;cursor:pointer;transition:all 0.2s;}
+.back-btn:hover{background:rgba(255,255,255,0.25);}
+
+.main-wrap{max-width:960px;margin:0 auto;padding:24px;}
+
+/* SEARCH BAR */
+.search-wrap{background:#fff;border-radius:var(--radius);box-shadow:0 2px 12px var(--shadow);padding:20px 24px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.search-field{flex:1;min-width:220px;}
+.search-field label{font-size:0.8rem;font-weight:700;color:var(--text-light);display:block;margin-bottom:6px;}
+.search-input{width:100%;padding:10px 14px;border:1.5px solid var(--ivory-dark);border-radius:8px;font-family:'Nunito',sans-serif;font-size:0.9rem;background:var(--ivory);outline:none;transition:all 0.2s;}
+.search-input:focus{border-color:var(--saffron);background:#fff;box-shadow:0 0 0 3px rgba(232,99,10,0.1);}
+.btn{padding:10px 20px;border:none;border-radius:20px;font-family:'Nunito',sans-serif;font-size:0.83rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(135deg,var(--saffron),#C45A00);color:#fff;}
+.btn-secondary{background:var(--ivory-dark);color:var(--maroon);border:1px solid var(--gold);}
+.btn-green{background:linear-gradient(135deg,#2E7D32,#1B5E20);color:#fff;}
+.btn-blue{background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;}
+
+/* INVOICE EDITOR */
+#invoiceEditor{display:none;}
+
+/* INVOICE PREVIEW (printable) */
+.invoice-box{background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px var(--shadow);overflow:hidden;margin-bottom:20px;}
+
+.inv-header{background:linear-gradient(135deg,#5C0A00,#8B1A00,#A52800);padding:24px 28px;text-align:center;position:relative;}
+.inv-om{font-size:1.2rem;color:var(--gold-light);margin-bottom:6px;letter-spacing:0.2em;}
+.inv-trust-name{font-family:'Cinzel',serif;font-size:1.3rem;color:#fff;font-weight:700;}
+.inv-trust-sub{font-size:0.82rem;color:rgba(232,192,106,0.9);margin-top:4px;}
+.inv-contact{font-size:0.75rem;color:rgba(253,248,240,0.7);margin-top:6px;}
+.inv-tag{
+  position:absolute;right:24px;top:50%;transform:translateY(-50%);
+  background:var(--gold);color:var(--maroon);padding:8px 18px;
+  border-radius:20px;font-family:'Cinzel',serif;font-size:0.85rem;font-weight:700;
+}
+
+.inv-meta{display:flex;justify-content:space-between;padding:16px 28px;background:linear-gradient(135deg,#FFF8E0,#FFF3CC);border-bottom:1px solid var(--ivory-dark);flex-wrap:wrap;gap:8px;}
+.inv-meta-left{font-size:0.85rem;}
+.inv-meta-right{font-size:0.85rem;text-align:right;}
+.meta-label{color:var(--text-light);font-size:0.75rem;}
+.meta-val{font-weight:700;color:var(--text-dark);}
+
+.inv-body{padding:24px 28px;}
+
+.inv-section-title{font-family:'Cinzel',serif;font-size:0.82rem;color:var(--maroon);border-bottom:2px solid var(--gold);padding-bottom:6px;margin-bottom:12px;margin-top:20px;letter-spacing:0.04em;}
+.inv-section-title:first-child{margin-top:0;}
+
+/* TWO-COL GUEST INFO */
+.guest-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;}
+.guest-item{padding:5px 0;border-bottom:1px dashed rgba(200,151,58,0.25);}
+.guest-key{font-size:0.73rem;color:var(--text-light);font-weight:600;}
+.guest-val{font-size:0.85rem;color:var(--text-dark);font-weight:700;}
+
+/* BILLING TABLE */
+.bill-table{width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:4px;}
+.bill-table th{background:linear-gradient(135deg,var(--maroon),#5C0A00);color:var(--gold-light);padding:9px 12px;text-align:left;font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.04em;}
+.bill-table td{padding:9px 12px;border-bottom:1px solid var(--ivory-dark);}
+.bill-table tr:hover td{background:var(--ivory);}
+.bill-table .amount-col{text-align:right;font-weight:700;}
+.bill-table tfoot td{padding:10px 12px;font-weight:700;border-top:2px solid var(--gold);}
+.total-row{background:linear-gradient(135deg,#FFF8E0,#FFF0CC);}
+.total-row td{font-family:'Cinzel',serif;font-size:0.9rem;color:var(--maroon);}
+.due-row{background:linear-gradient(135deg,#FFEBEE,#FFCDD2);}
+.due-row td{color:#C62828;font-family:'Cinzel',serif;font-size:0.95rem;}
+.paid-row{background:#E8F5E9;}
+.paid-row td{color:var(--green);}
+
+/* EDITABLE FIELDS */
+.edit-field{border:none;border-bottom:1.5px dashed var(--gold);background:transparent;font-family:'Nunito',sans-serif;font-size:0.85rem;width:100%;outline:none;padding:2px 4px;color:var(--text-dark);}
+.edit-field:focus{border-bottom-color:var(--saffron);background:rgba(232,99,10,0.05);}
+input[type=number].edit-field{text-align:right;}
+
+/* PAYMENT STATUS */
+.pay-status{display:inline-block;padding:4px 12px;border-radius:12px;font-size:0.75rem;font-weight:700;}
+.ps-paid{background:#E8F5E9;color:#2E7D32;}
+.ps-partial{background:#FFF8E1;color:#F57F17;}
+.ps-due{background:#FFEBEE;color:#C62828;}
+
+/* TERMS */
+.terms-box{background:var(--ivory);border:1px solid var(--ivory-dark);border-radius:8px;padding:14px 16px;font-size:0.76rem;color:var(--text-light);line-height:1.6;margin-top:16px;}
+.terms-box strong{color:var(--text-dark);}
+
+/* SIGNATURE */
+.sig-row{display:flex;justify-content:space-between;margin-top:28px;padding-top:16px;border-top:1px dashed var(--ivory-dark);}
+.sig-block{text-align:center;width:45%;}
+.sig-line{border-bottom:1px solid var(--text-dark);margin-bottom:6px;height:36px;}
+.sig-label{font-size:0.72rem;color:var(--text-light);}
+
+/* ACTION BUTTONS */
+.action-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
+
+@media print {
+  .page-header,.search-wrap,.action-bar{display:none !important;}
+  body{background:#fff;}
+  .invoice-box{box-shadow:none;border:1px solid #ccc;}
+  .main-wrap{padding:0;}
+}
+@media(max-width:600px){.guest-grid{grid-template-columns:1fr;}.inv-tag{display:none;}}
+</style>
+</head>
+<body>
+<script>if(sessionStorage.getItem('adminAuth')!=='true')window.location.href='index.html';</script>
+
+<div class="page-header">
+  <h1>🧾 Invoice & Checkout Billing</h1>
+  <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+</div>
+
+<div class="main-wrap">
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <div class="search-field">
+      <label>Reference ID / Name / Mobile</label>
+      <input type="text" class="search-input" id="searchInput" placeholder="PST-... or guest name or mobile" onkeydown="if(event.key==='Enter')searchReservation()">
+    </div>
+    <button class="btn btn-primary" onclick="searchReservation()">🔍 Load Reservation</button>
+    <button class="btn btn-secondary" onclick="clearInvoice()">✕ Clear</button>
+  </div>
+
+  <!-- RESULTS LIST -->
+  <div id="searchResults" style="display:none;background:#fff;border-radius:var(--radius);box-shadow:0 2px 12px var(--shadow);margin-bottom:20px;overflow:hidden;">
+    <div style="padding:12px 20px;background:linear-gradient(135deg,var(--maroon),#5C0A00);font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold-light);">Select Reservation</div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+      <thead><tr style="background:var(--ivory-dark);">
+        <th style="padding:8px 14px;text-align:left;">ID</th>
+        <th style="padding:8px 14px;">Name</th>
+        <th style="padding:8px 14px;">Check-In</th>
+        <th style="padding:8px 14px;">Check-Out</th>
+        <th style="padding:8px 14px;">Status</th>
+        <th style="padding:8px 14px;"></th>
+      </tr></thead>
+      <tbody id="resultsTbody"></tbody>
+    </table>
+  </div>
+
+  <!-- INVOICE EDITOR & PREVIEW -->
+  <div id="invoiceEditor">
+
+    <div class="action-bar">
+      <button class="btn btn-green" onclick="window.print()">🖨️ Print Invoice</button>
+      <button class="btn btn-blue" onclick="saveInvoice()">💾 Save to Sheet</button>
+      <button class="btn btn-primary" onclick="recalc()">🔄 Recalculate</button>
+    </div>
+
+    <div class="invoice-box" id="invoicePrint">
+
+      <!-- HEADER -->
+      <div class="inv-header">
+        <div class="inv-om">🕉 ॐ नमः सिद्धेभ्यः 🕉</div>
+        <div class="inv-trust-name">Shri Parmagam Shravak Trust</div>
+        <div class="inv-trust-sub">श्री कुन्दकुन्द नगर, पिछोरखेड़ सोनागिर — 473885, जिला: दतिया (म.प्र.)</div>
+        <div class="inv-contact">📞 8887417076 &nbsp;|&nbsp; 7987164958 &nbsp;|&nbsp; Bank: HDFC — A/c: 50100845160186 &nbsp;|&nbsp; IFSC: HDFC0011116</div>
+        <div class="inv-tag">INVOICE / बीजक</div>
+      </div>
+
+      <!-- META ROW -->
+      <div class="inv-meta">
+        <div class="inv-meta-left">
+          <div class="meta-label">Invoice No.</div>
+          <div class="meta-val" id="inv-number">—</div>
+          <div class="meta-label" style="margin-top:8px;">Ref ID</div>
+          <div class="meta-val" id="inv-refid">—</div>
+        </div>
+        <div class="inv-meta-right">
+          <div class="meta-label">Invoice Date</div>
+          <div class="meta-val" id="inv-date">—</div>
+          <div class="meta-label" style="margin-top:8px;">Payment Status</div>
+          <div class="meta-val" id="inv-paystatus">—</div>
+        </div>
+      </div>
+
+      <div class="inv-body">
+
+        <!-- GUEST DETAILS -->
+        <div class="inv-section-title">👤 Guest Information / अतिथि विवरण</div>
+        <div class="guest-grid">
+          <div class="guest-item"><div class="guest-key">Guest Name</div><div class="guest-val" id="g-name">—</div></div>
+          <div class="guest-item"><div class="guest-key">Mobile</div><div class="guest-val" id="g-mobile">—</div></div>
+          <div class="guest-item"><div class="guest-key">Address</div><div class="guest-val" id="g-addr">—</div></div>
+          <div class="guest-item"><div class="guest-key">City / State</div><div class="guest-val" id="g-city">—</div></div>
+          <div class="guest-item"><div class="guest-key">Occupation</div><div class="guest-val" id="g-occ">—</div></div>
+          <div class="guest-item"><div class="guest-key">Total Members</div><div class="guest-val" id="g-members">—</div></div>
+        </div>
+
+        <!-- STAY DETAILS -->
+        <div class="inv-section-title">🛏️ Stay Details / ठहरने का विवरण</div>
+        <div class="guest-grid">
+          <div class="guest-item"><div class="guest-key">Check-In</div><div class="guest-val" id="g-cin">—</div></div>
+          <div class="guest-item"><div class="guest-key">Check-Out</div><div class="guest-val" id="g-cout">—</div></div>
+          <div class="guest-item"><div class="guest-key">Nights</div><div class="guest-val" id="g-nights">—</div></div>
+          <div class="guest-item"><div class="guest-key">Allocated Rooms</div><div class="guest-val" id="g-rooms">—</div></div>
+        </div>
+
+        <!-- BILLING TABLE -->
+        <div class="inv-section-title">💰 Billing Details / बिलिंग विवरण</div>
+        <table class="bill-table">
+          <thead><tr>
+            <th>#</th><th>Description</th><th>Rate (₹)</th><th>Qty</th><th>Nights</th><th class="amount-col">Amount (₹)</th>
+          </tr></thead>
+          <tbody id="billItems"></tbody>
+          <tfoot>
+            <tr><td colspan="5" style="text-align:right;color:var(--text-light);">Sub Total</td><td class="amount-col" id="subTotal">0</td></tr>
+            <tr class="total-row"><td colspan="5" style="text-align:right;">TOTAL</td><td class="amount-col" id="grandTotal">0</td></tr>
+            <tr class="paid-row"><td colspan="5" style="text-align:right;">Advance Paid</td><td class="amount-col" id="advancePaid">0</td></tr>
+            <tr class="due-row"><td colspan="5" style="text-align:right;">BALANCE DUE</td><td class="amount-col" id="balanceDue">0</td></tr>
+          </tfoot>
+        </table>
+
+        <!-- ADDITIONAL CHARGES (editable) -->
+        <div class="inv-section-title">➕ Additional Charges / अतिरिक्त शुल्क <span style="font-size:0.72rem;font-weight:400;color:var(--text-light);">(editable)</span></div>
+        <table class="bill-table" id="extraChargesTable">
+          <thead><tr><th>#</th><th>Description</th><th>Amount (₹)</th><th style="width:40px;"></th></tr></thead>
+          <tbody id="extraItems">
+            <tr>
+              <td>1</td>
+              <td><input class="edit-field" type="text" placeholder="e.g. Food / Dining charges" onchange="recalc()"></td>
+              <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
+              <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><input class="edit-field" type="text" placeholder="e.g. Transport / Pick-up charges" onchange="recalc()"></td>
+              <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
+              <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><input class="edit-field" type="text" placeholder="e.g. Pooja arrangement charges" onchange="recalc()"></td>
+              <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
+              <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-secondary" onclick="addExtraRow()" style="margin-top:10px;font-size:0.78rem;padding:7px 14px;">+ Add Row</button>
+
+        <!-- PAYMENT RECEIVED DETAILS -->
+        <div class="inv-section-title">✅ Payment Received / प्राप्त भुगतान</div>
+        <div id="paymentsReceived" style="font-size:0.85rem;color:var(--text-light);font-style:italic;">No payment records found</div>
+
+        <!-- NOTES -->
+        <div class="inv-section-title">📝 Notes / टिप्पणी</div>
+        <textarea class="edit-field" id="invNotes" rows="2" style="width:100%;border:1px dashed var(--gold);border-radius:6px;padding:8px;font-size:0.83rem;" placeholder="Any special notes for this invoice..."></textarea>
+
+        <!-- TERMS -->
+        <div class="terms-box">
+          <strong>Terms & Conditions:</strong><br>
+          1. Room charges are calculated per night basis.<br>
+          2. Advance paid is non-refundable if cancelled within 48 hours of check-in.<br>
+          3. Balance due to be paid at the time of check-in / checkout.<br>
+          4. Any damage to trust property will be charged separately.<br>
+          5. This invoice is computer-generated and is valid without signature.
+        </div>
+
+        <!-- SIGNATURE -->
+        <div class="sig-row">
+          <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Guest Signature / अतिथि के हस्ताक्षर</div>
+          </div>
+          <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-label">Authorised Signatory / अधिकृत हस्ताक्षरकर्ता<br>Shri Parmagam Shravak Trust</div>
+          </div>
+        </div>
+
+      </div><!-- inv-body -->
+    </div><!-- invoice-box -->
+
+  </div><!-- invoiceEditor -->
+
+</div><!-- main-wrap -->
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1/exec';
+let allReservations = [];
+let allPayments     = [];
+let currentRes      = null;
+let extraRowCount   = 3;
+
+document.addEventListener('DOMContentLoaded', loadData);
+
+async function loadData() {
+  try {
+    const [rRes, pRes] = await Promise.all([
+      fetch(SCRIPT_URL+'?action=getReservations&t='+Date.now()),
+      fetch(SCRIPT_URL+'?action=getPayments&t='+Date.now())
+    ]);
+    allReservations = (await rRes.json()).reservations || [];
+    allPayments     = (await pRes.json()).payments     || [];
+  } catch(e) { console.error(e); }
+  // Check URL param
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('ref')) {
+    document.getElementById('searchInput').value = params.get('ref');
+    searchReservation();
+  }
+}
+
+function searchReservation() {
+  const q = document.getElementById('searchInput').value.trim().toUpperCase();
+  if (!q) return;
+  const results = allReservations.filter(r =>
+    (r['ID']||'').toUpperCase().includes(q) ||
+    (r['Full Name']||'').toUpperCase().includes(q) ||
+    (r['Mobile']||'').includes(q)
+  );
+  if (results.length === 1) { loadInvoice(results[0]); return; }
+  if (results.length > 1) {
+    document.getElementById('searchResults').style.display = 'block';
+    document.getElementById('resultsTbody').innerHTML = results.map(r => `
+      <tr style="border-bottom:1px solid #EFE4CC;cursor:pointer;" onmouseover="this.style.background='#F9F2E4'" onmouseout="this.style.background=''" onclick="loadInvoice(allReservations.find(x=>x['ID']==='${r['ID']}'))">
+        <td style="padding:10px 14px;font-weight:700;color:var(--maroon);font-size:0.8rem;">${r['ID']||'—'}</td>
+        <td style="padding:10px 14px;">${r['Full Name']||'—'}</td>
+        <td style="padding:10px 14px;">${fmtDate(r['Check-In'])}</td>
+        <td style="padding:10px 14px;">${fmtDate(r['Check-Out'])}</td>
+        <td style="padding:10px 14px;"><span class="pay-status ${statusClass(r['Status'])}">${r['Status']||'Pending'}</span></td>
+        <td style="padding:10px 14px;"><button class="btn btn-primary" style="padding:5px 12px;font-size:0.75rem;" onclick="event.stopPropagation();loadInvoice(allReservations.find(x=>x['ID']==='${r['ID']}'))">📄 Invoice</button></td>
+      </tr>`).join('');
+  } else {
+    alert('No reservation found for: '+q);
+  }
+}
+
+function statusClass(s){
+  if(s==='Confirmed') return 'ps-paid';
+  if(s==='Pending')   return 'ps-due';
+  return 'ps-partial';
+}
+
+function loadInvoice(r) {
+  if (!r) return;
+  currentRes = r;
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('invoiceEditor').style.display  = 'block';
+
+  const today = new Date();
+  const invNo = 'PST-INV-' + r['ID'].replace('PST-','').replace(/-/g,'') + '-' + String(today.getDate()).padStart(2,'0');
+
+  // Meta
+  setText('inv-number', invNo);
+  setText('inv-refid',  r['ID']);
+  setText('inv-date',   today.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}));
+
+  // Guest info
+  setText('g-name',    r['Full Name']||'—');
+  setText('g-mobile',  r['Mobile']||'—');
+  setText('g-addr',    r['Address']||'—');
+  setText('g-city',    (r['City']||'')+(r['State']?', '+r['State']:''));
+  setText('g-occ',     r['Occupation']||'—');
+  setText('g-members', '—'); // will be updated if we load members
+  setText('g-cin',     fmtDate(r['Check-In']));
+  setText('g-cout',    fmtDate(r['Check-Out']));
+  setText('g-nights',  r['Nights']||'—');
+  setText('g-rooms',   r['Allocated Rooms']||r['Rooms']||'—');
+
+  // Build bill items from room data
+  const nights = parseInt(r['Nights'])||1;
+  const items  = [];
+  if (parseInt(r['AC Rooms'])>0)      items.push({desc:'❄️ AC Room with Air Conditioning', rate:1200, qty:parseInt(r['AC Rooms']), nights});
+  if (parseInt(r['Non-AC Rooms'])>0)  items.push({desc:'🌬️ Non-AC Room with Cooler',       rate:700,  qty:parseInt(r['Non-AC Rooms']), nights});
+  if (parseInt(r['GH Rooms'])>0)      items.push({desc:'🏡 Guest House Room (AC)',           rate:2000, qty:parseInt(r['GH Rooms']), nights});
+
+  document.getElementById('billItems').innerHTML = items.map((it,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${it.desc}</td>
+      <td class="amount-col">₹${it.rate.toLocaleString('en-IN')}</td>
+      <td class="amount-col">${it.qty}</td>
+      <td class="amount-col">${it.nights}</td>
+      <td class="amount-col">₹${(it.rate*it.qty*it.nights).toLocaleString('en-IN')}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-light);font-style:italic;">No room data</td></tr>';
+
+  // Payments received
+  const myPayments = allPayments.filter(p => p['Reservation ID']===r['ID'] || p['Ref ID']===r['ID']);
+  const advancePaid = myPayments.reduce((s,p) => s+parseFloat(p['Amount']||p['Advance Amount']||0),0);
+  if (myPayments.length) {
+    document.getElementById('paymentsReceived').innerHTML = myPayments.map((p,i) => `
+      <div style="background:#E8F5E9;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;">
+        <span>Payment ${i+1} — ${p['Payment Mode']||'—'} — ${p['Payment Date']||p['Timestamp']||'—'} — Txn: ${p['Transaction Ref']||'—'}</span>
+        <strong style="color:var(--green);">₹${parseFloat(p['Amount']||p['Advance Amount']||0).toLocaleString('en-IN')}</strong>
+      </div>`).join('');
+  }
+  document.getElementById('advancePaid').textContent = '₹'+(advancePaid||parseFloat(r['Payment Amount']||0)).toLocaleString('en-IN');
+
+  recalc();
+  window.scrollTo({top:400, behavior:'smooth'});
+}
+
+function recalc() {
+  if (!currentRes) return;
+  const nights = parseInt(currentRes['Nights'])||1;
+  let roomTotal = 0;
+  if (parseInt(currentRes['AC Rooms'])>0)     roomTotal += 1200*parseInt(currentRes['AC Rooms'])*nights;
+  if (parseInt(currentRes['Non-AC Rooms'])>0) roomTotal += 700 *parseInt(currentRes['Non-AC Rooms'])*nights;
+  if (parseInt(currentRes['GH Rooms'])>0)     roomTotal += 2000*parseInt(currentRes['GH Rooms'])*nights;
+
+  let extraTotal = 0;
+  document.querySelectorAll('#extraItems tr').forEach(tr => {
+    const amtInput = tr.querySelectorAll('input')[1];
+    if (amtInput) extraTotal += parseFloat(amtInput.value)||0;
+  });
+
+  const grand = roomTotal + extraTotal;
+  const adv   = parseFloat(document.getElementById('advancePaid').textContent.replace(/[₹,]/g,''))||0;
+  const due   = grand - adv;
+
+  setText('subTotal',   '₹'+roomTotal.toLocaleString('en-IN'));
+  setText('grandTotal', '₹'+grand.toLocaleString('en-IN'));
+  setText('balanceDue', '₹'+Math.max(0,due).toLocaleString('en-IN'));
+
+  const statusEl = document.getElementById('inv-paystatus');
+  if (due <= 0) {
+    statusEl.innerHTML = '<span class="pay-status ps-paid">✅ FULLY PAID</span>';
+  } else if (adv > 0) {
+    statusEl.innerHTML = '<span class="pay-status ps-partial">⏳ PARTIAL — ₹'+Math.max(0,due).toLocaleString('en-IN')+' Due</span>';
+  } else {
+    statusEl.innerHTML = '<span class="pay-status ps-due">❌ PAYMENT DUE</span>';
+  }
+}
+
+function addExtraRow() {
+  extraRowCount++;
+  const tbody = document.getElementById('extraItems');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${extraRowCount}</td>
+    <td><input class="edit-field" type="text" placeholder="Description" onchange="recalc()"></td>
+    <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
+    <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function removeExtraRow(btn) {
+  btn.closest('tr').remove();
+  recalc();
+}
+
+function saveInvoice() {
+  alert('Invoice saved! (Connect to Apps Script submitInvoice action to persist to Google Sheets)');
+}
+
+function clearInvoice() {
+  currentRes = null;
+  document.getElementById('invoiceEditor').style.display = 'none';
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('searchInput').value = '';
+}
+
+function setText(id, v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+function fmtDate(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){return d;}
+}
+</script>
+</body>
+</html>
