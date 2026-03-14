@@ -1,1 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advance Payment — Shri Parmagam Shravak Trust</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --maroon:#7B0D00; --saffron:#E8630A; --gold:#C8973A; --gold-light:#E8C06A;
+  --ivory:#FDF8F0; --cream:#F9F2E4; --ivory-dark:#EFE4CC;
+  --white:#FFFFFF; --green:#2E7D32; --text-dark:#2A1A0A; --text-light:#7A5C3A;
+  --shadow:rgba(123,13,0,0.12); --radius:14px; --radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-dark);min-height:100vh;}
 
+.page-header{
+  background:linear-gradient(135deg,#5C0A00 0%,#8B1A00 40%,#A52800 70%,#7B1500 100%);
+  padding:28px 20px 24px;text-align:center;position:relative;overflow:hidden;
+}
+.page-header::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23C8973A' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.header-om{font-size:1.3rem;color:var(--gold-light);margin-bottom:6px;letter-spacing:0.2em;position:relative;}
+.header-title{font-family:'Cinzel',serif;font-size:1.5rem;color:#fff;font-weight:700;position:relative;text-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.header-sub{font-size:0.85rem;color:rgba(232,192,106,0.9);margin-top:4px;position:relative;}
+.header-contact{font-size:0.78rem;color:rgba(253,248,240,0.7);margin-top:6px;position:relative;}
+
+.form-wrap{max-width:640px;margin:0 auto;padding:24px 16px 60px;}
+
+/* BOOKING INFO CARD */
+.booking-card{
+  background:linear-gradient(135deg,#FFF8E0,#FFF0CC);
+  border:1.5px solid var(--gold);border-radius:var(--radius);
+  padding:20px 24px;margin-bottom:20px;
+  box-shadow:0 4px 16px rgba(200,151,58,0.2);
+}
+.booking-card-title{font-family:'Cinzel',serif;font-size:0.95rem;color:var(--maroon);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.booking-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(200,151,58,0.3);font-size:0.85rem;}
+.booking-row:last-child{border:none;}
+.booking-label{color:var(--text-light);font-weight:600;}
+.booking-value{color:var(--text-dark);font-weight:700;text-align:right;}
+.not-found-msg{background:#FFF3E0;border:1px solid #FFB300;border-radius:10px;padding:16px 20px;text-align:center;color:#E65100;font-size:0.88rem;}
+
+/* SECTION */
+.section-card{background:#fff;border-radius:var(--radius);box-shadow:0 4px 20px var(--shadow);margin-bottom:20px;overflow:hidden;border:1px solid var(--ivory-dark);}
+.section-head{background:linear-gradient(135deg,var(--maroon),#A52000);padding:14px 20px;display:flex;align-items:center;gap:10px;}
+.section-icon{font-size:1.2rem;}
+.section-title{font-family:'Cinzel',serif;font-size:0.88rem;color:var(--gold-light);font-weight:600;letter-spacing:0.04em;}
+.section-body{padding:20px;}
+
+/* QR PAYMENT */
+.qr-wrap{
+  background:linear-gradient(135deg,#FFF8E0,#FFF3CC);
+  border:1.5px solid var(--gold);border-radius:12px;
+  padding:20px;text-align:center;margin-bottom:20px;
+}
+.qr-img{width:160px;height:160px;border-radius:8px;border:3px solid var(--gold);background:#fff;padding:4px;margin:0 auto 10px;}
+.qr-img img{width:100%;height:100%;object-fit:contain;}
+.qr-name{font-family:'Cinzel',serif;font-size:1rem;color:var(--maroon);font-weight:700;}
+.qr-tid{font-size:0.78rem;color:var(--text-light);margin-top:2px;}
+
+.bank-box{background:var(--ivory);border:1px solid var(--ivory-dark);border-radius:10px;padding:16px;margin-bottom:16px;}
+.bank-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed #EFE4CC;font-size:0.85rem;}
+.bank-row:last-child{border:none;}
+.bank-key{color:var(--text-light);font-weight:600;}
+.bank-val{color:var(--text-dark);font-weight:700;font-family:monospace;font-size:0.9rem;}
+
+/* AMOUNT CARDS */
+.amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.amount-card{
+  background:var(--ivory);border:2px solid var(--ivory-dark);border-radius:10px;
+  padding:12px 10px;text-align:center;cursor:pointer;transition:all 0.2s;
+}
+.amount-card.selected{border-color:var(--saffron);background:linear-gradient(135deg,#FFF3E0,#FFE8CC);}
+.amount-card .room-type{font-size:0.72rem;color:var(--text-light);margin-bottom:4px;}
+.amount-card .amount{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--maroon);font-weight:700;}
+.amount-card .nights{font-size:0.7rem;color:var(--text-light);}
+
+/* FORM FIELDS */
+.field-group{margin-bottom:16px;}
+.field-label{display:block;font-size:0.83rem;font-weight:700;color:var(--text-dark);margin-bottom:6px;}
+.field-label .hi{font-weight:400;color:var(--text-light);font-size:0.8rem;}
+.req{color:var(--saffron);margin-left:2px;}
+.field-input,.field-select,.field-textarea{
+  width:100%;padding:11px 14px;border:1.5px solid var(--ivory-dark);border-radius:var(--radius-sm);
+  font-family:'Nunito',sans-serif;font-size:0.9rem;color:var(--text-dark);background:var(--ivory);
+  outline:none;transition:all 0.2s;
+}
+.field-input:focus,.field-select:focus{border-color:var(--saffron);background:#fff;box-shadow:0 0 0 3px rgba(232,99,10,0.1);}
+.field-input.error{border-color:#E53935;}
+.field-error{font-size:0.75rem;color:#E53935;margin-top:4px;display:none;}
+.field-error.show{display:block;}
+
+/* UPLOAD */
+.upload-box{
+  border:2px dashed var(--gold);border-radius:10px;padding:20px;text-align:center;
+  background:linear-gradient(135deg,#FFFBF0,#FFF8E0);cursor:pointer;transition:all 0.2s;
+}
+.upload-box:hover{border-color:var(--saffron);background:linear-gradient(135deg,#FFF5E0,#FFECC0);}
+.upload-box input{display:none;}
+.upload-icon{font-size:2rem;margin-bottom:6px;}
+.upload-text{font-size:0.85rem;color:var(--text-light);}
+.upload-preview{display:none;margin-top:12px;text-align:center;}
+.upload-preview img{max-width:100%;max-height:200px;border-radius:8px;border:2px solid var(--gold);}
+
+/* MODE TABS */
+.mode-tabs{display:flex;gap:0;border:1.5px solid var(--ivory-dark);border-radius:10px;overflow:hidden;margin-bottom:18px;}
+.mode-tab{flex:1;padding:10px;text-align:center;font-size:0.83rem;font-weight:700;cursor:pointer;transition:all 0.2s;background:var(--ivory);color:var(--text-light);}
+.mode-tab.active{background:linear-gradient(135deg,var(--saffron),#C45A00);color:#fff;}
+
+/* SUBMIT */
+.submit-wrap{text-align:center;margin-top:24px;}
+.btn-submit{
+  background:linear-gradient(135deg,var(--saffron),#C45A00);color:white;
+  border:none;padding:15px 48px;font-family:'Cinzel',serif;font-size:1rem;font-weight:600;
+  border-radius:50px;cursor:pointer;transition:all 0.3s;
+  box-shadow:0 6px 24px rgba(232,99,10,0.35);letter-spacing:0.05em;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(232,99,10,0.45);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:48px 24px;background:#fff;border-radius:var(--radius);box-shadow:0 4px 20px var(--shadow);}
+.success-icon{font-size:4rem;margin-bottom:16px;}
+.success-title{font-family:'Cinzel',serif;font-size:1.3rem;color:var(--maroon);margin-bottom:12px;}
+.success-text{color:var(--text-light);font-size:0.88rem;line-height:1.7;}
+
+.note-box{background:linear-gradient(135deg,#FFF8E0,#FFF0CC);border:1px solid var(--gold);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;font-size:0.82rem;color:var(--text-light);line-height:1.6;}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:520px){.form-grid{grid-template-columns:1fr;}.amount-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="header-om">🕉 ॐ नमः सिद्धेभ्यः 🕉</div>
+  <div class="header-title">Advance Payment</div>
+  <div class="header-sub">Shri Parmagam Shravak Trust, Sonagir</div>
+  <div class="header-contact">📞 8887417076 &nbsp;|&nbsp; 7987164958 &nbsp;|&nbsp; Shri Kund Kund Nagar — 473885</div>
+</div>
+
+<div class="form-wrap">
+
+  <!-- BOOKING INFO -->
+  <div id="bookingCard" class="booking-card" style="display:none;">
+    <div class="booking-card-title">📋 Your Reservation Details</div>
+    <div class="booking-row"><span class="booking-label">Reference ID</span><span class="booking-value" id="bi-id">—</span></div>
+    <div class="booking-row"><span class="booking-label">Guest Name</span><span class="booking-value" id="bi-name">—</span></div>
+    <div class="booking-row"><span class="booking-label">Check-In</span><span class="booking-value" id="bi-cin">—</span></div>
+    <div class="booking-row"><span class="booking-label">Check-Out</span><span class="booking-value" id="bi-cout">—</span></div>
+    <div class="booking-row"><span class="booking-label">Nights</span><span class="booking-value" id="bi-nights">—</span></div>
+    <div class="booking-row"><span class="booking-label">Rooms</span><span class="booking-value" id="bi-rooms">—</span></div>
+    <div class="booking-row"><span class="booking-label">Status</span><span class="booking-value" id="bi-status">—</span></div>
+  </div>
+  <div id="notFoundMsg" class="not-found-msg" style="display:none;">
+    ⚠️ Reservation not found. Please check your Reference ID or contact us at <strong>8887417076</strong>.
+  </div>
+
+  <!-- MAIN FORM -->
+  <div id="mainForm">
+
+  <!-- SECTION 1: REFERENCE LOOKUP -->
+  <div class="section-card">
+    <div class="section-head"><span class="section-icon">🔍</span><span class="section-title">Reservation Reference / आरक्षण संदर्भ</span></div>
+    <div class="section-body">
+      <div class="note-box">
+        ℹ️ Enter your Reservation Reference ID (e.g. <strong>PST-20260313-12345</strong>) received in your confirmation email. This will auto-fill your booking details.
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Reference ID <span class="req">*</span></label>
+          <input type="text" class="field-input" id="refId" placeholder="PST-YYYYMMDD-XXXXX" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onblur="lookupReservation()">
+          <div class="field-error" id="err-refId">Valid Reference ID required</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Mobile Number <span class="req">*</span></label>
+          <input type="tel" class="field-input" id="payMobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric">
+          <div class="field-error" id="err-payMobile">Valid mobile number required</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: PAYMENT METHOD -->
+  <div class="section-card">
+    <div class="section-head"><span class="section-icon">💳</span><span class="section-title">Payment Method / भुगतान का तरीका</span></div>
+    <div class="section-body">
+
+      <div class="mode-tabs">
+        <div class="mode-tab active" onclick="setMode('upi',this)">📱 UPI / QR Scan</div>
+        <div class="mode-tab" onclick="setMode('bank',this)">🏦 Bank Transfer</div>
+      </div>
+
+      <!-- UPI -->
+      <div id="mode-upi">
+        <div class="qr-wrap">
+          <div class="qr-img">
+            <!-- QR Code placeholder - replace with actual QR image -->
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+              <rect width="100" height="100" fill="#fff"/>
+              <!-- QR border -->
+              <rect x="5" y="5" width="35" height="35" fill="none" stroke="#000" stroke-width="3"/>
+              <rect x="10" y="10" width="25" height="25" fill="#000"/>
+              <rect x="13" y="13" width="19" height="19" fill="#fff"/>
+              <rect x="16" y="16" width="13" height="13" fill="#000"/>
+              <rect x="60" y="5" width="35" height="35" fill="none" stroke="#000" stroke-width="3"/>
+              <rect x="65" y="10" width="25" height="25" fill="#000"/>
+              <rect x="68" y="13" width="19" height="19" fill="#fff"/>
+              <rect x="71" y="16" width="13" height="13" fill="#000"/>
+              <rect x="5" y="60" width="35" height="35" fill="none" stroke="#000" stroke-width="3"/>
+              <rect x="10" y="65" width="25" height="25" fill="#000"/>
+              <rect x="13" y="68" width="19" height="19" fill="#fff"/>
+              <rect x="16" y="71" width="13" height="13" fill="#000"/>
+              <text x="50" y="55" text-anchor="middle" font-size="7" fill="#E8630A" font-weight="bold">SCAN TO PAY</text>
+              <rect x="45" y="45" width="10" height="10" fill="#E8630A"/>
+            </svg>
+          </div>
+          <div class="qr-name">SHRI SHRAVAK BHOJNALAY</div>
+          <div class="qr-tid">TID: 82089080 &nbsp;|&nbsp; UPI ID: Ask at front desk</div>
+          <div style="font-size:0.75rem;color:var(--text-light);margin-top:8px;">📸 After payment, take a screenshot and upload below</div>
+        </div>
+      </div>
+
+      <!-- BANK -->
+      <div id="mode-bank" style="display:none;">
+        <div class="bank-box">
+          <div class="bank-row"><span class="bank-key">Bank Name</span><span class="bank-val">HDFC Bank, Govindganj, Datia</span></div>
+          <div class="bank-row"><span class="bank-key">Account Number</span><span class="bank-val">50100845160186</span></div>
+          <div class="bank-row"><span class="bank-key">IFSC Code</span><span class="bank-val">HDFC0011116</span></div>
+          <div class="bank-row"><span class="bank-key">Account Name</span><span class="bank-val">Shri Parmagam Shravak Trust</span></div>
+          <div class="bank-row"><span class="bank-key">Account Type</span><span class="bank-val">Current</span></div>
+        </div>
+        <div class="note-box">⚠️ Please use your <strong>Reference ID</strong> as the payment remarks/narration so we can identify your payment.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PAYMENT AMOUNT -->
+  <div class="section-card">
+    <div class="section-head"><span class="section-icon">💰</span><span class="section-title">Payment Amount / भुगतान राशि</span></div>
+    <div class="section-body">
+      <div class="note-box">
+        💡 Pay <strong>ONE NIGHT advance</strong> per room to confirm your booking. Select the room type below or enter a custom amount.
+      </div>
+      <div class="amount-grid">
+        <div class="amount-card" onclick="selectAmount(1200,this)">
+          <div class="room-type">❄️ AC Room</div>
+          <div class="amount">₹1,200</div>
+          <div class="nights">per room</div>
+        </div>
+        <div class="amount-card" onclick="selectAmount(700,this)">
+          <div class="room-type">🌬️ Non-AC Room</div>
+          <div class="amount">₹700</div>
+          <div class="nights">per room</div>
+        </div>
+        <div class="amount-card" onclick="selectAmount(2000,this)">
+          <div class="room-type">🏡 Guest House</div>
+          <div class="amount">₹2,000</div>
+          <div class="nights">per room</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Amount Paid (₹) <span class="hi">/ जमा की गई राशि</span> <span class="req">*</span></label>
+        <input type="number" class="field-input" id="payAmount" placeholder="Enter amount in rupees" min="1">
+        <div class="field-error" id="err-payAmount">Please enter the payment amount</div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label class="field-label">Payment Date <span class="hi">/ भुगतान की तारीख</span> <span class="req">*</span></label>
+          <input type="date" class="field-input" id="payDate">
+          <div class="field-error" id="err-payDate">Payment date required</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Transaction / UTR Ref No. <span class="hi">/ लेनदेन संख्या</span></label>
+          <input type="text" class="field-input" id="payTxn" placeholder="UTR / Transaction ID">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Notes <span class="hi">/ टिप्पणी</span></label>
+        <input type="text" class="field-input" id="payNotes" placeholder="Any additional information (optional)">
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: SCREENSHOT UPLOAD -->
+  <div class="section-card">
+    <div class="section-head"><span class="section-icon">📸</span><span class="section-title">Payment Screenshot / भुगतान का स्क्रीनशॉट</span></div>
+    <div class="section-body">
+      <div class="upload-box" onclick="document.getElementById('payScreenshot').click()">
+        <input type="file" id="payScreenshot" accept="image/*" onchange="previewUpload(this)">
+        <div class="upload-icon">📤</div>
+        <div class="upload-text"><strong>Click to upload</strong> your payment screenshot<br><span style="font-size:0.75rem;">JPG, PNG supported · Max 5MB</span></div>
+        <div class="upload-preview" id="uploadPreview">
+          <img id="previewImg" src="" alt="Payment Screenshot">
+          <div style="font-size:0.75rem;color:var(--green);margin-top:6px;font-weight:700;">✅ Screenshot uploaded</div>
+        </div>
+      </div>
+      <div class="field-error" id="err-screenshot" style="margin-top:8px;">Please upload payment screenshot</div>
+    </div>
+  </div>
+
+  <div class="submit-wrap">
+    <button class="btn-submit" id="submitBtn" onclick="submitPayment()">
+      🙏 Submit Payment Details / भुगतान विवरण जमा करें
+    </button>
+  </div>
+
+  </div><!-- end mainForm -->
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Jai Jinendra! Payment Received</div>
+    <div class="success-text">
+      Your payment details have been submitted successfully.<br>
+      <em>आपका भुगतान विवरण सफलतापूर्वक जमा हो गया है।</em><br><br>
+      Our team will verify your payment and update your booking confirmation.<br>
+      You will receive a final confirmation email shortly.<br><br>
+      <strong id="successRefId" style="color:var(--maroon);font-size:1rem;"></strong><br><br>
+      <span style="font-size:0.85rem;">For any queries: <strong>📞 8887417076 / 7987164958</strong></span><br><br>
+      <strong style="color:var(--maroon);">🕉 May Lord Jinendra bless you! 🕉</strong>
+    </div>
+  </div>
+
+</div><!-- form-wrap -->
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1/exec';
+let currentReservation = null;
+let paymentMode = 'upi';
+let screenshotBase64 = '';
+
+// Set today as default payment date
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('payDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('payDate').max   = new Date().toISOString().split('T')[0];
+  // Check URL params for pre-fill
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('ref')) {
+    document.getElementById('refId').value = params.get('ref').toUpperCase();
+    if (params.get('mobile')) document.getElementById('payMobile').value = params.get('mobile');
+    lookupReservation();
+  }
+});
+
+// ── Mode toggle ──
+function setMode(m, btn) {
+  paymentMode = m;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mode-upi').style.display  = m==='upi'  ? 'block' : 'none';
+  document.getElementById('mode-bank').style.display = m==='bank' ? 'block' : 'none';
+}
+
+// ── Amount selection ──
+function selectAmount(amt, card) {
+  document.querySelectorAll('.amount-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  document.getElementById('payAmount').value = amt;
+}
+
+// ── Lookup reservation ──
+async function lookupReservation() {
+  const refId = document.getElementById('refId').value.trim().toUpperCase();
+  if (!refId || refId.length < 5) return;
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=getReservations&t=' + Date.now());
+    const data = await res.json();
+    const reservations = data.reservations || [];
+    const found = reservations.find(r => (r['ID']||'').toUpperCase() === refId);
+    if (found) {
+      currentReservation = found;
+      showBookingInfo(found);
+    } else {
+      document.getElementById('bookingCard').style.display = 'none';
+      document.getElementById('notFoundMsg').style.display = 'block';
+    }
+  } catch(e) { console.log('Lookup error:', e); }
+}
+
+function showBookingInfo(r) {
+  document.getElementById('notFoundMsg').style.display = 'none';
+  document.getElementById('bookingCard').style.display = 'block';
+  document.getElementById('bi-id').textContent     = r['ID'] || '—';
+  document.getElementById('bi-name').textContent   = r['Full Name'] || '—';
+  document.getElementById('bi-cin').textContent    = fmtDate(r['Check-In']);
+  document.getElementById('bi-cout').textContent   = fmtDate(r['Check-Out']);
+  document.getElementById('bi-nights').textContent = r['Nights'] || '—';
+  const rooms = [];
+  if (parseInt(r['AC Rooms'])>0)      rooms.push(`❄️ AC × ${r['AC Rooms']}`);
+  if (parseInt(r['Non-AC Rooms'])>0)  rooms.push(`🌬️ Non-AC × ${r['Non-AC Rooms']}`);
+  if (parseInt(r['GH Rooms'])>0)      rooms.push(`🏡 GH × ${r['GH Rooms']}`);
+  document.getElementById('bi-rooms').textContent  = rooms.join(', ') || '—';
+  document.getElementById('bi-status').textContent = r['Status'] || '—';
+  // Auto-fill mobile if available
+  if (!document.getElementById('payMobile').value && r['Mobile']) {
+    document.getElementById('payMobile').value = r['Mobile'];
+  }
+}
+
+// ── File upload preview ──
+function previewUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5*1024*1024) { alert('File too large. Max 5MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    screenshotBase64 = e.target.result;
+    document.getElementById('previewImg').src = screenshotBase64;
+    document.getElementById('uploadPreview').style.display = 'block';
+    document.getElementById('err-screenshot').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Validation ──
+function validate() {
+  let valid = true, first = null;
+  function chk(id, cond, errId) {
+    const el  = document.getElementById(id);
+    const err = document.getElementById(errId || 'err-'+id);
+    if (!cond) {
+      el?.classList.add('error'); if(err) err.classList.add('show');
+      valid = false; if (!first && el) first = el;
+    } else {
+      el?.classList.remove('error'); if(err) err.classList.remove('show');
+    }
+  }
+  chk('refId',     document.getElementById('refId').value.trim().length >= 5);
+  chk('payMobile', /^[6-9]\d{9}$/.test(document.getElementById('payMobile').value.trim()));
+  chk('payAmount', parseFloat(document.getElementById('payAmount').value) > 0);
+  chk('payDate',   document.getElementById('payDate').value !== '');
+  // Screenshot
+  const scrEl  = document.getElementById('err-screenshot');
+  if (!screenshotBase64) {
+    scrEl.style.display = 'block'; valid = false;
+  } else { scrEl.style.display = 'none'; }
+  if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
+  return valid;
+}
+
+// ── Submit ──
+async function submitPayment() {
+  if (!validate()) return;
+  const btn = document.getElementById('submitBtn');
+  btn.innerHTML = '<span class="spinner"></span> Submitting...';
+  btn.disabled = true;
+
+  const refId = document.getElementById('refId').value.trim().toUpperCase();
+  const r = currentReservation || {};
+  const rooms = [];
+  if (parseInt(r['AC Rooms'])>0)     rooms.push(`AC×${r['AC Rooms']}`);
+  if (parseInt(r['Non-AC Rooms'])>0) rooms.push(`NonAC×${r['Non-AC Rooms']}`);
+  if (parseInt(r['GH Rooms'])>0)     rooms.push(`GH×${r['GH Rooms']}`);
+
+  const payment = {
+    timestamp:      new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'}),
+    reservationId:  refId,
+    visitorName:    r['Full Name'] || '',
+    mobile:         document.getElementById('payMobile').value.trim(),
+    checkIn:        r['Check-In']  || '',
+    checkOut:       r['Check-Out'] || '',
+    roomDetails:    rooms.join(', ') || r['Allocated Rooms'] || '',
+    totalNights:    r['Nights'] || '',
+    advanceAmount:  document.getElementById('payAmount').value,
+    paymentMode:    paymentMode === 'upi' ? 'UPI/QR' : 'Bank Transfer',
+    transactionRef: document.getElementById('payTxn').value.trim(),
+    paymentDate:    document.getElementById('payDate').value,
+    notes:          document.getElementById('payNotes').value.trim(),
+    screenshot:     screenshotBase64.slice(0, 500) // truncate for storage
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'submitPayment', payment}),
+      mode: 'no-cors'
+    });
+  } catch(e) { console.log('Submit note:', e.message); }
+
+  document.getElementById('successRefId').textContent = 'Reference: ' + refId;
+  document.getElementById('mainForm').style.display    = 'none';
+  document.getElementById('bookingCard').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){return d;}
+}
+</script>
+</body>
+</html>
