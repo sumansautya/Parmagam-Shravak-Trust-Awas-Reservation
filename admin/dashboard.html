@@ -98,7 +98,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 .bar-row { display:flex; align-items:center; gap:8px; font-size:0.8rem; }
 .bar-label { min-width:90px; color:var(--text-light); text-align:right; font-size:0.75rem; }
 .bar-track { flex:1; background:var(--ivory-dark); border-radius:4px; height:22px; overflow:hidden; }
-.bar-fill  { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:8px; font-size:0.72rem; font-weight:700; color:white; transition:width 1s ease; min-width:30px; }
+.bar-fill  { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:6px; font-size:0.72rem; font-weight:700; color:white; transition:width 1s ease; min-width:0; white-space:nowrap; overflow:visible; }
 
 /* METRIC BOX */
 .metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:16px; }
@@ -154,7 +154,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
   <div class="nav-item" onclick="nav('rpt-devotee',this)"><span class="ni">👤</span> Devotee History</div>
   <div class="nav-item" onclick="nav('rpt-feedback',this)"><span class="ni">💬</span> Feedback Reports</div>
   <div class="nav-item" onclick="nav('rpt-payments',this)"><span class="ni">💳</span> Payments</div>
-  <a href="invoice.html" target="_blank" class="nav-item" style="text-decoration:none;display:block;color:inherit;"><span class="ni">🧾</span> Invoice / Billing ↗</a>
+  <a href="javascript:void(0)" onclick="openInvoice()" class="nav-item" style="text-decoration:none;display:block;color:inherit;"><span class="ni">🧾</span> Invoice / Billing ↗</a>
   <div class="nav-group-label">System</div>
   <div class="nav-item" onclick="logout()"><span class="ni">🚪</span> Logout</div>
 </nav>
@@ -374,8 +374,8 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
         <span id="dev-count" style="font-size:0.8rem;color:var(--text-light);"></span>
       </div>
       <div style="overflow-x:auto;"><table class="data-table"><thead><tr>
-        <th>#</th><th>Visitor Name</th><th>Mobile</th><th>City</th><th>State</th>
-        <th>Total Visits</th><th>Last Check-In</th><th>Total Nights</th><th>Status</th>
+        <th>#</th><th>Visitor Name / Ref ID</th><th>Mobile</th><th>City</th><th>State</th>
+        <th>Check-In</th><th>Check-Out</th><th>Nights</th><th>Rooms</th><th>Status</th>
       </tr></thead><tbody id="devTbody"><tr class="loading-row"><td colspan="9">Loading...</td></tr></tbody></table></div>
     </div>
   </div>
@@ -700,7 +700,26 @@ function setBar(barId, rooms, cat) {
   const occ   = rooms.filter(r=>val(r,'Category')===cat && val(r,'Status')==='Occupied').length;
   const pct   = total ? Math.round(occ/total*100) : 0;
   const el    = document.getElementById(barId);
-  if (el) { el.style.width=pct+'%'; el.textContent=`${pct}% (${occ}/${total})`; }
+  if (!el) return;
+  const label = `${pct}% (${occ}/${total})`;
+  if (pct < 15) {
+    // Bar too narrow — show label outside in dark text
+    el.style.width    = Math.max(pct,2) + '%';
+    el.style.color    = 'transparent'; // hide inside text
+    el.parentElement.style.position = 'relative';
+    // Put label next to bar using data attribute
+    el.setAttribute('data-label', label);
+    el.nextElementSibling && el.nextElementSibling.remove();
+    const span = document.createElement('span');
+    span.style.cssText = 'margin-left:6px;font-size:0.72rem;font-weight:700;color:var(--text-dark);white-space:nowrap;';
+    span.textContent = label;
+    el.parentElement.appendChild(span);
+  } else {
+    el.style.width   = pct + '%';
+    el.style.color   = 'white';
+    el.textContent   = label;
+    el.nextElementSibling && el.nextElementSibling.remove();
+  }
 }
 
 // ══ RESERVATIONS TABLE ══
@@ -1178,38 +1197,37 @@ function renderAddlReport() {
 }
 
 function renderDevotee(data) {
-  // Group ALL reservations by mobile number
-  const byKey = {};
-  data.forEach(r => {
-    const mob  = val(r,'Mobile') || val(r,'Full Name') || 'unknown';
-    const name = val(r,'Full Name');
-    const key  = mob;
-    if (!byKey[key]) byKey[key] = { name, mobile:mob, city:val(r,'City'), state:val(r,'State'), visits:0, lastVisit:'', nights:0, statuses:[] };
-    const d = byKey[key];
-    d.visits++;
-    d.nights += parseInt(val(r,'Nights'))||0;
-    const ci = toISO(val(r,'Check-In'));
-    if (!d.lastVisit || ci > d.lastVisit) { d.lastVisit = ci; d.name = name; }
-    d.statuses.push(val(r,'Status'));
+  // Show EVERY reservation as a row — no grouping
+  // Sort: most recent check-in first
+  const sorted = [...data].sort((a,b) => {
+    const da = toISO(val(a,'Check-In')), db = toISO(val(b,'Check-In'));
+    return db > da ? 1 : db < da ? -1 : 0;
   });
-  const list = Object.values(byKey).sort((a,b)=> b.visits - a.visits);
   const el = document.getElementById('dev-count');
-  if (el) el.textContent = list.length + ' devotee(s)';
-  document.getElementById('devTbody').innerHTML = list.length
-    ? list.map((d,i)=>{
-        const hasConf = d.statuses.some(s=>s==='Confirmed');
+  if (el) el.textContent = sorted.length + ' record(s)';
+  document.getElementById('devTbody').innerHTML = sorted.length
+    ? sorted.map((r,i) => {
+        const status = val(r,'Status') || 'Pending';
+        const badgeCls = status==='Confirmed'?'s-confirmed':status==='Cancelled'?'s-cancelled':'s-pending';
+        const nights = val(r,'Nights') || '—';
+        const rooms  = [];
+        if (parseInt(val(r,'AC Rooms'))>0)     rooms.push('AC×'+val(r,'AC Rooms'));
+        if (parseInt(val(r,'Non-AC Rooms'))>0) rooms.push('NonAC×'+val(r,'Non-AC Rooms'));
+        if (parseInt(val(r,'GH Rooms'))>0)     rooms.push('GH×'+val(r,'GH Rooms'));
         return `<tr>
           <td style="color:var(--text-light);font-size:0.75rem;">${i+1}</td>
-          <td><strong>${d.name}</strong></td>
-          <td>${d.mobile}</td>
-          <td>${d.city}</td><td>${d.state}</td>
-          <td style="text-align:center;font-weight:700;color:var(--saffron);">${d.visits}</td>
-          <td>${fmtDate(d.lastVisit)}</td>
-          <td style="text-align:center;">${d.nights}</td>
-          <td><span class="badge ${hasConf?'s-confirmed':'s-pending'}">${hasConf?'Confirmed':'Pending'}</span></td>
+          <td><strong>${val(r,'Full Name')}</strong><br><span style="font-size:0.72rem;color:var(--text-light);">${val(r,'ID')}</span></td>
+          <td>${val(r,'Mobile')}</td>
+          <td>${val(r,'City')}</td>
+          <td>${val(r,'State')}</td>
+          <td style="font-size:0.78rem;">${fmtDate(val(r,'Check-In'))}</td>
+          <td style="font-size:0.78rem;">${fmtDate(val(r,'Check-Out'))}</td>
+          <td style="text-align:center;">${nights}</td>
+          <td style="font-size:0.75rem;">${rooms.join(', ')||'—'}</td>
+          <td><span class="badge ${badgeCls}">${status}</span></td>
         </tr>`;
       }).join('')
-    : '<tr class="empty-row"><td colspan="9">No records found</td></tr>';
+    : '<tr class="empty-row"><td colspan="10">No records found</td></tr>';
 }
 
 function filterDevotee() {
@@ -1378,7 +1396,7 @@ function renderPayments(data) {
     <td><span class="badge s-confirmed" style="font-size:0.7rem;">${p['Payment Mode']||'—'}</span></td>
     <td style="font-size:0.75rem;color:var(--text-light);">${p['Transaction Ref']||'—'}</td>
     <td style="font-weight:700;color:var(--green);font-size:0.9rem;">₹${parseFloat(p['Advance Amount']||p['Amount']||0).toLocaleString('en-IN')}</td>
-    <td><a href="invoice.html?ref=${encodeURIComponent(p['Reservation ID']||p['Ref ID']||'')}" target="_blank" style="font-size:0.75rem;color:var(--saffron);text-decoration:none;font-weight:700;">🧾 View</a></td>
+    <td><button onclick="openInvoice(this.getAttribute('data-ref'))" data-ref="${p['Reservation ID']||p['Ref ID']||''}" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:var(--saffron);font-weight:700;text-decoration:underline;padding:2px 6px;">🧾 View</button></td>
   </tr>`).join('');
 }
 
@@ -1483,8 +1501,16 @@ function setText(id, val) { const el=document.getElementById(id); if(el) el.text
 function logout() {
   if (confirm('Logout from Admin Dashboard?')) {
     sessionStorage.removeItem('adminAuth');
+    localStorage.removeItem('pstAdminToken');
     window.location.href = 'index.html';
   }
+}
+
+function openInvoice(ref) {
+  // Pass auth via localStorage so new tab can verify
+  localStorage.setItem('pstAdminToken', 'pst2025admin');
+  const url = 'invoice.html' + (ref ? '?ref=' + encodeURIComponent(ref) : '');
+  window.open(url, '_blank');
 }
 </script>
 </body>
