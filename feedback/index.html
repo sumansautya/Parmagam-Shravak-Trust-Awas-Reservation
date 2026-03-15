@@ -502,7 +502,8 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-da
 
 <script>
 // ── Auto-fill from URL params (sent in feedback email link) ──
-(function autoFillFromURL() {
+// Wrapped in DOMContentLoaded to guarantee all form elements exist before filling
+document.addEventListener('DOMContentLoaded', function autoFillFromURL() {
   const p = new URLSearchParams(window.location.search);
   const fill = (id, val, lock) => {
     if (!val) return;
@@ -565,28 +566,26 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-da
   fillSelect('fb-occ',   occ,   !!occ);
 
   // Fill stay dates and show notice banner
-  if (name || refId) {
-    document.addEventListener('DOMContentLoaded', function() {
-      // Fill check-in / check-out dates
-      if (cin)  { fill('fb-cin',  cin,  true); }
-      if (cout) { fill('fb-cout', cout, true); }
-      if (cin || cout) {
-        const row = document.getElementById('stay-dates-row');
-        if (row) row.style.display = 'grid';
-      }
-      // Show auto-fill notice banner
-      const banner = document.getElementById('autofill-banner');
-      if (banner) {
-        let info = '';
-        if (name)  info += `<strong>${name}</strong>`;
-        if (refId) info += ` &nbsp;|&nbsp; Ref: <strong>${refId}</strong>`;
-        if (cin && cout) info += ` &nbsp;|&nbsp; Stay: <strong>${cin}</strong> → <strong>${cout}</strong>`;
-        banner.innerHTML = `✅ Your reservation details have been auto-filled and locked. Please only fill the ratings &amp; suggestions below. &nbsp;&nbsp;${info}`;
-        banner.style.display = 'block';
-      }
-    });
+  // Fill stay dates
+  if (cin)  { fill('fb-cin',  cin,  true); }
+  if (cout) { fill('fb-cout', cout, true); }
+  if (cin || cout) {
+    const row = document.getElementById('stay-dates-row');
+    if (row) row.style.display = 'grid';
   }
-})();
+  // Show auto-fill notice banner if coming from reservation email
+  if (name || refId) {
+    const banner = document.getElementById('autofill-banner');
+    if (banner) {
+      let info = '';
+      if (name)  info += `<strong>${name}</strong>`;
+      if (refId) info += ` &nbsp;|&nbsp; Ref: <strong>${refId}</strong>`;
+      if (cin && cout) info += ` &nbsp;|&nbsp; Stay: <strong>${cin}</strong> → <strong>${cout}</strong>`;
+      banner.innerHTML = `✅ Your reservation details have been auto-filled and locked. Please only fill the ratings &amp; suggestions below. &nbsp;&nbsp;${info}`;
+      banner.style.display = 'block';
+    }
+  }
+});
 
 // ── Progress bar ──
 function updateProgress() {
@@ -661,7 +660,10 @@ function validateFeedback() {
     if (!firstErr) firstErr = document.getElementById('rec-yes');
   } else { if(recErr) recErr.classList.remove('show'); }
 
-  if (firstErr) firstErr.scrollIntoView({ behavior:'smooth', block:'center' });
+  if (firstErr) {
+    firstErr.scrollIntoView({ behavior:'smooth', block:'center' });
+    setTimeout(() => { try { firstErr.focus(); } catch(e){} }, 400);
+  }
   return valid;
 }
 
