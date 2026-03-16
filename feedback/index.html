@@ -245,7 +245,7 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-da
             <option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option>
             <option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option>
             <option>West Bengal</option>
-            <option>Delhi</option><option>Jammu & Kashmir</option><option>Ladakh</option>
+            <option>Delhi (NCT)</option><option>Jammu & Kashmir</option><option>Ladakh</option>
             <option>Chandigarh</option><option>Puducherry</option>
             <option>Other / अन्य</option>
           </select>
@@ -523,18 +523,22 @@ document.addEventListener('DOMContentLoaded', function autoFillFromURL() {
     if (!val) return;
     const el = document.getElementById(id);
     if (!el) return;
-    // Try exact match, then case-insensitive, then partial text match
+    // Match strategy (priority order):
+    // 1. Exact value/text match
+    // 2. Option text is contained IN val  (e.g. "Delhi" found inside "Delhi (NCT)")
+    // 3. Val is contained IN option text
+    // 4. Fallback: add val as new option dynamically
     let matched = false;
+    const v = val.toLowerCase().trim();
     for (let opt of el.options) {
-      if (opt.value.toLowerCase() === val.toLowerCase() ||
-          opt.text.toLowerCase() === val.toLowerCase() ||
-          opt.text.toLowerCase().includes(val.toLowerCase())) {
+      const ot = opt.text.toLowerCase().trim();
+      const ov = (opt.value || opt.text).toLowerCase().trim();
+      if (ov === v || ot === v || v.includes(ot) || ot.includes(v)) {
         el.value = opt.value || opt.text;
         matched = true;
         break;
       }
     }
-    // If no option matched, add it dynamically so the value is preserved
     if (!matched && val) {
       const newOpt = document.createElement('option');
       newOpt.value = val;
