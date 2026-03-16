@@ -523,19 +523,32 @@ document.addEventListener('DOMContentLoaded', function autoFillFromURL() {
     if (!val) return;
     const el = document.getElementById(id);
     if (!el) return;
-    // Try to match option text (state/occupation may have different casing)
+    // Try exact match, then case-insensitive, then partial text match
+    let matched = false;
     for (let opt of el.options) {
       if (opt.value.toLowerCase() === val.toLowerCase() ||
+          opt.text.toLowerCase() === val.toLowerCase() ||
           opt.text.toLowerCase().includes(val.toLowerCase())) {
-        el.value = opt.value; break;
+        el.value = opt.value || opt.text;
+        matched = true;
+        break;
       }
     }
+    // If no option matched, add it dynamically so the value is preserved
+    if (!matched && val) {
+      const newOpt = document.createElement('option');
+      newOpt.value = val;
+      newOpt.text  = val;
+      el.appendChild(newOpt);
+      el.value = val;
+    }
     if (lock) {
-      el.disabled = true;
-      el.style.background = '#F0EAD8';
-      el.style.color = '#5A3E1B';
-      el.style.cursor = 'default';
-      el.style.borderColor = '#C8973A';
+      // Use pointer-events:none NOT disabled — disabled prevents value from being submitted/read
+      el.style.pointerEvents = 'none';
+      el.style.background    = '#F0EAD8';
+      el.style.color         = '#5A3E1B';
+      el.style.cursor        = 'default';
+      el.style.borderColor   = '#C8973A';
       el.title = 'Auto-filled from your reservation — cannot be changed';
     }
   };
@@ -635,8 +648,16 @@ function validateFeedback() {
   check('fb-mobile',  /^[6-9]\d{9}$/.test(mob));
   check('fb-address', addr?.length >= 5);
   check('fb-city',    city?.length >= 2);
-  check('fb-state',   document.getElementById('fb-state')?.value);
-  check('fb-occ',     document.getElementById('fb-occ')?.value);
+  // For locked selects (pointer-events:none), read value directly — never fail if locked
+  const stateEl = document.getElementById('fb-state');
+  const stateVal = stateEl?.value || '';
+  const stateLocked = stateEl?.style.pointerEvents === 'none';
+  check('fb-state', stateVal || stateLocked);
+
+  const occEl = document.getElementById('fb-occ');
+  const occVal = occEl?.value || '';
+  const occLocked = occEl?.style.pointerEvents === 'none';
+  check('fb-occ', occVal || occLocked);
   if (email) check('fb-email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 
   // Required ratings
@@ -676,11 +697,10 @@ function collectData() {
   const gs = id => {
     const el = document.getElementById(id);
     if (!el) return '';
-    // disabled selects don't submit, so fall back to URL param
-    if (el.disabled) {
-      return el.value || p.get(id === 'fb-state' ? 'state' : id === 'fb-occ' ? 'occ' : '') || '';
-    }
-    return el.value?.trim() || '';
+    // Read value directly — works for both normal and pointer-events locked selects
+    // Fall back to URL param as safety net
+    const paramKey = id === 'fb-state' ? 'state' : id === 'fb-occ' ? 'occ' : '';
+    return el.value?.trim() || (paramKey ? p.get(paramKey) : '') || '';
   };
   return {
     timestamp:    new Date().toLocaleString('en-IN', { timeZone:'Asia/Kolkata' }),
