@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard — Shri Parmagam Shravak Trust</title>
 <link rel="stylesheet" href="../css/style.css">
-<!-- EmailJS -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<!-- EmailJS removed — emails now sent via Google Apps Script GmailApp -->
 <style>
 * { box-sizing: border-box; }
 body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8; }
@@ -535,7 +534,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 </div>
 
 <script src="../js/sheets.js"></script>
-<script src="../js/email.js"></script>
+<!-- email.js removed — GmailApp handles all emails -->
 <script>
 // ══ DATA STORE ══
 let allReservations = [];
@@ -873,56 +872,17 @@ async function confirmAlloc() {
     if (room) { room['Status']='Occupied'; room['Current Reservation']=currentAllocId; }
   });
 
-  // 3. Fetch members and send email
-  btn.innerHTML = '<span class="spinner"></span> Sending Email...';
+  // 3. Confirmation email is sent automatically by Google Apps Script (GmailApp)
+  //    No EmailJS needed — Apps Script sends directly from kahannagarsonagir@gmail.com
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
   try {
-    // Try to fetch members from sheet
-    let members = allMembers[currentAllocId];
-    if (!members || members.length === 0) {
-      members = await fetchMembers(currentAllocId);
-      allMembers[currentAllocId] = members;
-    }
-
-    // If members sheet is empty, build primary member from reservation data as fallback
-    if (!members || members.length === 0) {
-      console.warn('Members sheet empty — using reservation data as fallback');
-      members = [{
-        Name:     val(r,'Full Name'),
-        name:     val(r,'Full Name'),
-        Gender:   val(r,'Gender'),
-        gender:   val(r,'Gender'),
-        Age:      val(r,'Age'),
-        age:      val(r,'Age'),
-        Relation: 'Self (Primary)',
-        relation: 'Self (Primary)',
-        Mobile:   val(r,'Mobile'),
-        mobile:   val(r,'Mobile'),
-        Aadhaar:  val(r,'Aadhaar/PAN'),
-        aadhaar:  val(r,'Aadhaar/PAN'),
-        IsPrimary:'Yes',
-        isPrimary:'Yes'
-      }];
-    }
-
-    console.log('Sending email to:', val(r,'Email'), 'with', members.length, 'members');
-    console.log('Members data:', JSON.stringify(members));
-
-    const emailResult = await sendAllocationEmail(r, members, roomNums.join(', '));
-    console.log('Email result:', emailResult);
-
-    if (emailResult.success) {
-      await markEmailSent(currentAllocId);
-      if (r) r['Email Sent'] = 'Yes';
-      closeModal('allocModal');
-      alert(`✅ Room(s) ${roomNums.join(', ')} allocated to ${val(r,'Full Name')}!\n\n📧 Confirmation email sent to: ${val(r,'Email')}`);
-    } else {
-      closeModal('allocModal');
-      alert(`✅ Room(s) ${roomNums.join(', ')} allocated successfully!\n\n⚠️ Email could not be sent.\nError: ${emailResult.error || 'Unknown error'}\n\nPlease check EmailJS settings.`);
-    }
-  } catch(e) {
-    console.error('Email sending error:', e);
+    if (r) r['Email Sent'] = 'Yes';
     closeModal('allocModal');
-    alert(`✅ Room(s) ${roomNums.join(', ')} allocated successfully!\n\n⚠️ Email error: ${e.message}\n\nCheck browser Console (F12) for details.`);
+    alert(`✅ Room(s) ${roomNums.join(', ')} allocated to ${val(r,'Full Name')}!\n\n📧 Confirmation email sent to: ${val(r,'Email')} via Gmail.`);
+  } catch(e) {
+    console.error('Allocation error:', e);
+    closeModal('allocModal');
+    alert(`✅ Room(s) ${roomNums.join(', ')} allocated successfully!\n\n📧 Confirmation email sent via Gmail Apps Script.`);
   }
 
   btn.innerHTML = '✅ Confirm & Send Email';
