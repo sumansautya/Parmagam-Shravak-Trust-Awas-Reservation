@@ -14,10 +14,11 @@
  * 5. Replace the 3 values below with your actual IDs
  * ══════════════════════════════════════════════════
  */
+
 const EMAILJS_CONFIG = {
-  SERVICE_ID:  'service_dmb76ea',    // e.g. 'service_abc123'
-  TEMPLATE_ID: 'template_5olugzd',   // e.g. 'template_xyz789'
-  PUBLIC_KEY:  'Ef1ryuGyNj8sEMFOc'     // e.g. 'aBcDeFgHiJkLmNoP'
+  SERVICE_ID:  'YOUR_SERVICE_ID',    // e.g. 'service_abc123'
+  TEMPLATE_ID: 'YOUR_TEMPLATE_ID',   // e.g. 'template_xyz789'
+  PUBLIC_KEY:  'YOUR_PUBLIC_KEY'     // e.g. 'aBcDeFgHiJkLmNoP'
 };
 
 /**
@@ -117,7 +118,7 @@ async function sendAllocationEmail(r, members, allocatedRooms) {
         '48 hours before check-in will be fully refunded.'
       ].join('\n'),
 
-      payment_link: 'https://sumansautya.github.io/Parmagam-Shravak-Trust-Awas-Reservation/payment/?ref=' + (r.id || r['ID'] || ''),
+      payment_link: 'https://kahannagarsonagir.github.io/Parmagam-Shravak-Trust-Awas-Reservation/payment/?ref=' + (r.id || r['ID'] || ''),
 
       room_policy: [
         '📋 ROOM & STAY POLICY',
@@ -253,6 +254,3 @@ Shri Parmagam Shravak Trust
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
    ════════════════════════════════════════════════════════════════ */
-
-
-
