@@ -86,7 +86,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 
 /* ROOM CHIPS */
 .room-grid-admin { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:8px; }
-.room-chip { padding:8px 4px; border-radius:var(--radius-sm); text-align:center; font-size:0.72rem; font-weight:700; cursor:pointer; border:2px solid transparent; transition:all 0.2s; }
+.room-chip { padding:6px 2px; border-radius:var(--radius-sm); text-align:center; font-size:0.72rem; font-weight:700; cursor:pointer; border:2px solid transparent; transition:all 0.2s; min-width:52px; }
 .chip-available   { background:#E8F5E9; color:var(--green);  border-color:#A5D6A7; }
 .chip-occupied    { background:#FFEBEE; color:#C62828;       border-color:#EF9A9A; cursor:not-allowed; opacity:0.7; }
 .chip-maintenance { background:#FFF8E1; color:#F57F17;       border-color:#FFE082; cursor:not-allowed; opacity:0.7; }
@@ -813,15 +813,53 @@ async function openAllocModal(resId) {
     </div>`;
 
   document.getElementById('manualRooms').value = '';
-  document.getElementById('allocRoomGrid').innerHTML = allRooms.map(room => {
+  // Sort rooms by Category order (AC → Non-AC → Guest House) then by Room Number
+  const CAT_ORDER = { 'AC Room': 1, 'Non-AC Room': 2, 'Guest House': 3 };
+  const sortedRooms = [...allRooms].sort((a, b) => {
+    const catA = val(a,'Category') || '';
+    const catB = val(b,'Category') || '';
+    // Determine category sort order
+    const orderA = Object.keys(CAT_ORDER).find(k => catA.includes(k));
+    const orderB = Object.keys(CAT_ORDER).find(k => catB.includes(k));
+    const sortA  = orderA ? CAT_ORDER[orderA] : 9;
+    const sortB  = orderB ? CAT_ORDER[orderB] : 9;
+    if (sortA !== sortB) return sortA - sortB;
+    // Within same category sort by room number numerically
+    const numA = parseInt(val(a,'Room Number')) || 0;
+    const numB = parseInt(val(b,'Room Number')) || 0;
+    return numA - numB;
+  });
+
+  // Group rooms by category for display with category headers
+  let gridHtml = '';
+  let lastCat  = '';
+  sortedRooms.forEach(room => {
     const s   = (val(room,'Status')||'available').toLowerCase();
     const cls = s==='available' ? 'chip-available' : s==='occupied' ? 'chip-occupied' : 'chip-maintenance';
-    return `<div class="room-chip ${cls}" id="chip-${val(room,'Room ID')}" onclick="toggleChip('${val(room,'Room ID')}','${val(room,'Room Number')}','${s}')">
-      <div>${val(room,'Room Number')}</div>
-      <div style="font-size:0.62rem;margin-top:1px;">${(val(room,'Category')||'').split(' ')[0]}</div>
-      <div style="font-size:0.62rem;">₹${val(room,'Rate')}</div>
+    const cat = val(room,'Category') || '';
+
+    // Add category header when category changes
+    if (cat !== lastCat) {
+      const catLabel = cat.includes('AC Room') && cat.includes('Non') ? cat
+        : cat.includes('Guest') ? '🏡 Guest House (AC)'
+        : cat.includes('Non')   ? '🌬️ Non-AC Room'
+        : cat.includes('AC')    ? '❄️ AC Room'
+        : cat;
+      gridHtml += `<div style="width:100%;font-size:0.72rem;font-weight:700;color:var(--primary);
+        padding:4px 6px;margin:6px 0 2px;border-bottom:1px solid var(--ivory-dark);
+        letter-spacing:0.05em;">${catLabel}</div>`;
+      lastCat = cat;
+    }
+
+    // Show room number only — clean and compact
+    gridHtml += `<div class="room-chip ${cls}" id="chip-${val(room,'Room ID')}"
+      onclick="toggleChip('${val(room,'Room ID')}','${val(room,'Room Number')}','${s}')"
+      title="${val(room,'Category')} | ₹${val(room,'Rate')}/night | ${s.charAt(0).toUpperCase()+s.slice(1)}">
+      <div style="font-size:0.85rem;font-weight:700;">${val(room,'Room Number')}</div>
     </div>`;
-  }).join('');
+  });
+
+  document.getElementById('allocRoomGrid').innerHTML = gridHtml;
 
   openModal('allocModal');
 }
