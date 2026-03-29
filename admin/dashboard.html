@@ -86,7 +86,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 
 /* ROOM CHIPS */
 .room-grid-admin { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:8px; }
-.room-chip { padding:6px 2px; border-radius:var(--radius-sm); text-align:center; font-size:0.72rem; font-weight:700; cursor:pointer; border:2px solid transparent; transition:all 0.2s; min-width:52px; }
+.room-chip { padding:8px 6px; border-radius:var(--radius-sm); text-align:center; font-size:0.72rem; font-weight:700; cursor:pointer; border:2px solid transparent; transition:all 0.2s; min-width:58px; max-width:72px; }
 .chip-available   { background:#E8F5E9; color:var(--green);  border-color:#A5D6A7; }
 .chip-occupied    { background:#FFEBEE; color:#C62828;       border-color:#EF9A9A; cursor:not-allowed; opacity:0.7; }
 .chip-maintenance { background:#FFF8E1; color:#F57F17;       border-color:#FFE082; cursor:not-allowed; opacity:0.7; }
@@ -475,7 +475,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
     <div id="allocDetails" style="background:var(--cream);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;font-size:0.83rem;"></div>
     <div style="margin-bottom:14px;">
       <div style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--maroon);margin-bottom:8px;">Select Available Room(s)</div>
-      <div class="room-grid-admin" id="allocRoomGrid"></div>
+      <div class="room-grid-admin" id="allocRoomGrid" style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;align-content:flex-start;"></div>
     </div>
     <div class="field-group" style="margin-bottom:16px;">
       <label class="field-label">Or type room numbers manually (comma separated)</label>
@@ -813,49 +813,52 @@ async function openAllocModal(resId) {
     </div>`;
 
   document.getElementById('manualRooms').value = '';
-  // Sort rooms by Category order (AC → Non-AC → Guest House) then by Room Number
-  const CAT_ORDER = { 'AC Room': 1, 'Non-AC Room': 2, 'Guest House': 3 };
+  // Sort rooms by Category order (AC → Non-AC → Guest House) then by Room ID numerically
+  const CAT_ORDER = { 'AC': 1, 'Non-AC': 2, 'Guest': 3 };
   const sortedRooms = [...allRooms].sort((a, b) => {
     const catA = val(a,'Category') || '';
     const catB = val(b,'Category') || '';
-    // Determine category sort order
-    const orderA = Object.keys(CAT_ORDER).find(k => catA.includes(k));
-    const orderB = Object.keys(CAT_ORDER).find(k => catB.includes(k));
-    const sortA  = orderA ? CAT_ORDER[orderA] : 9;
-    const sortB  = orderB ? CAT_ORDER[orderB] : 9;
+    const sortA = catA.includes('Guest') ? 3 : catA.includes('Non') ? 2 : catA.includes('AC') ? 1 : 9;
+    const sortB = catB.includes('Guest') ? 3 : catB.includes('Non') ? 2 : catB.includes('AC') ? 1 : 9;
     if (sortA !== sortB) return sortA - sortB;
-    // Within same category sort by room number numerically
-    const numA = parseInt(val(a,'Room Number')) || 0;
-    const numB = parseInt(val(b,'Room Number')) || 0;
+    // Within same category sort Room ID numerically (handles 101,102... and GH-01,GH-02...)
+    const idA = val(a,'Room ID') || '';
+    const idB = val(b,'Room ID') || '';
+    const numA = parseInt(idA.replace(/[^0-9]/g,'')) || 0;
+    const numB = parseInt(idB.replace(/[^0-9]/g,'')) || 0;
     return numA - numB;
   });
 
-  // Group rooms by category for display with category headers
+  // Group rooms by category with headers — show Room ID only in chip
   let gridHtml = '';
   let lastCat  = '';
   sortedRooms.forEach(room => {
-    const s   = (val(room,'Status')||'available').toLowerCase();
-    const cls = s==='available' ? 'chip-available' : s==='occupied' ? 'chip-occupied' : 'chip-maintenance';
-    const cat = val(room,'Category') || '';
+    const s      = (val(room,'Status')||'available').toLowerCase();
+    const cls    = s==='available' ? 'chip-available' : s==='occupied' ? 'chip-occupied' : 'chip-maintenance';
+    const cat    = val(room,'Category') || '';
+    const roomId = val(room,'Room ID')  || val(room,'Room Number') || '';
+    const rate   = val(room,'Rate')     || '';
+    const status = s.charAt(0).toUpperCase() + s.slice(1);
 
-    // Add category header when category changes
+    // Category header — shown once per group
     if (cat !== lastCat) {
-      const catLabel = cat.includes('AC Room') && cat.includes('Non') ? cat
-        : cat.includes('Guest') ? '🏡 Guest House (AC)'
-        : cat.includes('Non')   ? '🌬️ Non-AC Room'
-        : cat.includes('AC')    ? '❄️ AC Room'
-        : cat;
-      gridHtml += `<div style="width:100%;font-size:0.72rem;font-weight:700;color:var(--primary);
-        padding:4px 6px;margin:6px 0 2px;border-bottom:1px solid var(--ivory-dark);
-        letter-spacing:0.05em;">${catLabel}</div>`;
+      const catIcon  = cat.includes('Guest') ? '🏡' : cat.includes('Non') ? '🌬️' : cat.includes('AC') ? '❄️' : '🏠';
+      const catLabel = cat.includes('Guest') ? 'Guest House (AC)'
+                     : cat.includes('Non')   ? 'Non-AC Room with Cooler'
+                     : cat.includes('AC')    ? 'AC Room'
+                     : cat;
+      gridHtml += `<div style="width:100%;font-size:0.75rem;font-weight:700;color:var(--primary);
+        padding:5px 8px;margin:8px 0 4px;background:var(--ivory);
+        border-left:3px solid var(--accent);border-radius:3px;letter-spacing:0.03em;">
+        ${catIcon} ${catLabel}</div>`;
       lastCat = cat;
     }
 
-    // Show room number only — clean and compact
-    gridHtml += `<div class="room-chip ${cls}" id="chip-${val(room,'Room ID')}"
-      onclick="toggleChip('${val(room,'Room ID')}','${val(room,'Room Number')}','${s}')"
-      title="${val(room,'Category')} | ₹${val(room,'Rate')}/night | ${s.charAt(0).toUpperCase()+s.slice(1)}">
-      <div style="font-size:0.85rem;font-weight:700;">${val(room,'Room Number')}</div>
+    // Chip — Room ID only, full details on hover tooltip
+    gridHtml += `<div class="room-chip ${cls}" id="chip-${roomId}"
+      onclick="toggleChip('${roomId}','${roomId}','${s}')"
+      title="${cat} | ₹${rate}/night | ${status}">
+      <div style="font-size:0.9rem;font-weight:800;letter-spacing:0.02em;">${roomId}</div>
     </div>`;
   });
 
