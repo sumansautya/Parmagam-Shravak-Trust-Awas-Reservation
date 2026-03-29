@@ -813,52 +813,67 @@ async function openAllocModal(resId) {
     </div>`;
 
   document.getElementById('manualRooms').value = '';
-  // Sort rooms by Category order (AC → Non-AC → Guest House) then by Room ID numerically
-  const CAT_ORDER = { 'AC': 1, 'Non-AC': 2, 'Guest': 3 };
+  // Sort rooms: AC first, then Non-AC, then Guest House, then by Room ID number
   const sortedRooms = [...allRooms].sort((a, b) => {
-    const catA = val(a,'Category') || '';
-    const catB = val(b,'Category') || '';
-    const sortA = catA.includes('Guest') ? 3 : catA.includes('Non') ? 2 : catA.includes('AC') ? 1 : 9;
-    const sortB = catB.includes('Guest') ? 3 : catB.includes('Non') ? 2 : catB.includes('AC') ? 1 : 9;
+    const catA = (val(a,'Category') || '').toLowerCase();
+    const catB = (val(b,'Category') || '').toLowerCase();
+    const sortA = catA.includes('guest') ? 3 : catA.includes('non') ? 2 : catA.includes('ac') ? 1 : 9;
+    const sortB = catB.includes('guest') ? 3 : catB.includes('non') ? 2 : catB.includes('ac') ? 1 : 9;
     if (sortA !== sortB) return sortA - sortB;
-    // Within same category sort Room ID numerically (handles 101,102... and GH-01,GH-02...)
-    const idA = val(a,'Room ID') || '';
-    const idB = val(b,'Room ID') || '';
-    const numA = parseInt(idA.replace(/[^0-9]/g,'')) || 0;
-    const numB = parseInt(idB.replace(/[^0-9]/g,'')) || 0;
+    // Within category sort by numeric part of Room ID
+    const numA = parseInt((val(a,'Room ID')||'').replace(/[^0-9]/g,'')) || 0;
+    const numB = parseInt((val(b,'Room ID')||'').replace(/[^0-9]/g,'')) || 0;
     return numA - numB;
   });
 
-  // Group rooms by category with headers — show Room ID only in chip
+  // Build short display label from Room ID
+  // R001→101, R015→115, R016→201, R041→GH-01 etc.
+  // If Room ID is R001-R015 = AC (101-115), R016-R040 = Non-AC (201-225), R041+ = GH
+  function shortLabel(room) {
+    const rid = (val(room,'Room ID') || '').toUpperCase().trim();
+    const cat = (val(room,'Category') || '').toLowerCase();
+    const num = parseInt(rid.replace(/[^0-9]/g,'')) || 0;
+    // If Room Number column has a short value (<=6 chars), use it directly
+    const rnum = (val(room,'Room Number') || '').trim();
+    if (rnum && rnum.length <= 8 && !rnum.includes(' ')) return rnum;
+    // Derive short label from Room ID and Category
+    if (cat.includes('guest')) return 'GH-' + String(num).padStart(2,'0');
+    if (cat.includes('non'))   return String(200 + num - 16); // R016=201, R017=202...
+    if (cat.includes('ac'))    return String(100 + num);       // R001=101, R002=102...
+    return rid;
+  }
+
+  // Group rooms by category with headers — show short label only in chip
   let gridHtml = '';
   let lastCat  = '';
   sortedRooms.forEach(room => {
-    const s      = (val(room,'Status')||'available').toLowerCase();
-    const cls    = s==='available' ? 'chip-available' : s==='occupied' ? 'chip-occupied' : 'chip-maintenance';
-    const cat    = val(room,'Category') || '';
-    const roomId = val(room,'Room ID')  || val(room,'Room Number') || '';
-    const rate   = val(room,'Rate')     || '';
-    const status = s.charAt(0).toUpperCase() + s.slice(1);
+    const s       = (val(room,'Status')||'available').toLowerCase();
+    const cls     = s==='available' ? 'chip-available' : s==='occupied' ? 'chip-occupied' : 'chip-maintenance';
+    const cat     = val(room,'Category') || '';
+    const roomId  = val(room,'Room ID') || '';
+    const rate    = val(room,'Rate') || '';
+    const status  = s.charAt(0).toUpperCase() + s.slice(1);
+    const label   = shortLabel(room);
 
     // Category header — shown once per group
     if (cat !== lastCat) {
-      const catIcon  = cat.includes('Guest') ? '🏡' : cat.includes('Non') ? '🌬️' : cat.includes('AC') ? '❄️' : '🏠';
-      const catLabel = cat.includes('Guest') ? 'Guest House (AC)'
-                     : cat.includes('Non')   ? 'Non-AC Room with Cooler'
-                     : cat.includes('AC')    ? 'AC Room'
-                     : cat;
+      const catIcon  = cat.toLowerCase().includes('guest') ? '🏡'
+                     : cat.toLowerCase().includes('non')   ? '🌬️'
+                     : cat.toLowerCase().includes('ac')    ? '❄️' : '🏠';
+      const catLabel = cat.toLowerCase().includes('guest') ? 'Guest House (AC)'
+                     : cat.toLowerCase().includes('non')   ? 'Non-AC Room with Cooler'
+                     : cat.toLowerCase().includes('ac')    ? 'AC Room' : cat;
       gridHtml += `<div style="width:100%;font-size:0.75rem;font-weight:700;color:var(--primary);
         padding:5px 8px;margin:8px 0 4px;background:var(--ivory);
-        border-left:3px solid var(--accent);border-radius:3px;letter-spacing:0.03em;">
-        ${catIcon} ${catLabel}</div>`;
+        border-left:3px solid var(--accent);border-radius:3px;">${catIcon} ${catLabel}</div>`;
       lastCat = cat;
     }
 
-    // Chip — Room ID only, full details on hover tooltip
+    // Chip — short label only, full details on hover
     gridHtml += `<div class="room-chip ${cls}" id="chip-${roomId}"
-      onclick="toggleChip('${roomId}','${roomId}','${s}')"
-      title="${cat} | ₹${rate}/night | ${status}">
-      <div style="font-size:0.9rem;font-weight:800;letter-spacing:0.02em;">${roomId}</div>
+      onclick="toggleChip('${roomId}','${label}','${s}')"
+      title="${cat} | Rs.${rate}/night | ${status}">
+      <div style="font-size:0.9rem;font-weight:800;">${label}</div>
     </div>`;
   });
 
