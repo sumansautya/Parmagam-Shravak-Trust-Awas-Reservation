@@ -686,8 +686,36 @@ function validateFeedback() {
   } else { if(recErr) recErr.classList.remove('show'); }
 
   if (firstErr) {
+    // Scroll the error field into view
     firstErr.scrollIntoView({ behavior:'smooth', block:'center' });
-    setTimeout(() => { try { firstErr.focus(); } catch(e){} }, 400);
+
+    // After scroll completes, focus the field and flash it red
+    setTimeout(() => {
+      try {
+        // For normal inputs and textareas — focus directly
+        if (firstErr.tagName === 'INPUT' || firstErr.tagName === 'TEXTAREA') {
+          firstErr.focus();
+        }
+        // For select elements (even locked ones) — just highlight visually
+        else if (firstErr.tagName === 'SELECT') {
+          firstErr.style.outline = '3px solid #E53935';
+          setTimeout(() => { firstErr.style.outline = ''; }, 2000);
+        }
+        // For radio/star rating labels — find the parent field-group and highlight
+        else {
+          const group = firstErr.closest('.field-group') || firstErr.closest('.star-group') || firstErr.parentElement;
+          if (group) {
+            group.style.outline = '2px solid #E53935';
+            group.style.borderRadius = '6px';
+            setTimeout(() => { group.style.outline = ''; group.style.borderRadius = ''; }, 2000);
+          }
+        }
+        // Visual flash on the field — red border blink
+        firstErr.style.transition = 'box-shadow 0.2s';
+        firstErr.style.boxShadow = '0 0 0 3px rgba(229,57,53,0.4)';
+        setTimeout(() => { firstErr.style.boxShadow = ''; }, 2000);
+      } catch(e) {}
+    }, 450);
   }
   return valid;
 }
