@@ -489,6 +489,24 @@ body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-da
   <!-- SUCCESS SCREEN -->
   <div class="success-screen" id="successScreen">
     <div class="success-icon">🙏</div>
+
+    <!-- Duplicate Feedback Screen -->
+    <div id="duplicateScreen" style="display:none;text-align:center;padding:40px 20px;">
+      <div style="font-size:3rem;margin-bottom:16px;">🙏</div>
+      <h2 style="color:#7B0D00;font-size:1.4rem;margin-bottom:12px;">Feedback Already Submitted</h2>
+      <p style="color:#5A3E1B;font-size:1rem;line-height:1.7;margin-bottom:8px;">
+        आपकी फीडबैक पहले से प्राप्त हो चुकी है।<br>
+        Your feedback for this reservation has already been submitted.
+      </p>
+      <p style="color:#7A5C3A;font-size:0.9rem;margin-bottom:24px;">
+        Each reservation allows only one feedback submission.<br>
+        प्रत्येक आरक्षण के लिए केवल एक फीडबैक स्वीकार किया जाता है।
+      </p>
+      <div style="background:#FFF8E0;border:1.5px solid #C8973A;border-radius:8px;padding:14px 20px;display:inline-block;">
+        <div style="font-size:0.85rem;color:#7A5C3A;font-weight:bold;">Thank you for your visit! / आपकी यात्रा के लिए धन्यवाद!</div>
+        <div style="font-size:0.8rem;color:#5A3E1B;margin-top:4px;">📞 8887417076 / 7987164958</div>
+      </div>
+    </div>
     <div class="success-title">Jai Jinendra! Thank You!</div>
     <div class="success-text">
       Your feedback has been submitted successfully.<br>
@@ -788,17 +806,44 @@ async function submitFeedback() {
   const data = collectData();
 
   try {
+    // Use no-cors for submission (Apps Script cross-origin requirement)
+    // But first do a duplicate check via GET request (readable)
+    const refId = data.refId || '';
+
+    // Step 1: Check for duplicate via GET (CORS-readable)
+    if (refId) {
+      try {
+        const checkUrl = FEEDBACK_SCRIPT_URL + '?action=checkFeedbackDuplicate&refId=' + encodeURIComponent(refId) + '&t=' + Date.now();
+        const checkRes = await fetch(checkUrl);
+        const checkData = await checkRes.json();
+        if (checkData.duplicate) {
+          // Already submitted — show duplicate message instead of success
+          btn.innerHTML = '🙏 Submit Feedback';
+          btn.disabled = false;
+          document.getElementById('mainForm').style.display = 'none';
+          document.getElementById('duplicateScreen').style.display = 'block';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+      } catch(checkErr) {
+        // If duplicate check fails, allow submission to proceed (fail open)
+        console.log('Duplicate check skipped:', checkErr.message);
+      }
+    }
+
+    // Step 2: Submit feedback
     await fetch(FEEDBACK_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'submitFeedback', feedback: data }),
       mode: 'no-cors'
     });
+
   } catch(e) {
     console.log('Submit note:', e.message);
   }
 
-  // Show success regardless (no-cors means we can't read response)
+  // Show success screen
   document.getElementById('mainForm').style.display = 'none';
   document.getElementById('successScreen').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
