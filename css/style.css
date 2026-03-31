@@ -674,3 +674,66 @@ body::before {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Room Photo Cards ── */
+.room-card-photo {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+}
+
+.room-photo-wrap {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px 8px;
+  background: #F9F2E4;
+  border-bottom: 1px solid var(--ivory-dark);
+}
+
+.room-photo {
+  width: 110px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: zoom-in;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.room-photo:hover {
+  border-color: var(--gold);
+  transform: scale(1.03);
+}
+
+.room-photo-placeholder {
+  width: 110px;
+  height: 78px;
+  border-radius: 6px;
+  background: var(--ivory);
+  border: 2px dashed var(--ivory-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--text-light);
+}
+
+.room-card-photo .room-info {
+  padding: 10px 16px 6px;
+}
+
+.room-desc {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+.room-card-photo .room-counter {
+  padding: 8px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
