@@ -97,14 +97,14 @@ async function sendAllocationEmail(r, members, allocatedRooms) {
       additional_req:   r.additionalRequirements || r['Additional Req'] || 'None',
 
       // Trust contact
-      trust_mobile1:    '8887417076',
-      trust_mobile2:    '7987164958',
-      trust_address:    'Shri Kund Kund Nagar, Pichorkhed, Sonagir — 473885, Dist. Datia (M.P.)',
+      trust_mobile1:    '8827417276',
+      trust_mobile2:    '9910040020',
+      trust_address:    'Shri Kund Kund Nagar, Sidd Kshetra Sonagir — 475685, Dist. Datia (M.P.)',
 
       payment_instructions: [
         '💳 ADVANCE PAYMENT REQUIRED',
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        'To confirm your booking, please pay ONE NIGHT advance:',
+        'To confirm your booking, please pay advance:',
         '  • AC Room: ₹1,200  |  Non-AC Room: ₹700  |  Guest House: ₹2,000',
         '',
         'Pay via UPI (QR): SHRI SHRAVAK BHOJNALAY — TID: 82089080',
@@ -197,7 +197,7 @@ Dear {{to_name}},
 
 Jai Jinendra! 🙏
 
-Your room reservation at Shri Kund Kund Nagar, Sonagir has been
+Your room reservation at Shri Kund Kund Nagar, Sidd Kshetra Sonagir has been
 CONFIRMED. Please find your complete booking details below.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
