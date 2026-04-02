@@ -69,9 +69,8 @@
   <div class="header-hindi">श्री परमागम श्रावक ट्रस्ट, सोनागिर</div>
   <div class="header-divider"></div>
   <div class="header-address">
-    श्री कुन्दकुन्द नगर, सिद्धखेत्र सोनागिर — 475685, जिला: दतिया (म.प्र.) &nbsp;|&nbsp;
-    📞 8827417276 &nbsp;/&nbsp; 9910040020  &nbsp;|&nbsp;
-    E-Mail : kahannagarsonagir@gmail.com
+    श्री कुन्दकुन्द नगर, पिछोरखेड़ सोनागिर — 473885, जिला: दतिया (म.प्र.) &nbsp;|&nbsp;
+    📞 8887417076 &nbsp;/&nbsp; 7987164958
   </div>
 </header>
 
@@ -160,11 +159,24 @@
           <span class="field-error" id="err-mobile">Please enter a valid 10-digit mobile number</span>
         </div>
 
-        <!-- Email -->
+        <!-- Email with confirm -->
         <div class="field-group">
-          <label class="field-label">Email Address <span class="hindi">/ ईमेल</span><span class="req">*</span></label>
-          <input type="email" class="field-input" id="email" placeholder="your@email.com" autocomplete="email">
+          <label class="field-label">Email Address <span class="hindi">/ ईमेल पता</span><span class="req">*</span></label>
+          <input type="email" class="field-input" id="email" placeholder="your@email.com"
+                 autocomplete="email" oninput="checkEmailMatch()">
           <span class="field-error" id="err-email">Please enter a valid email address</span>
+        </div>
+
+        <!-- Confirm Email -->
+        <div class="field-group">
+          <label class="field-label">Confirm Email Address <span class="hindi">/ ईमेल पुनः दर्ज करें</span><span class="req">*</span></label>
+          <input type="email" class="field-input" id="emailConfirm" placeholder="Re-enter email address"
+                 autocomplete="off" onpaste="return false;" ondrop="return false;"
+                 oninput="checkEmailMatch()">
+          <span class="field-error" id="err-emailConfirm">Email addresses do not match</span>
+          <span id="emailMatchOk" style="display:none;font-size:0.78rem;color:#2E7D32;margin-top:4px;">
+            ✅ Email addresses match / ईमेल मिलान सही है
+          </span>
         </div>
 
         <!-- Aadhaar / PAN -->
@@ -458,8 +470,8 @@
 <!-- ── FOOTER ── -->
 <footer class="site-footer">
   🕉 Shri Parmagam Shravak Trust, Sonagir &nbsp;|&nbsp; श्री परमागम श्रावक ट्रस्ट, सोनागिर
-  <br>Kund Kund Nagar, Sidd Kshetra Sonagir — 475685, Dist. Datia (M.P.)
-  <br>📞 8827417276 &nbsp;/&nbsp; 9910040020
+  <br>Kund Kund Nagar, Pichorkhed Sonagir — 473885, Dist. Datia (M.P.)
+  <br>📞 8887417076 &nbsp;/&nbsp; 7987164958
 </footer>
 
 <script src="js/sheets.js"></script>
