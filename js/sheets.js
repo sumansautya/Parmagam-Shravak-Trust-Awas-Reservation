@@ -45,7 +45,8 @@ async function submitReservation(formData) {
       totalNights:          formData.totalNights,
       acRooms:              formData.rooms.ac,
       nonAcRooms:           formData.rooms.nonAc,
-      guestHouseRooms:      formData.rooms.guestHouse,
+      gh2bhkRooms:          formData.rooms.gh2bhk,
+      gh3bhkRooms:          formData.rooms.gh3bhk,
       transportMode:        formData.transportMode,
       needTransport:        formData.needTransport,
       needPooja:            formData.needPooja,
@@ -70,20 +71,31 @@ async function submitReservation(formData) {
 
     const payload = JSON.stringify({ action: 'submitReservation', reservation, members });
 
-    // Use POST with text/plain + no-cors (required for Apps Script cross-origin)
-    // We encode data as text/plain to avoid CORS preflight
-    const response = await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: payload,
-      mode: 'no-cors'
-    });
-    // no-cors always returns opaque response — cannot read status
-    // Apps Script will save data if URL is correct and script is deployed
-    console.log('submitReservation sent. ID:', submissionId);
-    console.log('URL used:', SHEETS_CONFIG.APPS_SCRIPT_URL.slice(0,80));
-
-    return { success: true, id: submissionId };
+    // Retry up to 3 times — "Failed to fetch" is often a temporary network blip
+    let lastError = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body:    payload,
+          mode:    'no-cors'
+        });
+        // no-cors returns opaque response — if fetch didn't throw, it reached the server
+        console.log('submitReservation sent. ID:', submissionId, '(attempt', attempt + ')');
+        return { success: true, id: submissionId };
+      } catch (err) {
+        lastError = err;
+        console.warn('Attempt', attempt, 'failed:', err.message);
+        if (attempt < 3) {
+          // Wait 2 seconds before retrying
+          await new Promise(res => setTimeout(res, 2000));
+        }
+      }
+    }
+    // All 3 attempts failed
+    console.error('submitReservation failed after 3 attempts:', lastError.message);
+    return { success: false, error: lastError.message };
   } catch (error) {
     console.error('submitReservation error:', error);
     return { success: false, error: error.message };
@@ -177,6 +189,22 @@ async function allocateRoom(reservationId, roomNumbers) {
 }
 
 // ── Update reservation status ──
+// ── Send regret email via Apps Script ──
+async function sendRegretEmail(reservationId, reason) {
+  try {
+    await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:    JSON.stringify({ action: 'sendRegretEmail', reservationId, reason }),
+      mode:    'no-cors'
+    });
+    return { success: true };
+  } catch(e) {
+    console.error('sendRegretEmail error:', e);
+    return { success: false, error: e.message };
+  }
+}
+
 async function updateStatus(reservationId, status) {
   try {
     await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
@@ -327,7 +355,7 @@ function doPost(e) {
         r.id, r.timestamp, r.fullName, r.address, r.city, r.state,
         r.mobile, r.email, r.aadhaarPan, r.gender, r.age, r.occupation,
         r.organization, r.designation, r.checkIn, r.checkOut, r.totalNights,
-        r.acRooms, r.nonAcRooms, r.guestHouseRooms, r.transportMode,
+        r.acRooms, r.nonAcRooms, r.gh2bhkRooms, r.gh3bhkRooms, r.transportMode,
         r.needTransport, r.needPooja, r.additionalRequirements,
         r.paymentAmount, r.status, r.allocatedRooms, r.allocationDate, r.emailSent
       ]);
