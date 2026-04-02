@@ -12,11 +12,11 @@ const formState = {
   transport: '',
   needTransport: '',
   needPooja: '',
-  rooms: { ac: 0, nonAc: 0, guestHouse: 0 },
+  rooms: { ac: 0, nonAc: 0, gh2bhk: 0, gh3bhk: 0 },
   members: []
 };
 
-const ROOM_RATES = { ac: 1200, nonAc: 700, guestHouse: 2000 };
+const ROOM_RATES = { ac: 1200, nonAc: 700, gh2bhk: 2000, gh3bhk: 3000 };
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,6 +25,85 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('checkOut').min = today;
 
   renderMembers();
+
+  // ── EDIT BUTTON FIX: Restore all form data from sessionStorage ──
+  // When visitor clicks Edit on review page, sessionStorage still has their data
+  const savedData = sessionStorage.getItem('reservationData');
+  if (savedData) {
+    try {
+      const d = JSON.parse(savedData);
+      // Restore text fields
+      const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+      setVal('fullName',    d.fullName);
+      setVal('address',     d.address);
+      setVal('city',        d.city);
+      setVal('mobile',      d.mobile);
+      setVal('email',       d.email);
+      setVal('emailConfirm',d.email);          // fill confirm same as email
+      setVal('aadhaarPan',  d.aadhaarPan);
+      setVal('age',         d.age);
+      setVal('organization',d.organization);
+      setVal('designation', d.designation);
+      setVal('checkIn',     d.checkIn);
+      setVal('checkOut',    d.checkOut);
+      setVal('additionalReq', d.additionalRequirements);
+
+      // Restore state
+      if (d.gender)      { formState.gender      = d.gender;      document.querySelector(`[name="gender"][value="${d.gender}"]`)?.closest('.radio-option')?.classList.add('selected'); }
+      if (d.occupation)  { formState.occupation  = d.occupation;  document.querySelector(`[name="occupation"][value="${d.occupation}"]`)?.closest('.radio-option')?.classList.add('selected'); }
+      if (d.transportMode){ formState.transport  = d.transportMode; document.querySelector(`.transport-card[onclick*="${d.transportMode}"]`)?.classList.add('selected'); }
+      if (d.needTransport){ formState.needTransport = d.needTransport; setToggle('needTransport', d.needTransport); }
+      if (d.needPooja)   { formState.needPooja   = d.needPooja;   setToggle('needPooja', d.needPooja); }
+
+      // Restore state dropdown
+      if (d.state) { const sel = document.getElementById('state'); if (sel) sel.value = d.state; }
+
+      // Restore rooms
+      if (d.rooms) {
+        ['ac','nonAc','gh2bhk','gh3bhk'].forEach(type => {
+          const count = d.rooms[type] || 0;
+          formState.rooms[type] = count;
+          const el = document.getElementById('roomCount-' + type);
+          if (el) el.textContent = count;
+          if (count > 0) document.getElementById('roomCard-' + type)?.classList.add('selected');
+        });
+      }
+
+      // Restore check-in/check-out dates and recalculate nights
+      if (d.checkIn && d.checkOut) updateNights();
+
+      // Show green tick on email since both fields are filled with same value
+      const okEl = document.getElementById('emailMatchOk');
+      if (okEl && d.email) okEl.style.display = 'inline-block';
+
+      // Update cost summary
+      updateCostSummary();
+
+      // Restore members
+      if (d.members && d.members.length > 0) {
+        // Remove extra guest members (keep only as many as saved, minus primary)
+        const guestCount = d.members.filter(m => m.relation !== 'Self (Primary Visitor)').length;
+        while (formState.members.length > guestCount) formState.members.pop();
+        while (formState.members.length < guestCount) formState.members.push({ name:'',gender:'',age:'',relation:'',aadhaar:'',mobile:'' });
+        renderMembers();
+        // Fill member fields after render
+        setTimeout(() => {
+          let gIdx = 1;
+          d.members.forEach(m => {
+            if (m.relation === 'Self (Primary Visitor)') return;
+            const setM = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+            setM(`m${gIdx}-name`,     m.name);
+            setM(`m${gIdx}-gender`,   m.gender);
+            setM(`m${gIdx}-age`,      m.age);
+            setM(`m${gIdx}-relation`, m.relation);
+            setM(`m${gIdx}-aadhaar`,  m.aadhaar);
+            setM(`m${gIdx}-mobile`,   m.mobile);
+            gIdx++;
+          });
+        }, 100);
+      }
+    } catch(e) { console.log('Restore error:', e); }
+  }
 
 
 ['fullName','address','city','mobile','email','age'].forEach(id => {
@@ -83,15 +162,16 @@ function changeRoom(type, delta) {
 // ── COST SUMMARY ──
 function updateCostSummary() {
   const nights = parseInt(document.getElementById('nightsCount').textContent) || 0;
-  const { ac, nonAc, guestHouse } = formState.rooms;
-  const hasRoom = ac > 0 || nonAc > 0 || guestHouse > 0;
+  const { ac, nonAc, gh2bhk, gh3bhk } = formState.rooms;
+  const hasRoom = ac > 0 || nonAc > 0 || gh2bhk > 0 || gh3bhk > 0;
   const summary = document.getElementById('costSummary');
   if (!hasRoom || nights === 0) { summary.style.display = 'none'; return; }
   summary.style.display = 'block';
   let rows = '', grand = 0;
-  if (ac > 0)         { const s = ac*ROOM_RATES.ac*nights;         grand+=s; rows+=`<div class="cost-row"><span>❄️ AC Room × ${ac} × ${nights} nights</span><span>₹${s.toLocaleString('en-IN')}</span></div>`; }
-  if (nonAc > 0)      { const s = nonAc*ROOM_RATES.nonAc*nights;   grand+=s; rows+=`<div class="cost-row"><span>🌬️ Non-AC Room × ${nonAc} × ${nights} nights</span><span>₹${s.toLocaleString('en-IN')}</span></div>`; }
-  if (guestHouse > 0) { const s = guestHouse*ROOM_RATES.guestHouse*nights; grand+=s; rows+=`<div class="cost-row"><span>🏡 Guest House × ${guestHouse} × ${nights} nights</span><span>₹${s.toLocaleString('en-IN')}</span></div>`; }
+  if (gh3bhk > 0)   { const s = gh3bhk*ROOM_RATES.gh3bhk*nights;   grand+=s; rows+=`<div class="cost-row"><span>🏡 Guest House 3 BHK × ${gh3bhk} × ${nights} nights</span><span>₹${s.toLocaleString('en-IN')}</span></div>`; }
+  if (gh2bhk > 0)   { const s = gh2bhk*ROOM_RATES.gh2bhk*nights;   grand+=s; rows+=`<div class="cost-row"><span>🏠 Guest House 2 BHK × ${gh2bhk} × ${nights} nights</span><span>₹${s.toLocaleString('en-IN')}</span></div>`; }
+  if (ac > 0)        { const s = ac*ROOM_RATES.ac*nights;            grand+=s; rows+=`<div class="cost-row"><span>❄️ AC Room × ${ac} × ${nights} nights</span><span>₹${s.toLocaleString('en-IN')}</span></div>`; }
+  if (nonAc > 0)     { const s = nonAc*ROOM_RATES.nonAc*nights;      grand+=s; rows+=`<div class="cost-row"><span>🌬️ Room with Cooler × ${nonAc} × ${nights} nights</span><span>₹${s.toLocaleString('en-IN')}</span></div>`; }
   document.getElementById('costRows').innerHTML = rows;
   document.getElementById('costTotal').textContent = `₹${grand.toLocaleString('en-IN')}`;
 }
@@ -408,8 +488,8 @@ function validateForm() {
   if (!co || co <= ci)   fail(document.getElementById('checkOut'), 'err-checkOut');
   else                   ok( document.getElementById('checkOut'),  'err-checkOut');
 
-  const { ac, nonAc, guestHouse } = formState.rooms;
-  if (ac + nonAc + guestHouse === 0) {
+  const { ac, nonAc, gh2bhk, gh3bhk } = formState.rooms;
+  if (ac + nonAc + gh2bhk + gh3bhk === 0) {
     document.getElementById('err-rooms').style.display = 'block';
     flag(document.getElementById('err-rooms'));
   } else {
@@ -590,7 +670,7 @@ async function submitForm() {
     checkIn:                document.getElementById('checkIn').value,
     checkOut:               document.getElementById('checkOut').value,
     totalNights:            parseInt(document.getElementById('nightsCount').textContent) || 0,
-    rooms:                  { ...formState.rooms },
+    rooms:                  { ...formState.rooms },  // ac, nonAc, gh2bhk, gh3bhk
     transportMode:          formState.transport,
     needTransport:          formState.needTransport,
     needPooja:              formState.needPooja,
