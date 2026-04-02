@@ -79,28 +79,49 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update cost summary
       updateCostSummary();
 
-      // Restore members
-      if (d.members && d.members.length > 0) {
-        // Remove extra guest members (keep only as many as saved, minus primary)
-        const guestCount = d.members.filter(m => m.relation !== 'Self (Primary Visitor)').length;
-        while (formState.members.length > guestCount) formState.members.pop();
-        while (formState.members.length < guestCount) formState.members.push({ name:'',gender:'',age:'',relation:'',aadhaar:'',mobile:'' });
+      // ── Restore additional members (skip primary — index 0 is always Self) ──
+      if (d.members && d.members.length > 1) {
+        // d.members[0] = primary visitor (Self) — skip it
+        // d.members[1..n] = additional members to restore
+        const guestMembers = d.members.slice(1); // skip primary
+
+        // Set formState.members to correct count
+        formState.members = guestMembers.map(m => ({
+          name:     m.name     || '',
+          gender:   m.gender   || '',
+          age:      m.age      || '',
+          relation: m.relation || '',
+          aadhaar:  m.aadhaar  || '',
+          mobile:   m.mobile   || ''
+        }));
+
+        // Re-render member cards with correct count
         renderMembers();
-        // Fill member fields after render
+
+        // After DOM renders, fill all field values
         setTimeout(() => {
-          let gIdx = 1;
-          d.members.forEach(m => {
-            if (m.relation === 'Self (Primary Visitor)') return;
-            const setM = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
-            setM(`m${gIdx}-name`,     m.name);
-            setM(`m${gIdx}-gender`,   m.gender);
-            setM(`m${gIdx}-age`,      m.age);
-            setM(`m${gIdx}-relation`, m.relation);
-            setM(`m${gIdx}-aadhaar`,  m.aadhaar);
-            setM(`m${gIdx}-mobile`,   m.mobile);
-            gIdx++;
+          guestMembers.forEach((m, i) => {
+            const idx = i + 1; // member card index starts at 1 (primary is 0)
+            const setF = (id, v) => {
+              const el = document.getElementById(id);
+              if (!el || v === undefined || v === null || v === '') return;
+              el.value = v;
+              // For select elements, also trigger onchange to sync formState
+              if (el.tagName === 'SELECT') {
+                el.dispatchEvent(new Event('change'));
+              }
+            };
+            setF(`m${idx}-name`,     m.name);
+            setF(`m${idx}-gender`,   m.gender);
+            setF(`m${idx}-age`,      m.age);
+            setF(`m${idx}-relation`, m.relation);
+            setF(`m${idx}-aadhaar`,  m.aadhaar);
+            setF(`m${idx}-mobile`,   m.mobile);
+            // Show mobile required label if age > 18
+            checkMemberMobileReq(idx);
           });
-        }, 100);
+          updateMemberSummary();
+        }, 200); // slightly longer delay to ensure DOM is ready
       }
     } catch(e) { console.log('Restore error:', e); }
   }
