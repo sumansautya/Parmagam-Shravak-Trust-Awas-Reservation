@@ -103,79 +103,16 @@ input[type=number].edit-field{text-align:right;}
 .action-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
 
 @media print {
-  /* Hide all UI chrome */
-  .page-header,.search-wrap,.action-bar,
-  #extraChargesTable + button,
-  button[onclick*="addExtraRow"],
-  button[onclick*="removeExtraRow"],
-  td button, .edit-field + *,
-  .inv-section-title span { display:none !important; }
-
-  /* Page setup — fit everything on one A4 page */
-  @page { size:A4 portrait; margin:8mm 10mm 8mm 10mm; }
-  html, body { background:#fff !important; font-size:10px !important; }
-  .main-wrap { padding:0 !important; max-width:100% !important; }
-  .invoice-box { box-shadow:none !important; border:1px solid #ddd !important; page-break-inside:avoid; }
-
-  /* Compact header */
-  .inv-header { padding:10px 14px !important; }
-  .inv-om { font-size:0.85rem !important; margin-bottom:2px !important; }
-  .inv-trust-name { font-size:0.95rem !important; }
-  .inv-trust-sub, .inv-contact { font-size:0.65rem !important; margin-top:1px !important; }
-  .inv-tag { padding:4px 10px !important; font-size:0.72rem !important; right:10px !important; }
-
-  /* Compact meta */
-  .inv-meta { padding:8px 14px !important; }
-  .meta-label { font-size:0.65rem !important; }
-  .meta-val { font-size:0.78rem !important; }
-
-  /* Compact body */
-  .inv-body { padding:8px 14px !important; }
-  .inv-section-title { font-size:0.72rem !important; padding-bottom:3px !important; margin-top:8px !important; margin-bottom:5px !important; }
-  .inv-section-title:first-child { margin-top:0 !important; }
-
-  /* Guest info grid */
-  .guest-grid { gap:2px !important; }
-  .guest-item { padding:2px 0 !important; }
-  .guest-key { font-size:0.62rem !important; }
-  .guest-val { font-size:0.75rem !important; }
-
-  /* Tables */
-  .bill-table { font-size:0.72rem !important; }
-  .bill-table th { padding:5px 8px !important; font-size:0.62rem !important; }
-  .bill-table td { padding:5px 8px !important; }
-  .bill-table tfoot td { padding:5px 8px !important; font-size:0.75rem !important; }
-
-  /* Extra charges — keep edit fields readable in print */
-  .edit-field { border:none !important; background:transparent !important; font-size:0.72rem !important; padding:0 !important; }
-  input.edit-field { -webkit-appearance:none; appearance:none; }
-
-  /* Payment received section */
-  #paymentsReceived div { padding:4px 8px !important; font-size:0.72rem !important; margin-bottom:3px !important; }
-
-  /* Notes */
-  #invNotes { border:none !important; font-size:0.72rem !important; resize:none !important; }
-
-  /* Terms */
-  .terms-box { font-size:0.62rem !important; padding:6px 10px !important; line-height:1.4 !important; }
-
-  /* Signatures */
-  .sig-row { margin-top:12px !important; padding-top:8px !important; }
-  .sig-line { height:20px !important; }
-  .sig-label { font-size:0.62rem !important; }
-
-  /* Pay status badges */
-  .pay-status { font-size:0.65rem !important; padding:2px 6px !important; }
+  .page-header,.search-wrap,.action-bar{display:none !important;}
+  body{background:#fff;}
+  .invoice-box{box-shadow:none;border:1px solid #ccc;}
+  .main-wrap{padding:0;}
 }
 @media(max-width:600px){.guest-grid{grid-template-columns:1fr;}.inv-tag{display:none;}}
 </style>
 </head>
 <body>
-<script>
-// Accept either sessionStorage (same tab) or localStorage token (new tab from dashboard)
-const _auth = sessionStorage.getItem('adminAuth')==='true' || localStorage.getItem('pstAdminToken')==='pst2025admin';
-if (!_auth) window.location.href = 'index.html';
-</script>
+<script>if(sessionStorage.getItem('adminAuth')!=='true')window.location.href='index.html';</script>
 
 <div class="page-header">
   <h1>🧾 Invoice & Checkout Billing</h1>
@@ -215,7 +152,12 @@ if (!_auth) window.location.href = 'index.html';
 
     <div class="action-bar">
       <button class="btn btn-green" onclick="window.print()">🖨️ Print Invoice</button>
-      <button class="btn btn-blue" id="saveBtn" onclick="saveInvoice()">💾 Save to Sheet</button>
+      <button class="btn btn-blue" onclick="saveInvoice()">💾 Save to Sheet</button>
+      <button class="btn btn-primary" id="emailBillBtn" onclick="emailBill()"
+              style="background:linear-gradient(135deg,#7B0D00,#5C0A00);border:none;color:white;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;">
+        📧 Email Bill to Visitor
+      </button>
+      <button class="btn btn-primary" onclick="recalc()">🔄 Recalculate</button>
     </div>
 
     <div class="invoice-box" id="invoicePrint">
@@ -289,19 +231,19 @@ if (!_auth) window.location.href = 'index.html';
           <tbody id="extraItems">
             <tr>
               <td>1</td>
-              <td><input class="edit-field" type="text" placeholder="e.g. Food / Dining charges" onchange="recalc()"></td>
+              <td><input class="edit-field" type="text" placeholder="Description of charges" onchange="recalc()"></td>
               <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
               <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>
             </tr>
             <tr>
               <td>2</td>
-              <td><input class="edit-field" type="text" placeholder="e.g. Transport / Pick-up charges" onchange="recalc()"></td>
+              <td><input class="edit-field" type="text" placeholder="Description of charges" onchange="recalc()"></td>
               <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
               <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>
             </tr>
             <tr>
               <td>3</td>
-              <td><input class="edit-field" type="text" placeholder="e.g. Pooja arrangement charges" onchange="recalc()"></td>
+              <td><input class="edit-field" type="text" placeholder="Description of charges" onchange="recalc()"></td>
               <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
               <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>
             </tr>
@@ -350,7 +292,6 @@ if (!_auth) window.location.href = 'index.html';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEowE3jrQJypFPc5YbjRUaxKR3HIBAsVaF-zAOPU5ybfK8sokmMZy74WDig35L57_1/exec';
 let allReservations = [];
 let allPayments     = [];
-let allInvoices     = [];   // saved invoices from Invoices sheet
 let currentRes      = null;
 let extraRowCount   = 3;
 
@@ -358,15 +299,12 @@ document.addEventListener('DOMContentLoaded', loadData);
 
 async function loadData() {
   try {
-    const [rRes, pRes, iRes] = await Promise.all([
+    const [rRes, pRes] = await Promise.all([
       fetch(SCRIPT_URL+'?action=getReservations&t='+Date.now()),
-      fetch(SCRIPT_URL+'?action=getPayments&t='+Date.now()),
-      fetch(SCRIPT_URL+'?action=getInvoices&t='+Date.now())
+      fetch(SCRIPT_URL+'?action=getPayments&t='+Date.now())
     ]);
     allReservations = (await rRes.json()).reservations || [];
     allPayments     = (await pRes.json()).payments     || [];
-    allInvoices     = (await iRes.json()).invoices     || [];
-    console.log('Loaded invoices:', allInvoices.length);
   } catch(e) { console.error(e); }
   // Check URL param
   const params = new URLSearchParams(window.location.search);
@@ -413,195 +351,57 @@ function loadInvoice(r) {
   document.getElementById('searchResults').style.display = 'none';
   document.getElementById('invoiceEditor').style.display  = 'block';
 
-  // ── CHECK: does a saved Invoice already exist for this Ref ID? ──
-  // Find the LATEST saved invoice for this reservation
-  const refId = r['ID'] || '';
-  const saved = allInvoices
-    .filter(inv => (inv['Reservation ID']||'') === refId)
-    .sort((a,b) => (b['Invoice Date']||'') > (a['Invoice Date']||'') ? 1 : -1)[0]; // latest
-
-  if (saved) {
-    // ── RESTORE FROM SAVED INVOICE ──
-    console.log('✅ Found saved invoice:', saved['Invoice No']);
-    loadFromSavedInvoice(saved, r);
-  } else {
-    // ── BUILD FRESH FROM RESERVATION ──
-    console.log('ℹ️ No saved invoice — building from reservation data');
-    loadFromReservation(r);
-  }
-
-  window.scrollTo({top:400, behavior:'smooth'});
-}
-
-function loadFromSavedInvoice(saved, r) {
-  // Show a banner indicating this is a saved invoice
-  showInvoiceBanner('saved', saved['Invoice Date'], saved['Invoice No']);
-
-  setText('inv-number', saved['Invoice No'] || '—');
-  setText('inv-refid',  saved['Reservation ID'] || r['ID']);
-  setText('inv-date',   fmtDate(saved['Invoice Date']));
-
-  // Guest info from reservation (always fresh from reservation sheet)
-  setText('g-name',    r['Full Name']||'—');
-  setText('g-mobile',  r['Mobile']||'—');
-  setText('g-addr',    r['Address']||'—');
-  setText('g-city',    (r['City']||'')+(r['State']?', '+r['State']:''));
-  setText('g-occ',     r['Occupation']||'—');
-  setText('g-members', '—');
-  setText('g-cin',     fmtDate(r['Check-In']));
-  setText('g-cout',    fmtDate(r['Check-Out']));
-  setText('g-nights',  r['Nights']||saved['Nights']||'—');
-  setText('g-rooms',   r['Allocated Rooms']||saved['Allocated Rooms']||'—');
-
-  // Room charges bill — rebuild from saved data
-  const nights = parseInt(saved['Nights']||r['Nights'])||1;
-  const items  = [];
-  if (parseInt(saved['AC Rooms']||r['AC Rooms'])>0)
-    items.push({desc:'❄️ AC Room with Air Conditioning', rate:1200, qty:parseInt(saved['AC Rooms']||r['AC Rooms']), nights});
-  if (parseInt(saved['Non-AC Rooms']||r['Non-AC Rooms'])>0)
-    items.push({desc:'🌬️ Non-AC Room with Cooler',       rate:700,  qty:parseInt(saved['Non-AC Rooms']||r['Non-AC Rooms']), nights});
-  if (parseInt(saved['GH Rooms']||r['GH Rooms'])>0)
-    items.push({desc:'🏡 Guest House Room (AC)',           rate:2000, qty:parseInt(saved['GH Rooms']||r['GH Rooms']), nights});
-
-  document.getElementById('billItems').innerHTML = items.map((it,i) =>
-    `<tr><td>${i+1}</td><td>${it.desc}</td>
-     <td class="amount-col">₹${it.rate.toLocaleString('en-IN')}</td>
-     <td class="amount-col">${it.qty}</td>
-     <td class="amount-col">${it.nights}</td>
-     <td class="amount-col">₹${(it.rate*it.qty*it.nights).toLocaleString('en-IN')}</td></tr>`
-  ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-light);">No room data</td></tr>';
-
-  // Restore extra charges from saved invoice
-  const extraTbody = document.getElementById('extraItems');
-  extraTbody.innerHTML = '';  // clear default rows
-  extraRowCount = 0;
-  const extraDetails = saved['Extra Details'] || '';
-  if (extraDetails.trim()) {
-    extraDetails.split('|').forEach(item => {
-      item = item.trim();
-      if (!item) return;
-      // Format: "Description: ₹Amount"
-      const colonIdx = item.lastIndexOf(':');
-      const desc = colonIdx > 0 ? item.slice(0, colonIdx).trim() : item;
-      const amt  = colonIdx > 0 ? parseFloat(item.slice(colonIdx+1).replace('₹','').trim())||0 : 0;
-      extraRowCount++;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${extraRowCount}</td>
-        <td><input class="edit-field" type="text" value="${desc}" onchange="recalc()"></td>
-        <td><input class="edit-field" type="number" value="${amt}" min="0" onchange="recalc()"></td>
-        <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td>`;
-      extraTbody.appendChild(tr);
-    });
-  }
-  // Always show at least 1 blank row for additions
-  if (extraRowCount === 0) {
-    extraRowCount = 1;
-    extraTbody.innerHTML = `<tr><td>1</td>
-      <td><input class="edit-field" type="text" placeholder="e.g. Food / Dining charges" onchange="recalc()"></td>
-      <td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td>
-      <td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;">✕</button></td></tr>`;
-  }
-
-  // Notes
-  const notesEl = document.getElementById('invNotes');
-  if (notesEl) notesEl.value = saved['Notes'] || '';
-
-  // Payment info — prefer saved data over re-fetching
-  const advancePaid = parseFloat(saved['Advance Paid']||0);
-  document.getElementById('advancePaid').textContent = '₹'+advancePaid.toLocaleString('en-IN');
-
-  // Also show payment records
-  const myPayments = allPayments.filter(p => (p['Reservation ID']||p['Ref ID']||'') === (r['ID']||''));
-  if (myPayments.length) {
-    document.getElementById('paymentsReceived').innerHTML = myPayments.map((p,i) =>
-      `<div style="background:#E8F5E9;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;">
-        <span>Payment ${i+1} — ${p['Payment Mode']||'—'} — ${p['Payment Date']||p['Timestamp']||'—'} — Txn: ${p['Transaction Ref']||'—'}</span>
-        <strong style="color:var(--green);">₹${parseFloat(p['Amount']||p['Advance Amount']||0).toLocaleString('en-IN')}</strong>
-      </div>`).join('');
-  }
-
-  recalc();
-}
-
-function loadFromReservation(r) {
-  showInvoiceBanner('new', '', '');
-
   const today = new Date();
   const invNo = 'PST-INV-' + r['ID'].replace('PST-','').replace(/-/g,'') + '-' + String(today.getDate()).padStart(2,'0');
+
+  // Meta
   setText('inv-number', invNo);
   setText('inv-refid',  r['ID']);
   setText('inv-date',   today.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}));
 
+  // Guest info
   setText('g-name',    r['Full Name']||'—');
   setText('g-mobile',  r['Mobile']||'—');
   setText('g-addr',    r['Address']||'—');
   setText('g-city',    (r['City']||'')+(r['State']?', '+r['State']:''));
   setText('g-occ',     r['Occupation']||'—');
-  setText('g-members', '—');
+  setText('g-members', '—'); // will be updated if we load members
   setText('g-cin',     fmtDate(r['Check-In']));
   setText('g-cout',    fmtDate(r['Check-Out']));
   setText('g-nights',  r['Nights']||'—');
-  setText('g-rooms',   r['Allocated Rooms']||'—');
+  setText('g-rooms',   r['Allocated Rooms']||r['Rooms']||'—');
 
+  // Build bill items from room data
   const nights = parseInt(r['Nights'])||1;
   const items  = [];
   if (parseInt(r['AC Rooms'])>0)      items.push({desc:'❄️ AC Room with Air Conditioning', rate:1200, qty:parseInt(r['AC Rooms']), nights});
   if (parseInt(r['Non-AC Rooms'])>0)  items.push({desc:'🌬️ Non-AC Room with Cooler',       rate:700,  qty:parseInt(r['Non-AC Rooms']), nights});
   if (parseInt(r['GH Rooms'])>0)      items.push({desc:'🏡 Guest House Room (AC)',           rate:2000, qty:parseInt(r['GH Rooms']), nights});
 
-  document.getElementById('billItems').innerHTML = items.map((it,i) =>
-    `<tr><td>${i+1}</td><td>${it.desc}</td>
-     <td class="amount-col">₹${it.rate.toLocaleString('en-IN')}</td>
-     <td class="amount-col">${it.qty}</td>
-     <td class="amount-col">${it.nights}</td>
-     <td class="amount-col">₹${(it.rate*it.qty*it.nights).toLocaleString('en-IN')}</td></tr>`
-  ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-light);">No room data</td></tr>';
+  document.getElementById('billItems').innerHTML = items.map((it,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${it.desc}</td>
+      <td class="amount-col">₹${it.rate.toLocaleString('en-IN')}</td>
+      <td class="amount-col">${it.qty}</td>
+      <td class="amount-col">${it.nights}</td>
+      <td class="amount-col">₹${(it.rate*it.qty*it.nights).toLocaleString('en-IN')}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-light);font-style:italic;">No room data</td></tr>';
 
-  // Reset extra rows to defaults
-  extraRowCount = 3;
-  document.getElementById('extraItems').innerHTML = `
-    <tr><td>1</td><td><input class="edit-field" type="text" placeholder="e.g. Food / Dining charges" onchange="recalc()"></td><td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td><td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td></tr>
-    <tr><td>2</td><td><input class="edit-field" type="text" placeholder="e.g. Transport / Pick-up charges" onchange="recalc()"></td><td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td><td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td></tr>
-    <tr><td>3</td><td><input class="edit-field" type="text" placeholder="e.g. Pooja arrangement charges" onchange="recalc()"></td><td><input class="edit-field" type="number" placeholder="0" min="0" value="0" onchange="recalc()"></td><td><button onclick="removeExtraRow(this)" style="background:none;border:none;cursor:pointer;color:#E53935;font-size:1rem;">✕</button></td></tr>`;
-
-  const notesEl = document.getElementById('invNotes');
-  if (notesEl) notesEl.value = '';
-
-  const myPayments = allPayments.filter(p => (p['Reservation ID']||p['Ref ID']||'') === r['ID']);
-  const advancePaid = myPayments.reduce((s,p)=>s+parseFloat(p['Amount']||p['Advance Amount']||0),0)
-                   || parseFloat(r['Payment Amount']||0);
-  document.getElementById('advancePaid').textContent = '₹'+advancePaid.toLocaleString('en-IN');
+  // Payments received
+  const myPayments = allPayments.filter(p => p['Reservation ID']===r['ID'] || p['Ref ID']===r['ID']);
+  const advancePaid = myPayments.reduce((s,p) => s+parseFloat(p['Amount']||p['Advance Amount']||0),0);
   if (myPayments.length) {
-    document.getElementById('paymentsReceived').innerHTML = myPayments.map((p,i) =>
-      `<div style="background:#E8F5E9;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;">
+    document.getElementById('paymentsReceived').innerHTML = myPayments.map((p,i) => `
+      <div style="background:#E8F5E9;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;">
         <span>Payment ${i+1} — ${p['Payment Mode']||'—'} — ${p['Payment Date']||p['Timestamp']||'—'} — Txn: ${p['Transaction Ref']||'—'}</span>
         <strong style="color:var(--green);">₹${parseFloat(p['Amount']||p['Advance Amount']||0).toLocaleString('en-IN')}</strong>
       </div>`).join('');
   }
+  document.getElementById('advancePaid').textContent = '₹'+(advancePaid||parseFloat(r['Payment Amount']||0)).toLocaleString('en-IN');
 
   recalc();
-}
-
-// Banner to show invoice source status
-function showInvoiceBanner(type, date, invNo) {
-  let existing = document.getElementById('invSourceBanner');
-  if (!existing) {
-    existing = document.createElement('div');
-    existing.id = 'invSourceBanner';
-    existing.style.cssText = 'border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.83rem;font-weight:600;display:flex;align-items:center;gap:8px;';
-    document.getElementById('invoicePrint').before(existing);
-  }
-  if (type === 'saved') {
-    existing.style.background = '#E8F5E9';
-    existing.style.border = '1.5px solid #66BB6A';
-    existing.style.color  = '#2E7D32';
-    existing.innerHTML = `✅ <strong>Saved Invoice Loaded</strong> — Invoice No: ${invNo} — Date: ${fmtDate(date)} &nbsp;|&nbsp; <span style="font-weight:400;">All saved data including extra charges and notes restored.</span>`;
-  } else {
-    existing.style.background = '#FFF8E1';
-    existing.style.border = '1.5px solid #FFB300';
-    existing.style.color  = '#E65100';
-    existing.innerHTML = `📄 <strong>New Invoice</strong> — No saved invoice found for this reservation. Fill in charges and click <strong>Save to Sheet</strong>.`;
-  }
+  window.scrollTo({top:400, behavior:'smooth'});
 }
 
 function recalc() {
@@ -653,76 +453,8 @@ function removeExtraRow(btn) {
   recalc();
 }
 
-async function saveInvoice() {
-  if (!currentRes) { alert('No reservation loaded.'); return; }
-  const btn = document.getElementById('saveBtn');
-  btn.textContent = '⏳ Saving...';
-  btn.disabled = true;
-
-  // Collect extra charges
-  const extras = [];
-  document.querySelectorAll('#extraItems tr').forEach(tr => {
-    const inputs = tr.querySelectorAll('input');
-    const desc = inputs[0]?.value?.trim();
-    const amt  = parseFloat(inputs[1]?.value)||0;
-    if (desc && amt > 0) extras.push(desc + ': ₹' + amt);
-  });
-
-  const nights   = parseInt(currentRes['Nights'])||1;
-  let roomTotal  = 0;
-  if (parseInt(currentRes['AC Rooms'])>0)     roomTotal += 1200*parseInt(currentRes['AC Rooms'])*nights;
-  if (parseInt(currentRes['Non-AC Rooms'])>0) roomTotal += 700 *parseInt(currentRes['Non-AC Rooms'])*nights;
-  if (parseInt(currentRes['GH Rooms'])>0)     roomTotal += 2000*parseInt(currentRes['GH Rooms'])*nights;
-  const extraTotal = extras.reduce((s,e) => s + parseFloat(e.split('₹')[1]||0), 0);
-  const grandTotal = roomTotal + extraTotal;
-  const adv        = parseFloat(document.getElementById('advancePaid').textContent.replace(/[₹,]/g,''))||0;
-  const balance    = Math.max(0, grandTotal - adv);
-
-  const invoice = {
-    timestamp:      new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'}),
-    invoiceNo:      document.getElementById('inv-number').textContent,
-    reservationId:  currentRes['ID'] || currentRes['Ref ID'] || '',
-    visitorName:    currentRes['Full Name'] || '',
-    mobile:         currentRes['Mobile'] || '',
-    city:           currentRes['City'] || '',
-    state:          currentRes['State'] || '',
-    checkIn:        currentRes['Check-In'] || '',
-    checkOut:       currentRes['Check-Out'] || '',
-    nights:         currentRes['Nights'] || '',
-    allocatedRooms: currentRes['Allocated Rooms'] || '',
-    acRooms:        currentRes['AC Rooms'] || '0',
-    nonAcRooms:     currentRes['Non-AC Rooms'] || '0',
-    ghRooms:        currentRes['GH Rooms'] || '0',
-    roomCharges:    roomTotal,
-    extraCharges:   extraTotal,
-    extraDetails:   extras.join(' | '),
-    grandTotal:     grandTotal,
-    advancePaid:    adv,
-    balanceDue:     balance,
-    notes:          document.getElementById('invNotes')?.value?.trim() || '',
-    invoiceDate:    new Date().toISOString().split('T')[0]
-  };
-
-  try {
-    await fetch(SCRIPT_URL, {
-      method:  'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body:    JSON.stringify({action: 'saveInvoice', invoice}),
-      mode:    'no-cors'
-    });
-    btn.textContent = '✅ Saved!';
-    btn.style.background = 'linear-gradient(135deg,#2E7D32,#1B5E20)';
-    setTimeout(() => {
-      btn.textContent = '💾 Save to Sheet';
-      btn.style.background = '';
-      btn.disabled = false;
-    }, 2500);
-    console.log('Invoice saved:', invoice.invoiceNo);
-  } catch(e) {
-    btn.textContent = '❌ Error — Retry';
-    btn.disabled = false;
-    console.error('Save error:', e);
-  }
+function saveInvoice() {
+  alert('Invoice saved! (Connect to Apps Script submitInvoice action to persist to Google Sheets)');
 }
 
 function clearInvoice() {
@@ -736,6 +468,48 @@ function setText(id, v) { const el=document.getElementById(id); if(el) el.textCo
 function fmtDate(d) {
   if (!d) return '—';
   try { return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){return d;}
+}
+
+// ── Email Bill to Visitor ──
+async function emailBill() {
+  const inp    = document.getElementById('searchInput');
+  const resId  = inp ? inp.value.trim() : '';
+  if (!resId) {
+    alert('Please load a reservation first before emailing the bill.');
+    return;
+  }
+  const btn = document.getElementById('emailBillBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled    = true;
+
+  // Collect invoice data
+  const invoice = typeof collectInvoiceData === 'function' ? collectInvoiceData() : null;
+  if (!invoice) {
+    alert('Please save the invoice first (Save to Sheet), then email it.');
+    btn.textContent = 'Email Bill to Visitor';
+    btn.disabled    = false;
+    return;
+  }
+
+  try {
+    const res    = await fetch(SCRIPT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify({ action: 'emailInvoice', invoice }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      btn.textContent = 'Bill Sent!';
+      setTimeout(() => { btn.textContent = 'Email Bill to Visitor'; btn.disabled = false; }, 3000);
+      alert('Bill emailed successfully to: ' + (result.email || invoice.visitorEmail || 'visitor'));
+    } else {
+      throw new Error(result.error || result.message || 'Unknown error');
+    }
+  } catch(e) {
+    btn.textContent = 'Email Bill to Visitor';
+    btn.disabled    = false;
+    alert('Failed to send bill: ' + e.message);
+  }
 }
 </script>
 </body>
