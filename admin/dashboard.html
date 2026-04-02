@@ -269,7 +269,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
     </div>
     <div class="panel">
       <div class="filter-bar">
-        <select id="rf-cat" onchange="filterRooms()"><option value="">All Categories</option><option>AC Room</option><option>Non-AC Room</option><option>Guest House Room</option></select>
+        <select id="rf-cat" onchange="filterRooms()"><option value="">All Categories</option><option>AC Room</option><option>Non-AC Room</option><option>Guest House 2BHK</option><option>Guest House 3BHK</option></select>
         <select id="rf-sts" onchange="filterRooms()"><option value="">All Status</option><option>Available</option><option>Occupied</option><option>Maintenance</option></select>
       </div>
       <div style="overflow-x:auto;">
@@ -599,7 +599,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
       <div class="field-group">
         <label class="field-label">Category <span class="req">*</span></label>
         <select class="field-select" id="rm-category">
-          <option>AC Room</option><option>Non-AC Room</option><option>Guest House Room</option>
+          <option>AC Room</option><option>Non-AC Room</option><option>Guest House 2BHK</option><option>Guest House 3BHK</option>
         </select>
       </div>
       <div class="field-group">
@@ -780,7 +780,8 @@ function renderOverview() {
   // Bars
   setBar('bar-ac', allRooms, 'AC Room');
   setBar('bar-na', allRooms, 'Non-AC Room');
-  setBar('bar-gh', allRooms, 'Guest House Room');
+  setBar('bar-gh', allRooms, 'Guest House 2BHK');
+  setBar('bar-gh3', allRooms, 'Guest House 3BHK');
 }
 
 function setBar(barId, rooms, cat) {
@@ -907,8 +908,17 @@ async function openAllocModal(resId) {
   const sortedRooms = [...allRooms].sort((a, b) => {
     const catA = (val(a,'Category') || '').toLowerCase();
     const catB = (val(b,'Category') || '').toLowerCase();
-    const sortA = catA.includes('guest') ? 3 : catA.includes('non') ? 2 : catA.includes('ac') ? 1 : 9;
-    const sortB = catB.includes('guest') ? 3 : catB.includes('non') ? 2 : catB.includes('ac') ? 1 : 9;
+    // Sort: GH 3BHK=1, GH 2BHK=2, AC=3, Non-AC=4
+    function catSort(c) {
+      if (c.includes('3bhk') || c.includes('3 bhk')) return 1;
+      if (c.includes('2bhk') || c.includes('2 bhk')) return 2;
+      if (c.includes('guest'))  return 2; // fallback for old guest house
+      if (c.includes('non'))    return 4;
+      if (c.includes('ac'))     return 3;
+      return 9;
+    }
+    const sortA = catSort(catA);
+    const sortB = catSort(catB);
     if (sortA !== sortB) return sortA - sortB;
     // Within category sort by numeric part of Room ID
     const numA = parseInt((val(a,'Room ID')||'').replace(/[^0-9]/g,'')) || 0;
@@ -947,12 +957,17 @@ async function openAllocModal(resId) {
 
     // Category header — shown once per group
     if (cat !== lastCat) {
-      const catIcon  = cat.toLowerCase().includes('guest') ? '🏡'
-                     : cat.toLowerCase().includes('non')   ? '🌬️'
-                     : cat.toLowerCase().includes('ac')    ? '❄️' : '🏠';
-      const catLabel = cat.toLowerCase().includes('guest') ? 'Guest House (AC)'
-                     : cat.toLowerCase().includes('non')   ? 'Non-AC Room with Cooler'
-                     : cat.toLowerCase().includes('ac')    ? 'AC Room' : cat;
+      const cl = cat.toLowerCase();
+      const catIcon  = (cl.includes('3bhk') || cl.includes('3 bhk')) ? '🏡'
+                     : (cl.includes('2bhk') || cl.includes('2 bhk')) ? '🏠'
+                     : cl.includes('guest') ? '🏡'
+                     : cl.includes('non')   ? '🌬️'
+                     : cl.includes('ac')    ? '❄️' : '🏠';
+      const catLabel = (cl.includes('3bhk') || cl.includes('3 bhk')) ? 'Guest House AC — 3 BHK (3 Bedrooms + Lounge)'
+                     : (cl.includes('2bhk') || cl.includes('2 bhk')) ? 'Guest House AC — 2 BHK (2 Bedrooms + Lounge)'
+                     : cl.includes('guest') ? 'Guest House (AC)'
+                     : cl.includes('non')   ? 'Room with Cooler Facility'
+                     : cl.includes('ac')    ? 'AC Room' : cat;
       gridHtml += `<div style="width:100%;font-size:0.75rem;font-weight:700;color:var(--primary);
         padding:5px 8px;margin:8px 0 4px;background:var(--ivory);
         border-left:3px solid var(--accent);border-radius:3px;">${catIcon} ${catLabel}</div>`;
@@ -1326,7 +1341,7 @@ function renderOccupancy() {
     <div class="metric-box"><div class="metric-val">${pct}%</div><div class="metric-lbl">Occupancy %</div></div>
     <div class="metric-box"><div class="metric-val">₹${rev.toLocaleString('en-IN')}</div><div class="metric-lbl">Revenue</div></div>`;
 
-  const cats = ['AC Room','Non-AC Room','Guest House Room'];
+  const cats = ['AC Room','Non-AC Room','Guest House 2BHK','Guest House 3BHK'];
   document.getElementById('occ-bars').innerHTML = cats.map(cat => {
     const ct = allRooms.filter(r=>val(r,'Category')===cat).length;
     const co = allRooms.filter(r=>val(r,'Category')===cat&&val(r,'Status')==='Occupied').length;
@@ -1419,7 +1434,9 @@ function renderDevotee(data) {
         const rooms  = [];
         if (parseInt(val(r,'AC Rooms'))>0)     rooms.push('AC×'+val(r,'AC Rooms'));
         if (parseInt(val(r,'Non-AC Rooms'))>0) rooms.push('NonAC×'+val(r,'Non-AC Rooms'));
-        if (parseInt(val(r,'GH Rooms'))>0)     rooms.push('GH×'+val(r,'GH Rooms'));
+        if (parseInt(val(r,'GH3BHK Rooms'))>0) rooms.push('GH3×'+val(r,'GH3BHK Rooms'));
+        if (parseInt(val(r,'GH2BHK Rooms'))>0) rooms.push('GH2×'+val(r,'GH2BHK Rooms'));
+        if (parseInt(val(r,'GH Rooms'))>0)      rooms.push('GH×'+val(r,'GH Rooms')); // legacy
         return `<tr>
           <td style="color:var(--text-light);font-size:0.75rem;">${i+1}</td>
           <td><strong>${val(r,'Full Name')}</strong><br><span style="font-size:0.72rem;color:var(--text-light);">${val(r,'ID')}</span></td>
@@ -1625,7 +1642,7 @@ async function loadAllocations() {
 
 // ══ EXPORT ══
 function exportCSV() {
-  const hdrs = ['ID','Full Name','Mobile','Email','City','State','Check-In','Check-Out','Nights','AC Rooms','Non-AC Rooms','GH Rooms','Transport Mode','Need Transport','Need Pooja','Additional Req','Payment Amount','Status','Allocated Rooms'];
+  const hdrs = ['ID','Full Name','Mobile','Email','City','State','Check-In','Check-Out','Nights','AC Rooms','Non-AC Rooms','GH2BHK Rooms','GH3BHK Rooms','Transport Mode','Need Transport','Need Pooja','Additional Req','Payment Amount','Status','Allocated Rooms'];
   const rows = allReservations.map(r => hdrs.map(h => `"${(val(r,h)||'').replace(/"/g,'""')}"`).join(','));
   const csv  = [hdrs.join(','), ...rows].join('\n');
   const a    = document.createElement('a');
@@ -1693,12 +1710,17 @@ function fmtDateLong(str) {
 
 function roomSummary(r) {
   let s = '';
-  const ac = parseInt(val(r,'AC Rooms') || val(r,'acRooms') || 0);
-  const na = parseInt(val(r,'Non-AC Rooms') || val(r,'nonAcRooms') || 0);
-  const gh = parseInt(val(r,'GH Rooms') || val(r,'guestHouseRooms') || 0);
-  if (ac > 0) s += `❄️ AC×${ac} `;
-  if (na > 0) s += `🌬️ Non-AC×${na} `;
-  if (gh > 0) s += `🏡 GH×${gh}`;
+  const ac  = parseInt(val(r,'AC Rooms')      || val(r,'acRooms')       || 0);
+  const na  = parseInt(val(r,'Non-AC Rooms')  || val(r,'nonAcRooms')    || 0);
+  const gh2 = parseInt(val(r,'GH2BHK Rooms')  || val(r,'gh2bhkRooms')   || 0);
+  const gh3 = parseInt(val(r,'GH3BHK Rooms')  || val(r,'gh3bhkRooms')   || 0);
+  // Legacy support for old GH Rooms column
+  const ghOld = parseInt(val(r,'GH Rooms')    || val(r,'guestHouseRooms')|| 0);
+  if (gh3 > 0)   s += `🏡 GH3×${gh3} `;
+  if (gh2 > 0)   s += `🏠 GH2×${gh2} `;
+  if (ghOld > 0) s += `🏡 GH×${ghOld} `;
+  if (ac > 0)    s += `❄️ AC×${ac} `;
+  if (na > 0)    s += `🌬️ Cooler×${na} `;
   return s.trim() || '—';
 }
 
@@ -1799,7 +1821,9 @@ function renderVisitorReport() {
     const rooms   = [];
     if (parseInt(val(r,'AC Rooms'))>0)     rooms.push(`❄️×${val(r,'AC Rooms')}`);
     if (parseInt(val(r,'Non-AC Rooms'))>0) rooms.push(`🌬️×${val(r,'Non-AC Rooms')}`);
-    if (parseInt(val(r,'GH Rooms'))>0)     rooms.push(`🏡×${val(r,'GH Rooms')}`);
+    if (parseInt(val(r,'GH3BHK Rooms'))>0) rooms.push(`🏡3BHK×${val(r,'GH3BHK Rooms')}`);
+    if (parseInt(val(r,'GH2BHK Rooms'))>0) rooms.push(`🏠2BHK×${val(r,'GH2BHK Rooms')}`);
+    if (parseInt(val(r,'GH Rooms'))>0)     rooms.push(`🏡GH×${val(r,'GH Rooms')}`); // legacy
     const status  = val(r,'Status') || '';
     const sCls    = status === 'Confirmed' ? 'color:#2E7D32;font-weight:700;'
                   : status === 'Cancelled' ? 'color:#C62828;'
