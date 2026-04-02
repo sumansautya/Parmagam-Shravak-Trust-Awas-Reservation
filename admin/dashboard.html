@@ -75,6 +75,8 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 .act-allocate { border-color:var(--saffron); color:var(--saffron-dark); }
 .act-view     { border-color:var(--green);   color:var(--green); }
 .act-cancel   { border-color:#E53935;        color:#E53935; }
+.act-regret   { border-color:#7B0D00;        color:#7B0D00; background:#FFF8E0; }
+.act-regret:hover { background:#7B0D00; color:white; }
 .act-edit     { border-color:var(--gold);    color:var(--maroon); }
 .act-delete   { border-color:#E53935;        color:#E53935; }
 
@@ -153,6 +155,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
   <div class="nav-item" onclick="nav('rpt-devotee',this)"><span class="ni">👤</span> Devotee History</div>
   <div class="nav-item" onclick="nav('rpt-feedback',this)"><span class="ni">💬</span> Feedback Reports</div>
   <div class="nav-item" onclick="nav('rpt-payments',this)"><span class="ni">💳</span> Payments</div>
+  <div class="nav-item" onclick="nav('rpt-visitors',this)"><span class="ni">📊</span> Visitor Report</div>
   <a href="javascript:void(0)" onclick="openInvoice()" class="nav-item" style="text-decoration:none;display:block;color:inherit;"><span class="ni">🧾</span> Invoice / Billing ↗</a>
   <div class="nav-group-label">System</div>
   <div class="nav-item" onclick="logout()"><span class="ni">🚪</span> Logout</div>
@@ -464,6 +467,90 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
       </tr></thead><tbody id="payTbody"><tr class="loading-row"><td colspan="11">Loading payment records...</td></tr></tbody></table></div>
     </div>
   </div>
+  <!-- ══ VISITOR REPORT ══ -->
+  <div class="page-section" id="page-rpt-visitors" style="display:none;">
+    <div class="section-header">
+      <h2 class="section-title">📊 Visitor Report / आगंतुक रिपोर्ट</h2>
+    </div>
+
+    <!-- Filters -->
+    <div style="background:var(--cream);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:var(--text-light);">From Date / प्रारंभ तिथि</label>
+        <input type="date" id="vr-from" class="field-input" style="padding:7px 12px;font-size:0.83rem;width:150px;" oninput="renderVisitorReport()">
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:var(--text-light);">To Date / समाप्ति तिथि</label>
+        <input type="date" id="vr-to" class="field-input" style="padding:7px 12px;font-size:0.83rem;width:150px;" oninput="renderVisitorReport()">
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:var(--text-light);">City / शहर</label>
+        <input type="text" id="vr-city" class="field-input" placeholder="All cities" style="padding:7px 12px;font-size:0.83rem;width:140px;" oninput="renderVisitorReport()">
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:var(--text-light);">State / राज्य</label>
+        <input type="text" id="vr-state" class="field-input" placeholder="All states" style="padding:7px 12px;font-size:0.83rem;width:140px;" oninput="renderVisitorReport()">
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:var(--text-light);">Visit Count / यात्रा संख्या</label>
+        <select id="vr-visits" class="field-input" style="padding:7px 12px;font-size:0.83rem;" onchange="renderVisitorReport()">
+          <option value="">All Visitors</option>
+          <option value="1">1st Visit Only</option>
+          <option value="2+">2 or more visits</option>
+          <option value="3+">3 or more visits</option>
+          <option value="5+">5 or more visits</option>
+        </select>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:var(--text-light);">Status</label>
+        <select id="vr-status" class="field-input" style="padding:7px 12px;font-size:0.83rem;" onchange="renderVisitorReport()">
+          <option value="">All</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Pending">Pending</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <button class="btn btn-secondary" onclick="clearVRFilters()" style="padding:8px 14px;font-size:0.8rem;">✕ Clear</button>
+        <button class="btn btn-green" onclick="exportVisitorExcel()" style="padding:8px 14px;font-size:0.8rem;">⬇️ Download Excel</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div id="vr-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;"></div>
+
+    <!-- Table -->
+    <div style="overflow-x:auto;">
+      <table class="data-table" style="font-size:0.8rem;">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ref ID</th>
+            <th>Full Name / नाम</th>
+            <th>Mobile</th>
+            <th>City / शहर</th>
+            <th>State / राज्य</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Nights</th>
+            <th>Rooms</th>
+            <th>Status</th>
+            <th>Visit #</th>
+          </tr>
+        </thead>
+        <tbody id="vr-tbody"><tr class="loading-row"><td colspan="12">Loading...</td></tr></tbody>
+      </table>
+    </div>
+    <div id="vr-count" style="font-size:0.8rem;color:var(--text-light);margin-top:8px;text-align:right;"></div>
+  </div>
+
 
 </main>
 </div>
@@ -641,12 +728,14 @@ function nav(page, el) {
 
   // Render immediately from already-loaded data — never call showLoading() here
   if (page==='overview')      renderOverview();
+  if (page==='rpt-visitors')  renderVisitorReport();
   if (page==='reservations')  renderReservTable(allReservations);
   if (page==='allocate')      renderAllocTable();
   if (page==='rooms')         renderRoomsTable();
   if (page==='rpt-occupancy') renderOccupancy();
   if (page==='rpt-addl')      renderAddlReport();
   if (page==='rpt-devotee')   renderDevotee(allReservations);
+  if (page==='rpt-visitors')  renderVisitorReport();
   if (page==='rpt-feedback')  { if(!allFeedback.length) loadFeedback(); else renderFeedback(filteredFeedback); }
   if (page==='rpt-payments')  { if(!allPayments.length) loadPayments(); else renderPayments(allPayments); }
 }
@@ -744,6 +833,7 @@ function renderReservTable(data) {
       <td style="white-space:nowrap;">
         ${val(r,'Status')!=='Confirmed'?`<button class="act-btn act-allocate" onclick="openAllocModal('${val(r,'ID')}')">🏠 Allocate</button> `:''}
         <button class="act-btn act-view" onclick="viewReservation('${val(r,'ID')}')">👁 View</button>
+        ${val(r,'Status')!=='Cancelled'?`<button class="act-btn act-regret" onclick="sendRegretMail('${val(r,'ID')}')" title="Send Regret / Room Not Available Mail">📩 Regret</button>`:''}
         ${val(r,'Status')!=='Cancelled'?`<button class="act-btn act-cancel" onclick="cancelReservation('${val(r,'ID')}')">✕</button>`:''}
       </td>
     </tr>`).join('');
@@ -1001,12 +1091,112 @@ async function viewReservation(resId) {
 
 // ══ CANCEL ══
 async function cancelReservation(resId) {
-  if (!confirm('Cancel this reservation? This action will be saved to Google Sheets.')) return;
+  const r = allReservations.find(x => val(x,'ID') === resId);
+  if (!r) return;
+  const allocRooms = val(r,'Allocated Rooms');
+  const checkIn    = val(r,'Check-In');
+  const checkOut   = val(r,'Check-Out');
+  const guestName  = val(r,'Full Name');
+
+  // Warn about same-day conflict before cancelling
+  let conflictMsg = '';
+  if (allocRooms && checkOut) {
+    const checkOutDate = checkOut.split('T')[0].split(' ')[0];
+    const today        = new Date().toISOString().split('T')[0];
+    // Check if another reservation is checking in on this room's checkout date
+    const sameDay = allReservations.filter(x =>
+      val(x,'ID') !== resId &&
+      val(x,'Status') !== 'Cancelled' &&
+      val(x,'Allocated Rooms') === allocRooms &&
+      (val(x,'Check-In') || '').startsWith(checkOutDate)
+    );
+    if (sameDay.length > 0) {
+      conflictMsg = '\n\n⚠️ WARNING: Room ' + allocRooms + ' is already allocated to '
+        + val(sameDay[0],'Full Name') + ' for check-in on ' + checkOutDate
+        + '. After cancellation, please verify room allocation for that visitor.';
+    }
+  }
+
+  const confirmMsg = 'Cancel reservation for ' + guestName + '?'
+    + (allocRooms ? '\n\nAllocated room: ' + allocRooms + ' will be automatically set to Available.' : '')
+    + conflictMsg
+    + '\n\nThis action will be saved to Google Sheets.';
+
+  if (!confirm(confirmMsg)) return;
+
+  // Cancel the reservation
   await updateStatus(resId, 'Cancelled');
-  const r = allReservations.find(x => val(x,'ID')===resId);
   if (r) r['Status'] = 'Cancelled';
+
+  // ── Auto-free the allocated room ──
+  if (allocRooms) {
+    const roomNums = allocRooms.split(',').map(s => s.trim()).filter(Boolean);
+    for (const roomNum of roomNums) {
+      const room = allRooms.find(x =>
+        val(x,'Room ID') === roomNum || val(x,'Room Number') === roomNum
+      );
+      if (room) {
+        // Free the room via Apps Script
+        await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body:    JSON.stringify({
+            action:   'freeRoom',
+            roomId:   val(room,'Room ID'),
+            roomNumber: roomNum
+          }),
+          mode: 'no-cors'
+        });
+        // Update local data
+        room['Status']              = 'Available';
+        room['Current Reservation'] = '';
+      }
+    }
+    alert('✅ Reservation cancelled.\nRoom ' + allocRooms + ' has been set to Available.');
+  } else {
+    alert('✅ Reservation cancelled.');
+  }
+
   renderReservTable(allReservations);
+  renderRoomsTable(allRooms);
   renderOverview();
+}
+
+async function sendRegretMail(resId) {
+  const r = allReservations.find(x => val(x,'ID') === resId);
+  if (!r) return;
+  const visitorName  = val(r,'Full Name');
+  const visitorEmail = val(r,'Email');
+  if (!visitorEmail) {
+    alert('❌ No email address found for this visitor. Cannot send regret mail.');
+    return;
+  }
+  // Ask for optional reason
+  const reason = prompt(
+    'Send Regret Mail to: ' + visitorName + ' (' + visitorEmail + ')\n\n'
+    + 'Enter reason (optional — leave blank for default message):\n'
+    + 'e.g. "All rooms are fully booked for your requested dates"',
+    'We regret to inform you that rooms are not available for your requested dates.'
+  );
+  if (reason === null) return; // cancelled
+  const confirmed = confirm(
+    '📩 Send Regret Mail?\n\n'
+    + 'To    : ' + visitorName + '\n'
+    + 'Email : ' + visitorEmail + '\n'
+    + 'Ref ID: ' + resId + '\n\n'
+    + 'Click OK to send.'
+  );
+  if (!confirmed) return;
+  try {
+    const result = await sendRegretEmail(resId, reason || '');
+    if (result && result.success) {
+      alert('✅ Regret mail sent successfully to ' + visitorEmail);
+    } else {
+      alert('⚠️ Mail sending failed. Please try again or contact visitor directly at ' + visitorEmail);
+    }
+  } catch(e) {
+    alert('⚠️ Error: ' + e.message);
+  }
 }
 
 // ══ ROOMS TABLE ══
@@ -1528,6 +1718,151 @@ function openInvoice(ref) {
   const url = 'invoice.html' + (ref ? '?ref=' + encodeURIComponent(ref) : '');
   window.open(url, '_blank');
 }
+
+// ══ VISITOR REPORT (Point 7) ══════════════════════════════════
+
+function renderVisitorReport() {
+  const fromDate = document.getElementById('vr-from')?.value || '';
+  const toDate   = document.getElementById('vr-to')?.value   || '';
+  const cityFilt = (document.getElementById('vr-city')?.value   || '').toLowerCase().trim();
+  const stateFilt= (document.getElementById('vr-state')?.value  || '').toLowerCase().trim();
+  const visitFilt= document.getElementById('vr-visits')?.value  || '';
+  const statusFilt=document.getElementById('vr-status')?.value  || '';
+
+  // Build visit count map by mobile
+  const visitMap = {};
+  allReservations.forEach(r => {
+    const mob = val(r,'Mobile') || val(r,'mobile') || '';
+    if (mob) visitMap[mob] = (visitMap[mob] || 0) + 1;
+  });
+
+  // Running count per mobile (to assign visit number per row)
+  const visitSeq = {};
+
+  // Filter reservations
+  let filtered = allReservations.filter(r => {
+    const cin    = (val(r,'Check-In') || '').split('T')[0];
+    const city   = (val(r,'City')   || '').toLowerCase();
+    const state  = (val(r,'State')  || '').toLowerCase();
+    const mob    = val(r,'Mobile')  || '';
+    const status = val(r,'Status')  || '';
+    const totalV = visitMap[mob] || 1;
+
+    if (fromDate   && cin < fromDate)               return false;
+    if (toDate     && cin > toDate)                 return false;
+    if (cityFilt   && !city.includes(cityFilt))     return false;
+    if (stateFilt  && !state.includes(stateFilt))   return false;
+    if (statusFilt && status !== statusFilt)         return false;
+
+    if (visitFilt === '1'  && totalV !== 1)         return false;
+    if (visitFilt === '2+' && totalV < 2)           return false;
+    if (visitFilt === '3+' && totalV < 3)           return false;
+    if (visitFilt === '5+' && totalV < 5)           return false;
+
+    return true;
+  });
+
+  // Sort by Check-In descending
+  filtered.sort((a,b) => (val(b,'Check-In')||'').localeCompare(val(a,'Check-In')||''));
+
+  // Stats
+  const totalVisitors = new Set(filtered.map(r => val(r,'Mobile'))).size;
+  const repeats       = filtered.filter(r => (visitMap[val(r,'Mobile')] || 1) > 1).length;
+  const confirmed     = filtered.filter(r => val(r,'Status') === 'Confirmed').length;
+
+  document.getElementById('vr-stats').innerHTML = [
+    ['📋','Total Records', filtered.length],
+    ['👤','Unique Visitors', totalVisitors],
+    ['🔄','Repeat Visitor Records', repeats],
+    ['✅','Confirmed', confirmed],
+  ].map(([ic,lb,v]) =>
+    `<div style="background:var(--cream);border-radius:var(--radius-sm);padding:10px 16px;min-width:130px;text-align:center;">
+      <div style="font-size:1.1rem;">${ic}</div>
+      <div style="font-size:1rem;font-weight:700;color:var(--maroon);">${v}</div>
+      <div style="font-size:0.72rem;color:var(--text-light);">${lb}</div>
+    </div>`
+  ).join('');
+
+  // Build table rows
+  const tbody = document.getElementById('vr-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="12">No records found for selected filters</td></tr>';
+    document.getElementById('vr-count').textContent = '';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((r, idx) => {
+    const mob     = val(r,'Mobile') || '';
+    visitSeq[mob] = (visitSeq[mob] || 0) + 1;
+    const vNum    = visitSeq[mob];
+    const total   = visitMap[mob] || 1;
+    const rooms   = [];
+    if (parseInt(val(r,'AC Rooms'))>0)     rooms.push(`❄️×${val(r,'AC Rooms')}`);
+    if (parseInt(val(r,'Non-AC Rooms'))>0) rooms.push(`🌬️×${val(r,'Non-AC Rooms')}`);
+    if (parseInt(val(r,'GH Rooms'))>0)     rooms.push(`🏡×${val(r,'GH Rooms')}`);
+    const status  = val(r,'Status') || '';
+    const sCls    = status === 'Confirmed' ? 'color:#2E7D32;font-weight:700;'
+                  : status === 'Cancelled' ? 'color:#C62828;'
+                  : 'color:#E8630A;font-weight:600;';
+    return `<tr>
+      <td style="text-align:center;">${idx+1}</td>
+      <td><code style="font-size:0.7rem;">${val(r,'ID')}</code></td>
+      <td><strong>${val(r,'Full Name')}</strong></td>
+      <td>${mob}</td>
+      <td>${val(r,'City') || '—'}</td>
+      <td>${val(r,'State') || '—'}</td>
+      <td>${fmtDate(val(r,'Check-In'))}</td>
+      <td>${fmtDate(val(r,'Check-Out'))}</td>
+      <td style="text-align:center;">${val(r,'Nights') || '—'}</td>
+      <td style="font-size:0.75rem;">${rooms.join(' ') || '—'}</td>
+      <td style="${sCls}">${status}</td>
+      <td style="text-align:center;font-weight:700;color:var(--maroon);">${vNum}/${total}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('vr-count').textContent =
+    `Showing ${filtered.length} record(s) | ${totalVisitors} unique visitor(s)`;
+}
+
+function clearVRFilters() {
+  ['vr-from','vr-to','vr-city','vr-state','vr-visits','vr-status'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  renderVisitorReport();
+}
+
+function exportVisitorExcel() {
+  // Build CSV data from current filtered table
+  const rows  = document.querySelectorAll('#vr-tbody tr');
+  if (!rows.length || rows[0].classList.contains('empty-row')) {
+    alert('No data to export.');
+    return;
+  }
+
+  const headers = ['#','Ref ID','Full Name','Mobile','City','State','Check-In','Check-Out','Nights','Rooms Booked','Status','Visit #'];
+  const csvRows = [headers.join(',')];
+
+  rows.forEach(row => {
+    const cells = Array.from(row.querySelectorAll('td')).map(td => {
+      const txt = td.innerText.replace(/[❄️🌬️🏡✅🔄📋👤]/g,'').trim();
+      return '"' + txt.replace(/"/g,'""') + '"';
+    });
+    csvRows.push(cells.join(','));
+  });
+
+  const csv     = '\uFEFF' + csvRows.join('\n'); // BOM for Excel Hindi support
+  const blob    = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url     = URL.createObjectURL(blob);
+  const link    = document.createElement('a');
+  const today   = new Date().toISOString().split('T')[0];
+  link.href     = url;
+  link.download = 'VisitorReport_' + today + '.csv';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+
 </script>
 </body>
 </html>
