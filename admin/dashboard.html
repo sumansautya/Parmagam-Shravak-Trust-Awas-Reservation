@@ -568,9 +568,17 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
       <label class="field-label">Or type room numbers manually (comma separated)</label>
       <input type="text" class="field-input" id="manualRooms" placeholder="e.g. 101, 203">
     </div>
+    <!-- Regret option inside modal — admin can send regret BEFORE allocating -->
+    <div style="background:#FFF8E0;border:1px solid #C8973A;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:0.8rem;color:#5A3E1B;">
+      <strong>⚠️ No rooms available?</strong> Click <strong>Send Regret</strong> to inform the visitor that accommodation cannot be provided.
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
-      <button class="btn btn-secondary" onclick="closeModal('allocModal')">Cancel</button>
-      <button class="btn btn-green" id="confirmAllocBtn" onclick="confirmAlloc()">✅ Confirm &amp; Send Email</button>
+      <button class="btn btn-secondary" onclick="closeModal('allocModal')">✕ Cancel</button>
+      <button class="btn" id="regretFromAllocBtn" onclick="sendRegretFromAlloc()"
+              style="background:#7B0D00;color:white;border:none;">
+        📩 Send Regret
+      </button>
+      <button class="btn btn-green" id="confirmAllocBtn" onclick="confirmAlloc()">✅ Confirm &amp; Send Payment Request</button>
     </div>
   </div>
 </div>
@@ -834,7 +842,7 @@ function renderReservTable(data) {
       <td style="white-space:nowrap;">
         ${val(r,'Status')!=='Confirmed'?`<button class="act-btn act-allocate" onclick="openAllocModal('${val(r,'ID')}')">🏠 Allocate</button> `:''}
         <button class="act-btn act-view" onclick="viewReservation('${val(r,'ID')}')">👁 View</button>
-        ${val(r,'Status')!=='Cancelled'?`<button class="act-btn act-regret" onclick="sendRegretMail('${val(r,'ID')}')" title="Send Regret / Room Not Available Mail">📩 Regret</button>`:''}
+        ${(val(r,'Status')==='Pending')?`<button class="act-btn act-regret" onclick="sendRegretMail('${val(r,'ID')}')" title="Send Regret — Before Payment Only">📩 Regret</button>`:''}
         ${val(r,'Status')!=='Cancelled'?`<button class="act-btn act-cancel" onclick="cancelReservation('${val(r,'ID')}')">✕</button>`:''}
       </td>
     </tr>`).join('');
@@ -1000,6 +1008,14 @@ function toggleChip(roomId, roomNum, status) {
     chip.classList.add('chip-selected');
     chip.classList.remove('chip-available');
   }
+}
+
+// ── Send Regret directly from Allocation Modal ──
+function sendRegretFromAlloc() {
+  if (!currentAllocId) return;
+  closeModal('allocModal');
+  // Small delay to let modal close before showing regret dialog
+  setTimeout(() => sendRegretMail(currentAllocId), 200);
 }
 
 async function confirmAlloc() {
