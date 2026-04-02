@@ -159,22 +159,34 @@
           <span class="field-error" id="err-mobile">Please enter a valid 10-digit mobile number</span>
         </div>
 
-        <!-- Email with confirm -->
+        <!-- Email-1: hidden (asterisk) — visitor cannot see what they type -->
         <div class="field-group">
           <label class="field-label">Email Address <span class="hindi">/ ईमेल पता</span><span class="req">*</span></label>
-          <input type="email" class="field-input" id="email" placeholder="your@email.com"
-                 autocomplete="email" oninput="checkEmailMatch()">
+          <input type="password" class="field-input" id="email"
+                 placeholder="Enter your email (hidden)"
+                 autocomplete="off" onpaste="return false;" ondrop="return false;"
+                 oninput="checkEmailMatch()"
+                 onblur="validateEmail1()">
+          <span style="font-size:0.73rem;color:var(--text-light);margin-top:3px;display:block;">
+            🔒 Email is hidden while typing — re-enter below to confirm
+          </span>
           <span class="field-error" id="err-email">Please enter a valid email address</span>
         </div>
 
-        <!-- Confirm Email -->
+        <!-- Email-2: visible — visitor sees what they are typing -->
         <div class="field-group">
           <label class="field-label">Confirm Email Address <span class="hindi">/ ईमेल पुनः दर्ज करें</span><span class="req">*</span></label>
-          <input type="email" class="field-input" id="emailConfirm" placeholder="Re-enter email address"
+          <input type="email" class="field-input" id="emailConfirm"
+                 placeholder="Re-type your email address here"
                  autocomplete="off" onpaste="return false;" ondrop="return false;"
-                 oninput="checkEmailMatch()">
-          <span class="field-error" id="err-emailConfirm">Email addresses do not match</span>
-          <span id="emailMatchOk" style="display:none;font-size:0.78rem;color:#2E7D32;margin-top:4px;">
+                 oninput="checkEmailMatch()"
+                 onblur="checkEmailMatch()">
+          <span class="field-error" id="err-emailConfirm"
+                style="display:none;">
+            ⚠️ Please re-enter your correct email address / कृपया सही ईमेल पता पुनः दर्ज करें
+          </span>
+          <span id="emailMatchOk"
+                style="display:none;font-size:0.78rem;color:#2E7D32;margin-top:4px;font-weight:600;">
             ✅ Email addresses match / ईमेल मिलान सही है
           </span>
         </div>
