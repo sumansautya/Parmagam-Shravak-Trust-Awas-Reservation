@@ -100,12 +100,12 @@
 </main>
 
 <footer class="site-footer">
-  🕉 Shri Parmagam Shravak Trust, Sonagir &nbsp;|&nbsp; Kund Kund Nagar, Sidd kshetra Sonagir — 475685, Dist. Datia (M.P.)
+  🕉 Shri Parmagam Shravak Trust, Sonagir &nbsp;|&nbsp; Kund Kund Nagar, Sonagir — 473885, Dist. Datia (M.P.)
 </footer>
 
 <script src="js/sheets.js"></script>
 <script>
-const ROOM_RATES = { ac: 1200, nonAc: 700, guestHouse: 2000 };
+const ROOM_RATES = { ac: 1200, nonAc: 700, gh2bhk: 2000, gh3bhk: 3000 };
 let reservationData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderReview(d) {
   const nights = d.totalNights || 0;
-  const { ac=0, nonAc=0, guestHouse=0 } = d.rooms || {};
-  const grandTotal = (ac * ROOM_RATES.ac + nonAc * ROOM_RATES.nonAc + guestHouse * ROOM_RATES.guestHouse) * nights;
+  const { ac=0, nonAc=0, gh2bhk=0, gh3bhk=0 } = d.rooms || {};
+  const grandTotal = (ac * ROOM_RATES.ac + nonAc * ROOM_RATES.nonAc + gh2bhk * ROOM_RATES.gh2bhk + gh3bhk * ROOM_RATES.gh3bhk) * nights;
 
   const allMembers = d.members || [];
   const male     = allMembers.filter(m => m.gender === 'Male').length;
@@ -170,9 +170,10 @@ function renderReview(d) {
         <div class="review-row"><span class="review-label">Check-In</span><span class="review-value">${formatDate(d.checkIn)}</span></div>
         <div class="review-row"><span class="review-label">Check-Out</span><span class="review-value">${formatDate(d.checkOut)}</span></div>
         <div class="review-row"><span class="review-label">Total Nights</span><span class="review-value"><span class="review-badge badge-green">🌙 ${nights} Night(s)</span></span></div>
-        ${ac > 0 ? `<div class="review-row"><span class="review-label">AC Room(s)</span><span class="review-value">${ac} room(s) × ₹1,200/night = ₹${(ac*1200*nights).toLocaleString('en-IN')}</span></div>` : ''}
-        ${nonAc > 0 ? `<div class="review-row"><span class="review-label">Non-AC Room(s)</span><span class="review-value">${nonAc} room(s) × ₹700/night = ₹${(nonAc*700*nights).toLocaleString('en-IN')}</span></div>` : ''}
-        ${guestHouse > 0 ? `<div class="review-row"><span class="review-label">Guest House Room(s)</span><span class="review-value">${guestHouse} room(s) × ₹2,000/night = ₹${(guestHouse*2000*nights).toLocaleString('en-IN')}</span></div>` : ''}
+        ${gh3bhk > 0 ? `<div class="review-row"><span class="review-label">🏡 Guest House 3 BHK</span><span class="review-value">${gh3bhk} unit(s) × ₹3,000/night = ₹${(gh3bhk*3000*nights).toLocaleString('en-IN')}</span></div>` : ''}
+        ${gh2bhk > 0 ? `<div class="review-row"><span class="review-label">🏠 Guest House 2 BHK</span><span class="review-value">${gh2bhk} unit(s) × ₹2,000/night = ₹${(gh2bhk*2000*nights).toLocaleString('en-IN')}</span></div>` : ''}
+        ${ac > 0 ? `<div class="review-row"><span class="review-label">❄️ AC Room(s)</span><span class="review-value">${ac} room(s) × ₹1,200/night = ₹${(ac*1200*nights).toLocaleString('en-IN')}</span></div>` : ''}
+        ${nonAc > 0 ? `<div class="review-row"><span class="review-label">🌬️ Room with Cooler</span><span class="review-value">${nonAc} room(s) × ₹700/night = ₹${(nonAc*700*nights).toLocaleString('en-IN')}</span></div>` : ''}
         <div class="review-row"><span class="review-label">Estimated Total</span><span class="review-value" style="color:var(--green); font-size:1rem;">₹${grandTotal.toLocaleString('en-IN')}</span></div>
       </div>
       <div class="review-block">
