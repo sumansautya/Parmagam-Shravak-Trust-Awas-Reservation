@@ -26,55 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderMembers();
 
-  // ── Email match check ──
-// Email-1: password type (hidden/asterisk) — visitor cannot see what they type
-// Email-2: email type (visible) — visitor sees what they type
-// Both must match exactly before cursor moves to next field
-
-function validateEmail1() {
-  // Validate format of Email-1 on blur
-  var email1 = document.getElementById('email')?.value?.trim() || '';
-  var errEl  = document.getElementById('err-email');
-  var valid  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
-  if (errEl) errEl.style.display = valid ? 'none' : 'block';
-  return valid;
-}
-
-function checkEmailMatch() {
-  var email1 = document.getElementById('email')?.value?.trim() || '';
-  var email2 = document.getElementById('emailConfirm')?.value?.trim() || '';
-  var okEl   = document.getElementById('emailMatchOk');
-  var errEl  = document.getElementById('err-emailConfirm');
-
-  // Don't show anything until Email-2 has some input
-  if (!email2) {
-    if (okEl)  okEl.style.display  = 'none';
-    if (errEl) errEl.style.display = 'none';
-    return;
-  }
-
-  // Both must be identical AND valid email format
-  var bothMatch = (email1 === email2) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
-
-  if (bothMatch) {
-    if (okEl)  okEl.style.display  = 'inline-block';
-    if (errEl) errEl.style.display = 'none';
-    // Remove error styling from confirm field
-    document.getElementById('emailConfirm')?.classList.remove('error');
-  } else {
-    if (okEl)  okEl.style.display  = 'none';
-    if (errEl) {
-      errEl.style.display = 'block';
-      // Specific messages
-      if (email1 && email2 && email1 !== email2) {
-        errEl.textContent = '⚠️ Please re-enter your correct email address / कृपया सही ईमेल पता पुनः दर्ज करें';
-      } else if (email2 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email2)) {
-        errEl.textContent = '⚠️ Please enter a valid email address / कृपया वैध ईमेल पता दर्ज करें';
-      }
-    }
-    document.getElementById('emailConfirm')?.classList.add('error');
-  }
-}
 
 ['fullName','address','city','mobile','email','age'].forEach(id => {
     const el = document.getElementById(id);
@@ -414,10 +365,12 @@ function validateForm() {
       errConfirm.textContent = '⚠️ Please re-enter your correct email address / कृपया सही ईमेल पता पुनः दर्ज करें';
       errConfirm.style.display = 'block';
     }
-    if (!firstError) firstError = document.getElementById('emailConfirm');
-    isValid = false;
+    document.getElementById('emailConfirm')?.classList.add('error');
+    flag(document.getElementById('emailConfirm'));
   } else {
-    document.getElementById('err-emailConfirm').style.display = 'none';
+    var errConfirmOk = document.getElementById('err-emailConfirm');
+    if (errConfirmOk) errConfirmOk.style.display = 'none';
+    document.getElementById('emailConfirm')?.classList.remove('error');
   }
   chk('age',       age !== '' && parseInt(age) >= 1 && parseInt(age) <= 120);
   chk('state',     state !== '', 'err-state');
@@ -528,6 +481,67 @@ function validateForm() {
   }
 
   return valid;
+}
+
+// ════════════════════════════════════════════
+// EMAIL DOUBLE-ENTRY VALIDATION
+// Email-1: password type — visitor types but sees asterisks
+// Email-2: email type   — visitor sees exactly what they type
+// ════════════════════════════════════════════
+
+// Called on blur of Email-1 — validates format only
+function validateEmail1() {
+  var email1 = document.getElementById('email')?.value?.trim() || '';
+  var errEl  = document.getElementById('err-email');
+  var valid  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
+  if (errEl) {
+    errEl.style.display  = valid ? 'none' : 'block';
+    errEl.textContent    = valid ? '' : 'Please enter a valid email address';
+  }
+  // Also re-run match check if Email-2 already has a value
+  var email2 = document.getElementById('emailConfirm')?.value?.trim() || '';
+  if (email2) checkEmailMatch();
+  return valid;
+}
+
+// Called on every keystroke in Email-2 AND on blur
+// Shows error immediately if emails don't match
+function checkEmailMatch() {
+  var email1 = document.getElementById('email')?.value?.trim() || '';
+  var email2 = document.getElementById('emailConfirm')?.value?.trim() || '';
+  var okEl   = document.getElementById('emailMatchOk');
+  var errEl  = document.getElementById('err-emailConfirm');
+  var field2 = document.getElementById('emailConfirm');
+
+  // Nothing to check if Email-2 is still empty
+  if (!email2) {
+    if (okEl)  okEl.style.display  = 'none';
+    if (errEl) errEl.style.display = 'none';
+    field2?.classList.remove('error');
+    return;
+  }
+
+  var isValidFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email2);
+  var bothMatch     = (email1 === email2) && isValidFormat;
+
+  if (bothMatch) {
+    // ✅ Match — show green tick, hide error
+    if (okEl)  { okEl.style.display  = 'inline-block'; }
+    if (errEl) { errEl.style.display = 'none'; }
+    field2?.classList.remove('error');
+  } else {
+    // ❌ No match — show red error immediately
+    if (okEl)  { okEl.style.display  = 'none'; }
+    if (errEl) {
+      errEl.style.display = 'block';
+      if (!isValidFormat) {
+        errEl.textContent = '⚠️ Please enter a valid email address / कृपया वैध ईमेल पता दर्ज करें';
+      } else {
+        errEl.textContent = '⚠️ Please re-enter your correct email address / कृपया सही ईमेल पता पुनः दर्ज करें';
+      }
+    }
+    field2?.classList.add('error');
+  }
 }
 
 // ════════════════════════════════════════════
