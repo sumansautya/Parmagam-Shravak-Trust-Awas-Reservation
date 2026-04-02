@@ -26,23 +26,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderMembers();
 
-  // ── Email match check (called on every keystroke) ──
+  // ── Email match check ──
+// Email-1: password type (hidden/asterisk) — visitor cannot see what they type
+// Email-2: email type (visible) — visitor sees what they type
+// Both must match exactly before cursor moves to next field
+
+function validateEmail1() {
+  // Validate format of Email-1 on blur
+  var email1 = document.getElementById('email')?.value?.trim() || '';
+  var errEl  = document.getElementById('err-email');
+  var valid  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
+  if (errEl) errEl.style.display = valid ? 'none' : 'block';
+  return valid;
+}
+
 function checkEmailMatch() {
   var email1 = document.getElementById('email')?.value?.trim() || '';
   var email2 = document.getElementById('emailConfirm')?.value?.trim() || '';
   var okEl   = document.getElementById('emailMatchOk');
   var errEl  = document.getElementById('err-emailConfirm');
+
+  // Don't show anything until Email-2 has some input
   if (!email2) {
     if (okEl)  okEl.style.display  = 'none';
     if (errEl) errEl.style.display = 'none';
     return;
   }
-  if (email1 === email2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1)) {
+
+  // Both must be identical AND valid email format
+  var bothMatch = (email1 === email2) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
+
+  if (bothMatch) {
     if (okEl)  okEl.style.display  = 'inline-block';
     if (errEl) errEl.style.display = 'none';
+    // Remove error styling from confirm field
+    document.getElementById('emailConfirm')?.classList.remove('error');
   } else {
     if (okEl)  okEl.style.display  = 'none';
-    if (errEl) errEl.style.display = 'block';
+    if (errEl) {
+      errEl.style.display = 'block';
+      // Specific messages
+      if (email1 && email2 && email1 !== email2) {
+        errEl.textContent = '⚠️ Please re-enter your correct email address / कृपया सही ईमेल पता पुनः दर्ज करें';
+      } else if (email2 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email2)) {
+        errEl.textContent = '⚠️ Please enter a valid email address / कृपया वैध ईमेल पता दर्ज करें';
+      }
+    }
+    document.getElementById('emailConfirm')?.classList.add('error');
   }
 }
 
@@ -379,7 +409,11 @@ function validateForm() {
   // Confirm email must match
   const emailConfirm = document.getElementById('emailConfirm')?.value?.trim() || '';
   if (email !== emailConfirm || !emailConfirm) {
-    document.getElementById('err-emailConfirm').style.display = 'block';
+    var errConfirm = document.getElementById('err-emailConfirm');
+    if (errConfirm) {
+      errConfirm.textContent = '⚠️ Please re-enter your correct email address / कृपया सही ईमेल पता पुनः दर्ज करें';
+      errConfirm.style.display = 'block';
+    }
     if (!firstError) firstError = document.getElementById('emailConfirm');
     isValid = false;
   } else {
