@@ -26,7 +26,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderMembers();
 
-  ['fullName','address','city','mobile','email','age'].forEach(id => {
+  // ── Email match check (called on every keystroke) ──
+function checkEmailMatch() {
+  var email1 = document.getElementById('email')?.value?.trim() || '';
+  var email2 = document.getElementById('emailConfirm')?.value?.trim() || '';
+  var okEl   = document.getElementById('emailMatchOk');
+  var errEl  = document.getElementById('err-emailConfirm');
+  if (!email2) {
+    if (okEl)  okEl.style.display  = 'none';
+    if (errEl) errEl.style.display = 'none';
+    return;
+  }
+  if (email1 === email2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1)) {
+    if (okEl)  okEl.style.display  = 'inline-block';
+    if (errEl) errEl.style.display = 'none';
+  } else {
+    if (okEl)  okEl.style.display  = 'none';
+    if (errEl) errEl.style.display = 'block';
+  }
+}
+
+['fullName','address','city','mobile','email','age'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('blur', () => validateField(id));
   });
@@ -356,6 +376,15 @@ function validateForm() {
   chk('city',      city.length >= 2);
   chk('mobile',    /^[6-9][0-9]{9}$/.test(mob));
   chk('email',     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  // Confirm email must match
+  const emailConfirm = document.getElementById('emailConfirm')?.value?.trim() || '';
+  if (email !== emailConfirm || !emailConfirm) {
+    document.getElementById('err-emailConfirm').style.display = 'block';
+    if (!firstError) firstError = document.getElementById('emailConfirm');
+    isValid = false;
+  } else {
+    document.getElementById('err-emailConfirm').style.display = 'none';
+  }
   chk('age',       age !== '' && parseInt(age) >= 1 && parseInt(age) <= 120);
   chk('state',     state !== '', 'err-state');
 
