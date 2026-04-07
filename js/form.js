@@ -85,12 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // ── Restore additional members (skip primary — index 0 is always Self) ──
       if (d.members && d.members.length > 1) {
-        // d.members[0] = primary visitor (Self) — skip it
-        // d.members[1..n] = additional members to restore
-        const guestMembers = d.members.slice(1);
-
-        // Set formState.members directly — renderMembersFromState()
-        // will read from this and fill all DOM inputs automatically
+        const guestMembers = d.members.slice(1); // index 0 is primary (Self)
+        // Load into formState — renderMembersFromState() will build cards + fill values
         formState.members = guestMembers.map(m => ({
           name:     m.name     || '',
           gender:   m.gender   || '',
@@ -99,26 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
           aadhaar:  m.aadhaar  || '',
           mobile:   m.mobile   || ''
         }));
-
-        // Use renderMembersFromState() — it builds cards AND fills values from formState
         renderMembersFromState();
-
-        // Extra pass after DOM settles — handle select dropdowns which need explicit dispatch
-        setTimeout(() => {
-          guestMembers.forEach((m, i) => {
-            const idx = i + 1;
-            // Selects (gender, relation) need explicit value + change event
-            ['gender','relation'].forEach(f => {
-              const el = document.getElementById(`m${idx}-${f}`);
-              if (el && m[f]) {
-                el.value = m[f];
-                el.dispatchEvent(new Event('change'));
-              }
-            });
-            checkMemberMobileReq(idx);
-          });
-          updateMemberSummary();
-        }, 150);
       }
     } catch(e) { console.log('Restore error:', e); }
   }
@@ -338,17 +315,32 @@ function renderMembersFromState() {
   const container = document.getElementById('membersList');
   container.innerHTML = buildPrimaryMemberCard();
   syncPrimaryMember();
+  // Build ALL cards first
   formState.members.forEach((m, i) => {
     const div = document.createElement('div');
     div.innerHTML = buildMemberCard(i + 1);
     container.appendChild(div.firstElementChild);
-    setTimeout(() => {
-      ['name','gender','age','relation','aadhaar','mobile'].forEach(f => {
-        const el = document.getElementById(`m${i+1}-${f}`);
+  });
+  // Then fill ALL values in ONE setTimeout after all cards exist in DOM
+  setTimeout(() => {
+    formState.members.forEach((m, i) => {
+      const idx = i + 1;
+      ['name','age','aadhaar','mobile'].forEach(f => {
+        const el = document.getElementById(`m${idx}-${f}`);
         if (el && m[f]) el.value = m[f];
       });
-    }, 10);
-  });
+      // Select fields need explicit value set
+      ['gender','relation'].forEach(f => {
+        const el = document.getElementById(`m${idx}-${f}`);
+        if (el && m[f]) {
+          el.value = m[f];
+          el.dispatchEvent(new Event('change'));
+        }
+      });
+      checkMemberMobileReq(idx);
+    });
+    updateMemberSummary();
+  }, 50);
 }
 
 function updateMemberData(i, field, value) {
