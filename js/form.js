@@ -87,9 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (d.members && d.members.length > 1) {
         // d.members[0] = primary visitor (Self) — skip it
         // d.members[1..n] = additional members to restore
-        const guestMembers = d.members.slice(1); // skip primary
+        const guestMembers = d.members.slice(1);
 
-        // Set formState.members to correct count
+        // Set formState.members directly — renderMembersFromState()
+        // will read from this and fill all DOM inputs automatically
         formState.members = guestMembers.map(m => ({
           name:     m.name     || '',
           gender:   m.gender   || '',
@@ -99,33 +100,25 @@ document.addEventListener('DOMContentLoaded', () => {
           mobile:   m.mobile   || ''
         }));
 
-        // Re-render member cards with correct count
-        renderMembers();
+        // Use renderMembersFromState() — it builds cards AND fills values from formState
+        renderMembersFromState();
 
-        // After DOM renders, fill all field values
+        // Extra pass after DOM settles — handle select dropdowns which need explicit dispatch
         setTimeout(() => {
           guestMembers.forEach((m, i) => {
-            const idx = i + 1; // member card index starts at 1 (primary is 0)
-            const setF = (id, v) => {
-              const el = document.getElementById(id);
-              if (!el || v === undefined || v === null || v === '') return;
-              el.value = v;
-              // For select elements, also trigger onchange to sync formState
-              if (el.tagName === 'SELECT') {
+            const idx = i + 1;
+            // Selects (gender, relation) need explicit value + change event
+            ['gender','relation'].forEach(f => {
+              const el = document.getElementById(`m${idx}-${f}`);
+              if (el && m[f]) {
+                el.value = m[f];
                 el.dispatchEvent(new Event('change'));
               }
-            };
-            setF(`m${idx}-name`,     m.name);
-            setF(`m${idx}-gender`,   m.gender);
-            setF(`m${idx}-age`,      m.age);
-            setF(`m${idx}-relation`, m.relation);
-            setF(`m${idx}-aadhaar`,  m.aadhaar);
-            setF(`m${idx}-mobile`,   m.mobile);
-            // Show mobile required label if age > 18
+            });
             checkMemberMobileReq(idx);
           });
           updateMemberSummary();
-        }, 200); // slightly longer delay to ensure DOM is ready
+        }, 150);
       }
     } catch(e) { console.log('Restore error:', e); }
   }
