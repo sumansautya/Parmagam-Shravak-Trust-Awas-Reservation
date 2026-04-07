@@ -906,18 +906,27 @@ function getRoomBookedDates(roomLabel) {
   // Build a list of date ranges where this room is already allocated
   // Uses toISO() to normalize all date formats from Google Sheet
   const booked = [];
+  // Convert to STRING for comparison — Google Sheet stores some room numbers
+  // as numbers (right-aligned) and some as text (left-aligned), causing mismatches
   const searchLabel = String(roomLabel || '').trim();
+
   allReservations.forEach(res => {
     const status    = (val(res,'Status') || '').toLowerCase();
-    const allocRoom = (val(res,'Allocated Rooms') || '').trim();
+    const allocRaw  = val(res,'Allocated Rooms');
+    const allocRoom = String(allocRaw || '').trim();
     if (status === 'cancelled') return; // skip cancelled
     if (!allocRoom || allocRoom === '—') return; // skip unallocated
-    // Check if this room label appears in allocated rooms (comma-separated)
-    const roomNums = allocRoom.split(',').map(s => s.trim());
-    const matched  = roomNums.some(n => n === searchLabel);
+
+    // Split by comma, convert EACH part to string and trim
+    // This handles: "202" (number), "GH-06" (text), "101, 102" (multiple)
+    const roomNums = allocRoom.split(',').map(s => String(s).trim());
+
+    // Compare as strings — eliminates number/text mismatch
+    const matched = roomNums.some(n => n === searchLabel);
+
     if (matched) {
-      const ci = toISO(val(res,'Check-In'));   // normalize to YYYY-MM-DD
-      const co = toISO(val(res,'Check-Out'));  // normalize to YYYY-MM-DD
+      const ci = toISO(val(res,'Check-In'));
+      const co = toISO(val(res,'Check-Out'));
       if (ci && co) {
         booked.push({
           id:   val(res,'ID'),
@@ -994,7 +1003,8 @@ async function openAllocModal(resId) {
   function shortLabel(room) {
     // Room ID column contains the actual room number (101, 201, GH-01 etc.)
     // Room Number column contains full description — DO NOT USE for display
-    const rid = (val(room,'Room ID') || '').trim();
+    // Convert to STRING — Room ID may be stored as number in Google Sheet
+    const rid = String(val(room,'Room ID') || '').trim();
     return rid || '?';
   }
 
@@ -1018,7 +1028,7 @@ async function openAllocModal(resId) {
     let effectiveStatus = rawStatus;
     let conflictInfo    = '';
     if (rawStatus === 'available' && newCi && newCo) {
-      const check = isRoomAvailableForDates(label, newCi, newCo, resId);
+      const check = isRoomAvailableForDates(String(label), newCi, newCo, resId);
       if (!check.available) {
         effectiveStatus = 'occupied'; // treat as occupied for these dates
         conflictInfo    = 'Booked: ' + check.conflictWith.name
