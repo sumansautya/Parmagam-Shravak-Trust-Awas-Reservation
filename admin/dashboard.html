@@ -894,6 +894,45 @@ function renderAllocTable() {
 }
 
 // ══ ALLOCATION MODAL ══
+
+// ── Check if a room is booked for overlapping dates ──
+// Two reservations overlap if: checkIn1 < checkOut2 AND checkOut1 > checkIn2
+function getRoomBookedDates(roomLabel) {
+  // Build a list of date ranges where this room is already allocated
+  const booked = [];
+  allReservations.forEach(res => {
+    const status    = (val(res,'Status') || '').toLowerCase();
+    const allocRoom = (val(res,'Allocated Rooms') || '');
+    if (status === 'cancelled') return; // skip cancelled
+    if (!allocRoom) return;             // skip unallocated
+    // Check if this room appears in allocated rooms
+    const roomNums = allocRoom.split(',').map(s => s.trim());
+    if (roomNums.some(n => n === roomLabel || n === String(roomLabel))) {
+      const ci = (val(res,'Check-In')  || '').split('T')[0].split(' ')[0];
+      const co = (val(res,'Check-Out') || '').split('T')[0].split(' ')[0];
+      if (ci && co) booked.push({ id: val(res,'ID'), ci, co, name: val(res,'Full Name') });
+    }
+  });
+  return booked;
+}
+
+function datesOverlap(ci1, co1, ci2, co2) {
+  // Two stays overlap if one starts before the other ends
+  // ci1 < co2 AND co1 > ci2
+  return ci1 < co2 && co1 > ci2;
+}
+
+function isRoomAvailableForDates(roomLabel, newCi, newCo, excludeResId) {
+  const booked = getRoomBookedDates(roomLabel);
+  for (const b of booked) {
+    if (b.id === excludeResId) continue; // skip the current reservation itself
+    if (datesOverlap(newCi, newCo, b.ci, b.co)) {
+      return { available: false, conflictWith: b };
+    }
+  }
+  return { available: true };
+}
+
 async function openAllocModal(resId) {
   currentAllocId = resId;
   selectedChips  = [];
@@ -951,17 +990,38 @@ async function openAllocModal(resId) {
     return rid;
   }
 
+  // Get check-in and check-out of the reservation being allocated
+  const newCi = (val(r,'Check-In')  || '').split('T')[0].split(' ')[0];
+  const newCo = (val(r,'Check-Out') || '').split('T')[0].split(' ')[0];
+
   // Group rooms by category with headers — show short label only in chip
+  // Chip colour based on DATE OVERLAP, not just Status field
   let gridHtml = '';
   let lastCat  = '';
   sortedRooms.forEach(room => {
-    const s       = (val(room,'Status')||'available').toLowerCase();
-    const cls     = s==='available' ? 'chip-available' : s==='occupied' ? 'chip-occupied' : 'chip-maintenance';
-    const cat     = val(room,'Category') || '';
-    const roomId  = val(room,'Room ID') || '';
-    const rate    = val(room,'Rate') || '';
-    const status  = s.charAt(0).toUpperCase() + s.slice(1);
-    const label   = shortLabel(room);
+    const rawStatus = (val(room,'Status')||'available').toLowerCase();
+    const cat       = val(room,'Category') || '';
+    const roomId    = val(room,'Room ID')  || '';
+    const rate      = val(room,'Rate')     || '';
+    const label     = shortLabel(room);
+
+    // ── DATE OVERLAP CHECK ──
+    // Even if room Status=Available, check if it has a booking on these dates
+    let effectiveStatus = rawStatus;
+    let conflictInfo    = '';
+    if (rawStatus === 'available' && newCi && newCo) {
+      const check = isRoomAvailableForDates(label, newCi, newCo, resId);
+      if (!check.available) {
+        effectiveStatus = 'occupied'; // treat as occupied for these dates
+        conflictInfo    = 'Booked: ' + check.conflictWith.name
+          + ' (' + check.conflictWith.ci + ' to ' + check.conflictWith.co + ')';
+      }
+    }
+
+    const cls    = effectiveStatus === 'available'    ? 'chip-available'
+                 : effectiveStatus === 'maintenance'  ? 'chip-maintenance'
+                 : 'chip-occupied';
+    const status = conflictInfo || (effectiveStatus.charAt(0).toUpperCase() + effectiveStatus.slice(1));
 
     // Category header — shown once per group
     if (cat !== lastCat) {
@@ -982,9 +1042,9 @@ async function openAllocModal(resId) {
       lastCat = cat;
     }
 
-    // Chip — short label only, full details on hover
+    // Chip — short label, colour based on date availability, conflict info on hover
     gridHtml += `<div class="room-chip ${cls}" id="chip-${roomId}"
-      onclick="toggleChip('${roomId}','${label}','${s}')"
+      onclick="toggleChip('${roomId}','${label}','${effectiveStatus}')"
       title="${cat} | Rs.${rate}/night | ${status}">
       <div style="font-size:0.9rem;font-weight:800;">${label}</div>
     </div>`;
@@ -1031,10 +1091,29 @@ async function confirmAlloc() {
   if (!roomNums.length) { alert('Please select or enter at least one room number.'); return; }
 
   const btn = document.getElementById('confirmAllocBtn');
+  const r   = allReservations.find(x => val(x,'ID') === currentAllocId);
+
+  // ── Final date-overlap validation before saving ──
+  const newCi2 = (val(r,'Check-In')  || '').split('T')[0].split(' ')[0];
+  const newCo2 = (val(r,'Check-Out') || '').split('T')[0].split(' ')[0];
+  const conflicts = [];
+  roomNums.forEach(roomNum => {
+    const check = isRoomAvailableForDates(roomNum, newCi2, newCo2, currentAllocId);
+    if (!check.available) {
+      conflicts.push('Room ' + roomNum + ' is already booked for '
+        + check.conflictWith.name + ' ('
+        + check.conflictWith.ci + ' to ' + check.conflictWith.co + ')');
+    }
+  });
+  if (conflicts.length > 0) {
+    alert('⚠️ Cannot Allocate — Date Conflict Detected:\n\n'
+      + conflicts.join('\n')
+      + '\n\nPlease select a different room.');
+    return;
+  }
+
   btn.innerHTML = '<span class="spinner"></span> Saving...';
   btn.disabled  = true;
-
-  const r = allReservations.find(x => val(x,'ID') === currentAllocId);
 
   // 1. Save allocation to Google Sheets
   await allocateRoom(currentAllocId, roomNums);
