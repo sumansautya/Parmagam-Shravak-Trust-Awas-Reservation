@@ -21,7 +21,11 @@ const ROOM_RATES = { ac: 1200, nonAc: 700, gh2bhk: 2000, gh3bhk: 3000 };
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('checkIn').min = today;
+  // Allow 1 day back-dated Check-In for late night arrivals
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  document.getElementById('checkIn').min  = yesterdayStr;
   document.getElementById('checkOut').min = today;
 
   renderMembers();
@@ -202,8 +206,10 @@ function calcNights() {
   const ci = document.getElementById('checkIn').value;
   const co = document.getElementById('checkOut').value;
   const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const minAllowed = yesterday.toISOString().split('T')[0];
   if (ci) {
-    if (ci < today) {
+    if (ci < minAllowed) {
       document.getElementById('checkIn').classList.add('error');
       document.getElementById('err-checkIn').classList.add('visible');
     } else {
@@ -502,8 +508,10 @@ function validateForm() {
   const ci    = document.getElementById('checkIn')?.value  || '';
   const co    = document.getElementById('checkOut')?.value || '';
   const today = new Date().toISOString().split('T')[0];
+  const yday  = new Date(); yday.setDate(yday.getDate()-1);
+  const minCI = yday.toISOString().split('T')[0]; // allow 1 back-dated day
 
-  if (!ci || ci < today) fail(document.getElementById('checkIn'),  'err-checkIn');
+  if (!ci || ci < minCI) fail(document.getElementById('checkIn'),  'err-checkIn');
   else                   ok( document.getElementById('checkIn'),   'err-checkIn');
 
   if (!co || co <= ci)   fail(document.getElementById('checkOut'), 'err-checkOut');
