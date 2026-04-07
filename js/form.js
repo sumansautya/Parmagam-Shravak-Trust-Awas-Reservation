@@ -315,32 +315,31 @@ function renderMembersFromState() {
   const container = document.getElementById('membersList');
   container.innerHTML = buildPrimaryMemberCard();
   syncPrimaryMember();
-  // Build ALL cards first
-  formState.members.forEach((m, i) => {
+  // Build ALL cards first (synchronous)
+  formState.members.forEach((_, i) => {
     const div = document.createElement('div');
     div.innerHTML = buildMemberCard(i + 1);
     container.appendChild(div.firstElementChild);
   });
-  // Then fill ALL values in ONE setTimeout after all cards exist in DOM
-  setTimeout(() => {
-    formState.members.forEach((m, i) => {
+  // Fill values in two passes — 100ms and 500ms for reliability across devices
+  const snap = formState.members.map(m => Object.assign({}, m));
+  function fillPass() {
+    snap.forEach((m, i) => {
       const idx = i + 1;
       ['name','age','aadhaar','mobile'].forEach(f => {
-        const el = document.getElementById(`m${idx}-${f}`);
+        const el = document.getElementById('m' + idx + '-' + f);
         if (el && m[f]) el.value = m[f];
       });
-      // Select fields need explicit value set
       ['gender','relation'].forEach(f => {
-        const el = document.getElementById(`m${idx}-${f}`);
-        if (el && m[f]) {
-          el.value = m[f];
-          el.dispatchEvent(new Event('change'));
-        }
+        const el = document.getElementById('m' + idx + '-' + f);
+        if (el && m[f]) el.value = m[f];
       });
       checkMemberMobileReq(idx);
     });
     updateMemberSummary();
-  }, 50);
+  }
+  setTimeout(fillPass, 100);
+  setTimeout(fillPass, 600);
 }
 
 function updateMemberData(i, field, value) {
