@@ -568,8 +568,13 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
       <label class="field-label">Or type room numbers manually (comma separated)</label>
       <input type="text" class="field-input" id="manualRooms" placeholder="e.g. 101, 203">
     </div>
-    <!-- Regret option inside modal — admin can send regret BEFORE allocating -->
+    <!-- Room availability legend + Regret option -->
     <div style="background:#FFF8E0;border:1px solid #C8973A;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:0.8rem;color:#5A3E1B;">
+      <div style="margin-bottom:6px;">
+        <span style="display:inline-block;width:14px;height:14px;background:#E8F5E9;border:2px solid #81C784;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Available for these dates &nbsp;&nbsp;
+        <span style="display:inline-block;width:14px;height:14px;background:#FFEBEE;border:2px solid #EF9A9A;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Already booked / Occupied &nbsp;&nbsp;
+        <span style="display:inline-block;width:14px;height:14px;background:#FFF8E1;border:2px solid #FFE082;border-radius:3px;vertical-align:middle;margin-right:4px;"></span> Maintenance
+      </div>
       <strong>⚠️ No rooms available?</strong> Click <strong>Send Regret</strong> to inform the visitor that accommodation cannot be provided.
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
@@ -899,18 +904,28 @@ function renderAllocTable() {
 // Two reservations overlap if: checkIn1 < checkOut2 AND checkOut1 > checkIn2
 function getRoomBookedDates(roomLabel) {
   // Build a list of date ranges where this room is already allocated
+  // Uses toISO() to normalize all date formats from Google Sheet
   const booked = [];
+  const searchLabel = String(roomLabel || '').trim();
   allReservations.forEach(res => {
     const status    = (val(res,'Status') || '').toLowerCase();
-    const allocRoom = (val(res,'Allocated Rooms') || '');
+    const allocRoom = (val(res,'Allocated Rooms') || '').trim();
     if (status === 'cancelled') return; // skip cancelled
-    if (!allocRoom) return;             // skip unallocated
-    // Check if this room appears in allocated rooms
+    if (!allocRoom || allocRoom === '—') return; // skip unallocated
+    // Check if this room label appears in allocated rooms (comma-separated)
     const roomNums = allocRoom.split(',').map(s => s.trim());
-    if (roomNums.some(n => n === roomLabel || n === String(roomLabel))) {
-      const ci = (val(res,'Check-In')  || '').split('T')[0].split(' ')[0];
-      const co = (val(res,'Check-Out') || '').split('T')[0].split(' ')[0];
-      if (ci && co) booked.push({ id: val(res,'ID'), ci, co, name: val(res,'Full Name') });
+    const matched  = roomNums.some(n => n === searchLabel);
+    if (matched) {
+      const ci = toISO(val(res,'Check-In'));   // normalize to YYYY-MM-DD
+      const co = toISO(val(res,'Check-Out'));  // normalize to YYYY-MM-DD
+      if (ci && co) {
+        booked.push({
+          id:   val(res,'ID'),
+          ci,
+          co,
+          name: val(res,'Full Name') || 'Unknown'
+        });
+      }
     }
   });
   return booked;
@@ -977,22 +992,15 @@ async function openAllocModal(resId) {
   // R001→101, R015→115, R016→201, R041→GH-01 etc.
   // If Room ID is R001-R015 = AC (101-115), R016-R040 = Non-AC (201-225), R041+ = GH
   function shortLabel(room) {
-    const rid = (val(room,'Room ID') || '').toUpperCase().trim();
-    const cat = (val(room,'Category') || '').toLowerCase();
-    const num = parseInt(rid.replace(/[^0-9]/g,'')) || 0;
-    // If Room Number column has a short value (<=6 chars), use it directly
-    const rnum = (val(room,'Room Number') || '').trim();
-    if (rnum && rnum.length <= 8 && !rnum.includes(' ')) return rnum;
-    // Derive short label from Room ID and Category
-    if (cat.includes('guest')) return 'GH-' + String(num).padStart(2,'0');
-    if (cat.includes('non'))   return String(200 + num - 16); // R016=201, R017=202...
-    if (cat.includes('ac'))    return String(100 + num);       // R001=101, R002=102...
-    return rid;
+    // Room ID column contains the actual room number (101, 201, GH-01 etc.)
+    // Room Number column contains full description — DO NOT USE for display
+    const rid = (val(room,'Room ID') || '').trim();
+    return rid || '?';
   }
 
-  // Get check-in and check-out of the reservation being allocated
-  const newCi = (val(r,'Check-In')  || '').split('T')[0].split(' ')[0];
-  const newCo = (val(r,'Check-Out') || '').split('T')[0].split(' ')[0];
+  // Get check-in and check-out of the reservation being allocated — normalize via toISO()
+  const newCi = toISO(val(r,'Check-In'));
+  const newCo = toISO(val(r,'Check-Out'));
 
   // Group rooms by category with headers — show short label only in chip
   // Chip colour based on DATE OVERLAP, not just Status field
@@ -1094,8 +1102,8 @@ async function confirmAlloc() {
   const r   = allReservations.find(x => val(x,'ID') === currentAllocId);
 
   // ── Final date-overlap validation before saving ──
-  const newCi2 = (val(r,'Check-In')  || '').split('T')[0].split(' ')[0];
-  const newCo2 = (val(r,'Check-Out') || '').split('T')[0].split(' ')[0];
+  const newCi2 = toISO(val(r,'Check-In'));
+  const newCo2 = toISO(val(r,'Check-Out'));
   const conflicts = [];
   roomNums.forEach(roomNum => {
     const check = isRoomAvailableForDates(roomNum, newCi2, newCo2, currentAllocId);
@@ -1243,7 +1251,7 @@ async function cancelReservation(resId) {
     const roomNums = allocRooms.split(',').map(s => s.trim()).filter(Boolean);
     for (const roomNum of roomNums) {
       const room = allRooms.find(x =>
-        val(x,'Room ID') === roomNum || val(x,'Room Number') === roomNum
+        val(x,'Room ID') === roomNum || val(x,'Room ID') === roomNum
       );
       if (room) {
         // Free the room via Apps Script
@@ -1323,14 +1331,14 @@ function renderRoomsTable(data) {
     const s   = val(r,'Status')||'Available';
     const cls = s==='Available'?'s-confirmed':s==='Occupied'?'s-cancelled':'s-pending';
     return `<tr>
-      <td><strong>${val(r,'Room Number')}</strong></td>
+      <td><strong>${val(r,'Room ID')}</strong></td>
       <td>${val(r,'Category')}</td>
       <td>₹${parseFloat(val(r,'Rate')||0).toLocaleString('en-IN')}/night</td>
       <td><span class="badge ${cls}">${s}</span></td>
       <td>${val(r,'Current Reservation')||'—'}</td>
       <td>
         <button class="act-btn act-edit"   onclick="openRoomModal('${val(r,'Room ID')}')">✏️ Edit</button>
-        <button class="act-btn act-delete" onclick="deleteRoom('${val(r,'Room ID')}','${val(r,'Room Number')}','${s}')">🗑️</button>
+        <button class="act-btn act-delete" onclick="deleteRoom('${val(r,'Room ID')}','${val(r,'Room ID')}','${s}')">🗑️</button>
       </td>
     </tr>`;
   }).join('');
@@ -1348,7 +1356,7 @@ function openRoomModal(roomId) {
   const room = roomId ? allRooms.find(r => val(r,'Room ID')===roomId) : null;
   document.getElementById('roomModalTitle').textContent = room ? '✏️ Edit Room' : '🏠 Add Room';
   document.getElementById('rm-id').value       = room ? val(room,'Room ID')   : '';
-  document.getElementById('rm-number').value   = room ? val(room,'Room Number') : '';
+  document.getElementById('rm-number').value   = room ? val(room,'Room ID') : '';
   document.getElementById('rm-category').value = room ? val(room,'Category')  : 'AC Room';
   document.getElementById('rm-rate').value     = room ? val(room,'Rate')      : '';
   document.getElementById('rm-status').value   = room ? val(room,'Status')    : 'Available';
@@ -1370,9 +1378,9 @@ async function saveRoom() {
   // Update local
   if (id) {
     const existing = allRooms.find(r => val(r,'Room ID')===id);
-    if (existing) { existing['Room Number']=num; existing['Category']=cat; existing['Rate']=rate; existing['Status']=sts; }
+    if (existing) { existing['Room ID']=num; existing['Category']=cat; existing['Rate']=rate; existing['Status']=sts; }
   } else {
-    allRooms.push({'Room ID':'new-'+Date.now(),'Room Number':num,'Category':cat,'Rate':rate,'Status':sts,'Current Reservation':''});
+    allRooms.push({'Room ID':num,'Category':cat,'Rate':rate,'Status':sts,'Current Reservation':''});
   }
 
   closeModal('roomModal');
@@ -1450,7 +1458,7 @@ function renderOccupancy() {
   document.getElementById('occTbody').innerHTML = allRooms.map(r => {
     const s = val(r,'Status')||'Available';
     return `<tr>
-      <td><strong>${val(r,'Room Number')}</strong></td>
+      <td><strong>${val(r,'Room ID')}</strong></td>
       <td>${val(r,'Category')}</td>
       <td><span class="badge ${s==='Available'?'s-confirmed':s==='Occupied'?'s-cancelled':'s-pending'}">${s}</span></td>
       <td>₹${parseFloat(val(r,'Rate')||0).toLocaleString('en-IN')}</td>
