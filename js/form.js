@@ -84,8 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
       updateCostSummary();
 
       // ── Restore additional members (skip primary — index 0 is always Self) ──
+      console.log('[RESTORE] d.members:', JSON.stringify(d.members));
       if (d.members && d.members.length > 1) {
         const guestMembers = d.members.slice(1); // index 0 is primary (Self)
+        console.log('[RESTORE] guestMembers to restore:', JSON.stringify(guestMembers));
         // Load into formState — renderMembersFromState() will build cards + fill values
         formState.members = guestMembers.map(m => ({
           name:     m.name     || '',
@@ -313,33 +315,68 @@ function removeMember(i) {
 
 function renderMembersFromState() {
   const container = document.getElementById('membersList');
+  if (!container) return;
+
   container.innerHTML = buildPrimaryMemberCard();
   syncPrimaryMember();
-  // Build ALL cards first (synchronous)
+
+  if (!formState.members.length) return;
+
+  // Build ALL member cards synchronously
   formState.members.forEach((_, i) => {
     const div = document.createElement('div');
     div.innerHTML = buildMemberCard(i + 1);
     container.appendChild(div.firstElementChild);
   });
-  // Fill values in two passes — 100ms and 500ms for reliability across devices
+
+  // Take a frozen snapshot of member data to fill into cards
   const snap = formState.members.map(m => Object.assign({}, m));
-  function fillPass() {
+  const totalCards = snap.length;
+
+  function fillAllCards() {
+    let allFilled = true;
+    console.log('[FILL] snap to fill:', JSON.stringify(snap));
     snap.forEach((m, i) => {
       const idx = i + 1;
+      // Check first field exists — card is in DOM
+      const nameEl = document.getElementById('m' + idx + '-name');
+      console.log('[FILL] m' + idx + '-name element:', nameEl ? 'EXISTS' : 'NOT FOUND');
+      if (!nameEl) { allFilled = false; return; }
+
+      // Fill text inputs
       ['name','age','aadhaar','mobile'].forEach(f => {
         const el = document.getElementById('m' + idx + '-' + f);
-        if (el && m[f]) el.value = m[f];
+        if (el && m[f] !== undefined && m[f] !== '') el.value = m[f];
       });
+      // Fill select dropdowns
       ['gender','relation'].forEach(f => {
         const el = document.getElementById('m' + idx + '-' + f);
-        if (el && m[f]) el.value = m[f];
+        if (el && m[f] !== undefined && m[f] !== '') el.value = m[f];
       });
       checkMemberMobileReq(idx);
     });
-    updateMemberSummary();
+    if (allFilled) updateMemberSummary();
+    return allFilled;
   }
-  setTimeout(fillPass, 100);
-  setTimeout(fillPass, 600);
+
+  // Use MutationObserver to detect when all cards are fully in DOM
+  const lastCardId = 'm' + totalCards + '-name';
+  const observer = new MutationObserver(() => {
+    if (document.getElementById(lastCardId)) {
+      observer.disconnect();
+      fillAllCards();
+    }
+  });
+  observer.observe(container, { childList: true, subtree: true });
+
+  // Fallback: if cards already in DOM (sync render), fill immediately
+  if (document.getElementById(lastCardId)) {
+    observer.disconnect();
+    fillAllCards();
+  } else {
+    // Safety net if MutationObserver misses it
+    setTimeout(() => { observer.disconnect(); fillAllCards(); }, 800);
+  }
 }
 
 function updateMemberData(i, field, value) {
