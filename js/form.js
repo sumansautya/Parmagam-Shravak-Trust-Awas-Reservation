@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Restore check-in/check-out dates and recalculate nights
-      if (d.checkIn && d.checkOut) updateNights();
+      if (d.checkIn && d.checkOut) calcNights();
 
       // Show green tick on email since both fields are filled with same value
       const okEl = document.getElementById('emailMatchOk');
