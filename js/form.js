@@ -84,10 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
       updateCostSummary();
 
       // ── Restore additional members (skip primary — index 0 is always Self) ──
-      console.log('[RESTORE] d.members:', JSON.stringify(d.members));
       if (d.members && d.members.length > 1) {
         const guestMembers = d.members.slice(1); // index 0 is primary (Self)
-        console.log('[RESTORE] guestMembers to restore:', JSON.stringify(guestMembers));
         // Load into formState — renderMembersFromState() will build cards + fill values
         formState.members = guestMembers.map(m => ({
           name:     m.name     || '',
@@ -335,12 +333,10 @@ function renderMembersFromState() {
 
   function fillAllCards() {
     let allFilled = true;
-    console.log('[FILL] snap to fill:', JSON.stringify(snap));
     snap.forEach((m, i) => {
       const idx = i + 1;
       // Check first field exists — card is in DOM
       const nameEl = document.getElementById('m' + idx + '-name');
-      console.log('[FILL] m' + idx + '-name element:', nameEl ? 'EXISTS' : 'NOT FOUND');
       if (!nameEl) { allFilled = false; return; }
 
       // Fill text inputs
