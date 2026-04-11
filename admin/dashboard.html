@@ -123,12 +123,42 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 .detail-val { font-weight:600; color:var(--text-dark); }
 
 @media(max-width:768px){ .sidebar{display:none;} .dash-main{padding:16px;} }
+  /* ── View-Only Mode ── */
+  .viewer-badge {
+    display:none;
+    background:#1565C0;color:#fff;
+    font-size:0.72rem;font-weight:700;
+    padding:3px 12px;border-radius:12px;
+    letter-spacing:0.05em;
+  }
+  body.view-only .viewer-badge { display:inline-block; }
+  body.view-only .act-allocate,
+  body.view-only .act-regret,
+  body.view-only .act-cancel,
+  body.view-only .act-edit,
+  body.view-only .act-delete,
+  body.view-only #addRoomBtn,
+  body.view-only #confirmAllocBtn,
+  body.view-only #regretFromAllocBtn,
+  body.view-only .btn-green,
+  body.view-only .btn-danger,
+  body.view-only button[onclick*="saveRoom"],
+  body.view-only button[onclick*="deleteRoom"],
+  body.view-only button[onclick*="cancelReservation"],
+  body.view-only button[onclick*="freeRoom"],
+  body.view-only button[onclick*="sendRegret"],
+  body.view-only button[onclick*="emailInvoice"],
+  body.view-only button[onclick*="saveInvoice"],
+  body.view-only button[onclick*="allocate"],
+  body.view-only .manual-rooms-row { display:none !important; }
 </style>
 </head>
 <body>
 
 <script>
   if (sessionStorage.getItem('adminAuth') !== 'true') window.location.href = 'index.html';
+  // Role: 'admin' = full access, 'viewer' = read-only
+  window.IS_VIEWER = (sessionStorage.getItem('adminRole') === 'viewer');
 </script>
 
 <div class="dash-shell">
@@ -159,6 +189,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
   <a href="javascript:void(0)" onclick="openInvoice()" class="nav-item" style="text-decoration:none;display:block;color:inherit;"><span class="ni">🧾</span> Invoice / Billing ↗</a>
   <div class="nav-group-label">System</div>
   <div class="nav-item" onclick="logout()"><span class="ni">🚪</span> Logout</div>
+  <div id="viewerBadge" style="display:none;background:#1565C0;color:#fff;font-size:0.72rem;font-weight:700;padding:4px 14px;border-radius:12px;margin:auto 12px auto 0;letter-spacing:0.05em;">👁 VIEW ONLY MODE</div>
 </nav>
 
 <!-- ══ MAIN ══ -->
@@ -648,6 +679,14 @@ const TODAY = new Date().toISOString().split('T')[0];
 
 // ══ INIT ══
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply view-only mode if logged in as viewer
+  if (window.IS_VIEWER) {
+    document.body.classList.add('view-only');
+    // Show viewer badge in header
+    const badge = document.getElementById('viewerBadge');
+    if (badge) badge.style.display = 'inline-block';
+  }
+
   document.getElementById('todayDate').textContent =
     new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('arr-date').value = TODAY;
@@ -1090,6 +1129,7 @@ function toggleChip(roomId, roomNum, status) {
 
 // ── Send Regret directly from Allocation Modal ──
 function sendRegretFromAlloc() {
+  if (window.IS_VIEWER) { alert('👁 View Only Mode — Regret blocked for viewer.\nPlease login as Admin to make changes.'); return; }
   if (!currentAllocId) return;
   closeModal('allocModal');
   // Small delay to let modal close before showing regret dialog
@@ -1097,6 +1137,7 @@ function sendRegretFromAlloc() {
 }
 
 async function confirmAlloc() {
+  if (window.IS_VIEWER) { alert('👁 View Only Mode — Room allocation blocked for viewer.\nPlease login as Admin to make changes.'); return; }
   const manual   = document.getElementById('manualRooms').value.trim();
   let roomNums   = [];
 
@@ -1219,6 +1260,7 @@ async function viewReservation(resId) {
 
 // ══ CANCEL ══
 async function cancelReservation(resId) {
+  if (window.IS_VIEWER) { alert('👁 View Only Mode — Please login as Admin to make changes.'); return; }
   const r = allReservations.find(x => val(x,'ID') === resId);
   if (!r) return;
   const allocRooms = val(r,'Allocated Rooms');
@@ -1291,6 +1333,7 @@ async function cancelReservation(resId) {
 }
 
 async function sendRegretMail(resId) {
+  if (window.IS_VIEWER) { alert('👁 View Only Mode — Please login as Admin to send emails.'); return; }
   const r = allReservations.find(x => val(x,'ID') === resId);
   if (!r) return;
   const visitorName  = val(r,'Full Name');
@@ -1374,6 +1417,7 @@ function openRoomModal(roomId) {
 }
 
 async function saveRoom() {
+  if (window.IS_VIEWER) { alert('👁 View Only Mode — Save room blocked for viewer.\nPlease login as Admin to make changes.'); return; }
   const num = document.getElementById('rm-number').value.trim();
   const cat = document.getElementById('rm-category').value;
   const rate= parseFloat(document.getElementById('rm-rate').value) || 0;
@@ -1399,6 +1443,7 @@ async function saveRoom() {
 }
 
 async function deleteRoom(id, num, status) {
+  if (window.IS_VIEWER) { alert('👁 View Only Mode — Please login as Admin to make changes.'); return; }
   if (status === 'Occupied') { alert('Cannot delete an occupied room.'); return; }
   if (!confirm(`Delete Room ${num}?`)) return;
   await deleteRoomFromSheet(id);
