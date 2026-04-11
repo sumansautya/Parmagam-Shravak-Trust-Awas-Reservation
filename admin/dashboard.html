@@ -291,8 +291,17 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 
   <!-- ── MANAGE ROOMS ── -->
   <div class="page-section" id="page-rooms">
-    <div class="dash-header">
+    <div class="dash-header" style="flex-wrap:wrap;gap:10px;">
       <div class="dash-title">🛏️ Manage Rooms</div>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--ivory);border:1.5px solid var(--border-gold);border-radius:var(--radius-sm);padding:6px 14px;font-size:0.82rem;flex-wrap:wrap;">
+        <span style="color:var(--maroon);font-weight:700;">📅 Show status for:</span>
+        <input type="date" id="roomCheckDate" class="field-input"
+          style="padding:4px 8px;font-size:0.82rem;width:150px;"
+          oninput="renderRoomsTable()">
+        <button onclick="document.getElementById('roomCheckDate').value=TODAY;renderRoomsTable();"
+          style="background:var(--saffron);color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:0.75rem;cursor:pointer;">Today</button>
+        <span id="roomDateLabel" style="font-size:0.72rem;color:var(--text-light);font-style:italic;"></span>
+      </div>
       <button class="btn btn-primary" style="padding:8px 18px;font-size:0.85rem;" onclick="openRoomModal(null)">+ Add Room</button>
     </div>
     <div class="stat-grid" style="margin-bottom:20px;">
@@ -304,7 +313,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
     <div class="panel">
       <div class="filter-bar">
         <select id="rf-cat" onchange="filterRooms()"><option value="">All Categories</option><option>AC Room</option><option>Non-AC Room</option><option>Guest House 2BHK</option><option>Guest House 3BHK</option></select>
-        <select id="rf-sts" onchange="filterRooms()"><option value="">All Status</option><option>Available</option><option>Occupied</option><option>Maintenance</option></select>
+        <select id="rf-sts" onchange="filterRooms()"><option value="">All Status</option><option value="Available">Available</option><option value="Occupied">Occupied</option><option value="Maintenance">Maintenance</option></select>
       </div>
       <div style="overflow-x:auto;">
         <table class="data-table">
@@ -338,17 +347,49 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 
   <!-- ── OCCUPANCY ── -->
   <div class="page-section" id="page-rpt-occupancy">
-    <div class="dash-header"><div class="dash-title">📈 Occupancy Report</div></div>
-    <div class="panel">
-      <div class="tab-bar">
-        <button class="tab-btn active" onclick="setTab(this,'occ-current')">Current</button>
-        <button class="tab-btn" onclick="setTab(this,'occ-monthly')">Monthly Summary</button>
+    <div class="dash-header" style="flex-wrap:wrap;gap:10px;">
+      <div class="dash-title">📅 3-Month Room Status Calendar</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="occ-filter" onchange="renderOccupancy()"
+          style="padding:7px 12px;border:1.5px solid var(--border-gold);border-radius:var(--radius-sm);font-size:0.82rem;background:var(--ivory);">
+          <option value="all">📋 All Rooms</option>
+          <option value="occupied">🔴 Occupied Only</option>
+          <option value="available">✅ Available Only</option>
+          <option value="maintenance">🔧 Maintenance Only</option>
+        </select>
+        <select id="occ-cat" onchange="renderOccupancy()"
+          style="padding:7px 12px;border:1.5px solid var(--border-gold);border-radius:var(--radius-sm);font-size:0.82rem;background:var(--ivory);">
+          <option value="">All Categories</option>
+          <option value="GH3BHK">🏡 Guest House 3BHK</option>
+          <option value="GH2BHK">🏠 Guest House 2BHK</option>
+          <option value="AC">❄️ AC Room</option>
+          <option value="NonAC">🌬️ Non-AC Room</option>
+        </select>
+        <button onclick="exportOccupancyExcel()"
+          style="background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:7px 16px;font-size:0.82rem;cursor:pointer;font-weight:700;">
+          📥 Export Excel
+        </button>
       </div>
-      <div class="metric-grid" id="occ-metrics"></div>
-      <div class="mini-bar" id="occ-bars" style="margin-top:12px;"></div>
-      <div style="overflow-x:auto;margin-top:16px;"><table class="data-table"><thead><tr>
-        <th>Room No.</th><th>Category</th><th>Status</th><th>Rate</th><th>Current Guest</th>
-      </tr></thead><tbody id="occTbody"><tr class="loading-row"><td colspan="5">Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- Summary stat cards -->
+    <div id="occ-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px;"></div>
+
+    <!-- Calendar grid -->
+    <div class="panel" style="padding:0;">
+      <div id="occ-legend" style="padding:10px 16px;background:var(--ivory);border-bottom:1px solid var(--border-gold);display:flex;gap:20px;flex-wrap:wrap;font-size:0.78rem;align-items:center;">
+        <strong style="color:var(--maroon);">Legend:</strong>
+        <span><span style="display:inline-block;width:16px;height:16px;background:#C8E6C9;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Available</span>
+        <span><span style="display:inline-block;width:16px;height:16px;background:#FFCDD2;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Occupied</span>
+        <span><span style="display:inline-block;width:16px;height:16px;background:#FFF9C4;border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Maintenance</span>
+        <span style="color:var(--text-light);font-size:0.72rem;">Hover on cell to see visitor name</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="occCalTable" style="border-collapse:collapse;font-size:0.72rem;min-width:100%;">
+          <thead id="occCalHead"></thead>
+          <tbody id="occCalBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -696,9 +737,10 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
         <input type="number" class="field-input" id="rm-rate" placeholder="1200">
       </div>
       <div class="field-group">
-        <label class="field-label">Status</label>
+        <label class="field-label">Status <span style="font-size:0.72rem;color:var(--text-light);">(Occupied = auto-computed from bookings)</span></label>
         <select class="field-select" id="rm-status">
-          <option>Available</option><option>Maintenance</option>
+          <option value="Available">✅ Available</option>
+          <option value="Maintenance">🔧 Under Maintenance</option>
         </select>
       </div>
     </div>
@@ -1168,17 +1210,23 @@ async function openAllocModal(resId) {
     const rate      = val(room,'Rate')     || '';
     const label     = shortLabel(room);
 
-    // ── DATE OVERLAP CHECK ──
-    // Even if room Status=Available, check if it has a booking on these dates
-    let effectiveStatus = rawStatus;
+    // ── DATE-BASED STATUS CHECK ──
+    // Step 1: Check if room is under Maintenance (from Rooms sheet — manual flag)
+    let effectiveStatus = 'available';
     let conflictInfo    = '';
-    if (rawStatus === 'available' && newCi && newCo) {
+    if (rawStatus === 'maintenance') {
+      effectiveStatus = 'maintenance';
+      conflictInfo    = 'Under Maintenance';
+    } else if (newCi && newCo) {
+      // Step 2: Check reservation date overlap for the visitor's check-in/check-out period
       const check = isRoomAvailableForDates(String(label), newCi, newCo, resId);
       if (!check.available) {
-        effectiveStatus = 'occupied'; // treat as occupied for these dates
+        effectiveStatus = 'occupied';
         conflictInfo    = 'Booked: ' + check.conflictWith.name
-          + ' (' + check.conflictWith.ci + ' to ' + check.conflictWith.co + ')';
+          + ' (' + check.conflictWith.ci + ' → ' + check.conflictWith.co + ')';
       }
+      // Step 3: If available from bookings, still check maintenance
+      // (already handled in Step 1 above)
     }
 
     const cls    = effectiveStatus === 'available'    ? 'chip-available'
@@ -1246,8 +1294,8 @@ function changeRoom(resId, currentRooms) {
     + 'Check-Out: ' + val(r,'Check-Out') + '\n\n'
     + '⚠️  IMPORTANT — Before selecting new rooms:\n'
     + '1. Go to Manage Rooms\n'
-    + '2. Free the current rooms (' + (currentRooms||'') + ') by changing their Status to Available\n'
-    + '3. Then come back and select new rooms\n\n'
+    + '2. No need to manually free rooms — the system is date-based\n'
+    + '3. Simply select the new rooms below and confirm\n\n'
     + 'Click OK to open the Room Selection now.\n'
     + '(Make sure old rooms are already freed first)';
 
@@ -1424,7 +1472,7 @@ async function cancelReservation(resId) {
   }
 
   const confirmMsg = 'Cancel reservation for ' + guestName + '?'
-    + (allocRooms ? '\n\nAllocated room: ' + allocRooms + ' will be automatically set to Available.' : '')
+    + (allocRooms ? '\n\nAllocated room: ' + allocRooms + ' will be freed automatically (date-based).' : '')
     + conflictMsg
     + '\n\nThis action will be saved to Google Sheets.';
 
@@ -1513,33 +1561,122 @@ async function sendRegretMail(resId) {
 }
 
 // ══ ROOMS TABLE ══
+// ── Compute date-based room status from reservations ──
+// Returns 'Occupied', 'Available', or 'Maintenance' for a given room on a given date
+function getRoomStatusForDate(roomLabel, checkDate) {
+  // Maintenance is set manually — always respected
+  const roomObj = allRooms.find(r => String(val(r,'Room ID')).trim() === String(roomLabel).trim());
+  if (roomObj && (val(roomObj,'Status')||'').toLowerCase() === 'maintenance') return 'Maintenance';
+
+  // Check if any confirmed/pending reservation has this room allocated on checkDate
+  for (var i = 0; i < allReservations.length; i++) {
+    var res = allReservations[i];
+    var status = (val(res,'Status')||'').toLowerCase();
+    if (status === 'cancelled' || status === 'regret') continue;
+
+    var allocRooms = String(val(res,'Allocated Rooms')||'').trim();
+    if (!allocRooms || allocRooms === '—') continue;
+
+    var roomNums = allocRooms.split(',').map(function(s){ return s.trim(); });
+    if (!roomNums.some(function(n){ return n === String(roomLabel).trim(); })) continue;
+
+    // Check date overlap: room is occupied if checkDate falls within [checkIn, checkOut)
+    var ci = toISO(val(res,'Check-In'));
+    var co = toISO(val(res,'Check-Out'));
+    if (ci && co && checkDate >= ci && checkDate < co) {
+      return 'Occupied:' + val(res,'ID') + ':' + val(res,'Full Name');
+    }
+  }
+  return 'Available';
+}
+
 function renderRoomsTable(data) {
   const rooms = data || allRooms;
-  document.getElementById('r-avail').textContent = rooms.filter(r=>val(r,'Status')==='Available').length;
-  document.getElementById('r-occ').textContent   = rooms.filter(r=>val(r,'Status')==='Occupied').length;
-  document.getElementById('r-maint').textContent = rooms.filter(r=>val(r,'Status')==='Maintenance').length;
+
+  // Get selected date for status check — default to today
+  const dateEl    = document.getElementById('roomCheckDate');
+  const checkDate = (dateEl && dateEl.value) ? dateEl.value : TODAY;
+  if (dateEl && !dateEl.value) dateEl.value = TODAY;
+
+  // Update label
+  const lblEl = document.getElementById('roomDateLabel');
+  if (lblEl) {
+    const d = new Date(checkDate + 'T00:00:00');
+    lblEl.textContent = 'Status as on: ' + d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  }
+
+  // Compute date-based status for each room
+  const roomsWithStatus = rooms.map(function(r) {
+    const rid = String(val(r,'Room ID')||'').trim();
+    const rawStatus = getRoomStatusForDate(rid, checkDate);
+    var effectiveStatus, resInfo = '';
+    if (rawStatus === 'Maintenance') {
+      effectiveStatus = 'Maintenance';
+    } else if (rawStatus.startsWith('Occupied:')) {
+      effectiveStatus = 'Occupied';
+      const parts = rawStatus.split(':');
+      resInfo = parts[1] + ' — ' + (parts[2]||'');
+    } else {
+      effectiveStatus = 'Available';
+    }
+    return { r, effectiveStatus, resInfo };
+  });
+
+  // Stats
+  document.getElementById('r-avail').textContent = roomsWithStatus.filter(x=>x.effectiveStatus==='Available').length;
+  document.getElementById('r-occ').textContent   = roomsWithStatus.filter(x=>x.effectiveStatus==='Occupied').length;
+  document.getElementById('r-maint').textContent = roomsWithStatus.filter(x=>x.effectiveStatus==='Maintenance').length;
   document.getElementById('r-total').textContent = rooms.length;
 
   const tbody = document.getElementById('roomsTbody');
-  if (!rooms.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="6">No rooms found. Click "+ Add Room" to add rooms.</td></tr>'; return; }
-  tbody.innerHTML = rooms.map(r => {
-    const s   = val(r,'Status')||'Available';
-    const cls = s==='Available'?'s-confirmed':s==='Occupied'?'s-cancelled':'s-pending';
-    return `<tr>
-      <td><strong>${val(r,'Room ID')}</strong></td>
-      <td>${val(r,'Category')}</td>
-      <td>₹${parseFloat(val(r,'Rate')||0).toLocaleString('en-IN')}/night</td>
-      <td><span class="badge ${cls}">${s}</span></td>
-      <td>${val(r,'Current Reservation')||'—'}</td>
-      <td>
-        <button class="act-btn act-edit"   onclick="openRoomModal('${val(r,'Room ID')}')">✏️ Edit</button>
-        <button class="act-btn act-delete" onclick="deleteRoom('${val(r,'Room ID')}','${val(r,'Room ID')}','${s}')">🗑️</button>
-      </td>
-    </tr>`;
+  if (!rooms.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No rooms found. Click "+ Add Room" to add rooms.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = roomsWithStatus.map(function(item) {
+    var r = item.r;
+    var s = item.effectiveStatus;
+    var cls = s==='Available' ? 's-confirmed' : s==='Occupied' ? 's-cancelled' : 's-pending';
+    var badge = s==='Occupied'
+      ? '<span class="badge s-cancelled" title="' + item.resInfo + '">🔴 Occupied</span>'
+      + '<div style="font-size:0.68rem;color:var(--text-light);margin-top:2px;">' + (item.resInfo.split('—')[1]||'').trim() + '</div>'
+      : '<span class="badge ' + cls + '">' + s + '</span>';
+    return '<tr>'
+      + '<td><strong>' + val(r,'Room ID') + '</strong></td>'
+      + '<td>' + val(r,'Category') + '</td>'
+      + '<td>₹' + parseFloat(val(r,'Rate')||0).toLocaleString('en-IN') + '/night</td>'
+      + '<td>' + badge + '</td>'
+      + '<td style="font-size:0.75rem;">' + (item.resInfo ? item.resInfo.split('—')[0].trim() : '—') + '</td>'
+      + '<td>'
+      + '<button class="act-btn act-edit" onclick="openRoomModal(\'' + val(r,'Room ID') + '\')">✏️ Edit</button> '
+      + '<button class="act-btn act-delete" onclick="deleteRoom(\'' + val(r,'Room ID') + '\',\'' + val(r,'Room ID') + '\',\'' + s + '\')">🗑️</button>'
+      + '</td>'
+      + '</tr>';
   }).join('');
 }
 
 function filterRooms() {
+  const cat    = document.getElementById('rf-cat').value;
+  const sts    = document.getElementById('rf-sts').value;
+  const dateEl = document.getElementById('roomCheckDate');
+  const checkDate = (dateEl && dateEl.value) ? dateEl.value : TODAY;
+
+  // For status filter, compute date-based status first
+  const filtered = allRooms.filter(function(r) {
+    const catMatch = !cat || val(r,'Category') === cat;
+    if (!catMatch) return false;
+    if (!sts) return true;
+    const rid = String(val(r,'Room ID')||'').trim();
+    const rawStatus = getRoomStatusForDate(rid, checkDate);
+    const effectiveStatus = rawStatus === 'Maintenance' ? 'Maintenance'
+      : rawStatus.startsWith('Occupied:') ? 'Occupied' : 'Available';
+    return effectiveStatus === sts;
+  });
+  renderRoomsTable(filtered);
+}
+
+function filterRoomsOLD() {
   const cat = document.getElementById('rf-cat').value;
   const sts = document.getElementById('rf-sts').value;
   renderRoomsTable(allRooms.filter(r =>
@@ -1586,7 +1723,16 @@ async function saveRoom() {
 
 async function deleteRoom(id, num, status) {
   if (window.IS_VIEWER) { alert('👁 View Only Mode — Please login as Admin to make changes.'); return; }
-  if (status === 'Occupied') { alert('Cannot delete an occupied room.'); return; }
+  // Check if room has any active (non-cancelled) future reservations
+  const rid = String(id).trim();
+  const hasActiveBooking = allReservations.some(function(res) {
+    var rStatus = (val(res,'Status')||'').toLowerCase();
+    if (rStatus === 'cancelled' || rStatus === 'regret') return false;
+    var allocRooms = String(val(res,'Allocated Rooms')||'').split(',').map(function(s){return s.trim();});
+    var co = toISO(val(res,'Check-Out'));
+    return allocRooms.indexOf(rid) >= 0 && co >= TODAY;
+  });
+  if (hasActiveBooking) { alert('Cannot delete Room ' + num + '.\nIt has active bookings. Please cancel those reservations first.'); return; }
   if (!confirm(`Delete Room ${num}?`)) return;
   await deleteRoomFromSheet(id);
   allRooms = allRooms.filter(r => val(r,'Room ID') !== id);
@@ -1630,39 +1776,164 @@ function loadArrReport() {
 }
 
 function renderOccupancy() {
-  const total = allRooms.length;
-  const occ   = allRooms.filter(r=>val(r,'Status')==='Occupied').length;
-  const pct   = total ? Math.round(occ/total*100) : 0;
-  const rev   = allReservations.filter(r=>val(r,'Status')==='Confirmed').reduce((s,r)=>s+(parseFloat(val(r,'Payment Amount'))||0),0);
-
-  document.getElementById('occ-metrics').innerHTML = `
-    <div class="metric-box"><div class="metric-val">${total}</div><div class="metric-lbl">Total Rooms</div></div>
-    <div class="metric-box"><div class="metric-val">${occ}</div><div class="metric-lbl">Occupied</div></div>
-    <div class="metric-box"><div class="metric-val">${pct}%</div><div class="metric-lbl">Occupancy %</div></div>
-    <div class="metric-box"><div class="metric-val">₹${rev.toLocaleString('en-IN')}</div><div class="metric-lbl">Revenue</div></div>`;
-
-  const cats = ['AC Room','Non-AC Room','Guest House 2BHK','Guest House 3BHK'];
-  document.getElementById('occ-bars').innerHTML = cats.map(cat => {
-    const ct = allRooms.filter(r=>val(r,'Category')===cat).length;
-    const co = allRooms.filter(r=>val(r,'Category')===cat&&val(r,'Status')==='Occupied').length;
-    const cp = ct ? Math.round(co/ct*100) : 0;
-    return `<div class="bar-row">
-      <span class="bar-label">${cat.split(' ')[0]}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${cp}%;background:var(--saffron);">${cp}% (${co}/${ct})</div></div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('occTbody').innerHTML = allRooms.map(r => {
-    const s = val(r,'Status')||'Available';
-    return `<tr>
-      <td><strong>${val(r,'Room ID')}</strong></td>
-      <td>${val(r,'Category')}</td>
-      <td><span class="badge ${s==='Available'?'s-confirmed':s==='Occupied'?'s-cancelled':'s-pending'}">${s}</span></td>
-      <td>₹${parseFloat(val(r,'Rate')||0).toLocaleString('en-IN')}</td>
-      <td>${val(r,'Current Reservation')||'—'}</td>
-    </tr>`;
-  }).join('');
+  if (!allRooms.length) return;
+  const filterVal = document.getElementById('occ-filter')?.value || 'all';
+  const catFilter = document.getElementById('occ-cat')?.value   || '';
+  const dates = [];
+  for (var d = 0; d < 90; d++) {
+    const dt = new Date(TODAY + 'T00:00:00');
+    dt.setDate(dt.getDate() + d);
+    dates.push(dt.toISOString().split('T')[0]);
+  }
+  function catOrder(cat) {
+    const c = (cat||'').toLowerCase();
+    if (c.includes('3bhk') || c.includes('guest house 3')) return 1;
+    if (c.includes('2bhk') || c.includes('guest house 2')) return 2;
+    if (c.includes('ac') && !c.includes('non')) return 3;
+    if (c.includes('non')) return 4;
+    return 5;
+  }
+  let rooms = [...allRooms].sort(function(a,b) {
+    const co = catOrder(val(a,'Category')) - catOrder(val(b,'Category'));
+    if (co !== 0) return co;
+    return parseInt(String(val(a,'Room ID')).replace(/[^0-9]/g,'')) - parseInt(String(val(b,'Room ID')).replace(/[^0-9]/g,''));
+  });
+  if (catFilter) {
+    rooms = rooms.filter(function(r) {
+      const c = (val(r,'Category')||'').toLowerCase();
+      if (catFilter==='GH3BHK') return c.includes('3bhk');
+      if (catFilter==='GH2BHK') return c.includes('2bhk');
+      if (catFilter==='AC')     return c.includes('ac') && !c.includes('guest') && !c.includes('non');
+      if (catFilter==='NonAC')  return c.includes('non');
+      return true;
+    });
+  }
+  // Pre-compute status grid
+  const statusGrid = rooms.map(function(r) {
+    const rid = String(val(r,'Room ID')||'').trim();
+    return dates.map(function(dateStr) {
+      if ((val(r,'Status')||'').toLowerCase() === 'maintenance') return {s:'Maintenance',who:'',resId:''};
+      for (var i=0; i<allReservations.length; i++) {
+        var res = allReservations[i];
+        var rs = (val(res,'Status')||'').toLowerCase();
+        if (rs==='cancelled'||rs==='regret') continue;
+        var ar = String(val(res,'Allocated Rooms')||'').split(',').map(function(x){return x.trim();});
+        if (ar.indexOf(rid) < 0) continue;
+        var ci = toISO(val(res,'Check-In')); var co = toISO(val(res,'Check-Out'));
+        if (ci && co && dateStr >= ci && dateStr < co) return {s:'Occupied',who:val(res,'Full Name')||'',resId:val(res,'ID')||''};
+      }
+      return {s:'Available',who:'',resId:''};
+    });
+  });
+  // Status filter
+  let filteredRooms = rooms, filteredGrid = statusGrid;
+  if (filterVal !== 'all') {
+    const ts = filterVal==='occupied'?'Occupied':filterVal==='available'?'Available':'Maintenance';
+    const keep = rooms.map(function(_,ri){return statusGrid[ri].some(function(c){return c.s===ts;});});
+    filteredRooms = rooms.filter(function(_,ri){return keep[ri];});
+    filteredGrid  = statusGrid.filter(function(_,ri){return keep[ri];});
+  }
+  // Summary stats
+  var occCells=0, availCells=0, maintCells=0, totalCells=0;
+  filteredGrid.forEach(function(row){row.forEach(function(cell){
+    totalCells++; if(cell.s==='Occupied')occCells++; else if(cell.s==='Available')availCells++; else maintCells++;
+  });});
+  const occPct = totalCells ? Math.round(occCells/totalCells*100) : 0;
+  document.getElementById('occ-summary').innerHTML =
+    '<div class="stat-card maroon"><div class="stat-icon">🔴</div><div class="stat-num">'+occCells+'</div><div class="stat-label">Occupied Nights</div></div>'
+   +'<div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-num">'+availCells+'</div><div class="stat-label">Available Nights</div></div>'
+   +'<div class="stat-card gold"><div class="stat-icon">🔧</div><div class="stat-num">'+maintCells+'</div><div class="stat-label">Maintenance Nights</div></div>'
+   +'<div class="stat-card saffron"><div class="stat-icon">📊</div><div class="stat-num">'+occPct+'%</div><div class="stat-label">Occupancy Rate</div></div>';
+  // Month groups for header
+  const months = [];
+  var cm='',cc=0;
+  dates.forEach(function(d){const m=d.slice(0,7);if(m!==cm){if(cm)months.push({label:new Date(cm+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'}),count:cc});cm=m;cc=1;}else cc++;});
+  if(cm)months.push({label:new Date(cm+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'}),count:cc});
+  const mColors=['#7B0D00','#1565C0','#1B5E20'];
+  var mHtml='<tr><th rowspan="2" style="position:sticky;left:0;z-index:3;background:#7B0D00;color:#E8C06A;padding:8px 12px;text-align:left;white-space:nowrap;min-width:80px;border-right:2px solid #C8973A;">Room</th>'
+    +'<th rowspan="2" style="position:sticky;left:80px;z-index:3;background:#7B0D00;color:#E8C06A;padding:8px 8px;text-align:left;white-space:nowrap;border-right:2px solid #C8973A;min-width:70px;">Category</th>';
+  months.forEach(function(m,mi){mHtml+='<th colspan="'+m.count+'" style="background:'+mColors[mi%3]+';color:#fff;padding:6px 4px;text-align:center;font-size:0.75rem;border-left:2px solid rgba(255,255,255,0.3);">'+m.label+'</th>';});
+  mHtml+='</tr>';
+  var dHtml='<tr>';
+  dates.forEach(function(d){
+    const dt=new Date(d+'T00:00:00');
+    const day=dt.getDate();
+    const dow=['Su','Mo','Tu','We','Th','Fr','Sa'][dt.getDay()];
+    const isWe=dt.getDay()===0||dt.getDay()===6;
+    const isMo=day===1;
+    dHtml+='<th style="background:'+(isWe?'#3E2723':'#4E342E')+';color:'+(isWe?'#FFD54F':'#E8C06A')+';padding:3px 2px;text-align:center;font-size:0.62rem;min-width:26px;max-width:26px;'+(isMo?'border-left:2px solid #C8973A;':'')+'"><div>'+day+'</div><div style="font-size:0.55rem;opacity:0.8;">'+dow+'</div></th>';
+  });
+  dHtml+='</tr>';
+  document.getElementById('occCalHead').innerHTML = mHtml+dHtml;
+  // Body
+  var bHtml='', lastCat='';
+  filteredRooms.forEach(function(room,ri){
+    const cat=val(room,'Category')||'';
+    const rid=val(room,'Room ID')||'';
+    const rate=parseFloat(val(room,'Rate')||0);
+    if(cat!==lastCat){
+      const ci=(cat.toLowerCase().includes('3bhk'))?'🏡':(cat.toLowerCase().includes('2bhk'))?'🏠':(cat.toLowerCase().includes('non'))?'🌬️':'❄️';
+      bHtml+='<tr><td colspan="'+(dates.length+2)+'" style="background:linear-gradient(135deg,#5C0A00,#8B1A00);color:#E8C06A;font-weight:700;font-size:0.78rem;padding:6px 12px;position:sticky;left:0;">'+ci+' '+cat+' — ₹'+rate.toLocaleString('en-IN')+'/night</td></tr>';
+      lastCat=cat;
+    }
+    bHtml+='<tr>';
+    bHtml+='<td style="position:sticky;left:0;z-index:2;background:#FDF8F0;font-weight:700;color:var(--maroon);padding:4px 8px;border-right:1px solid #EFE4CC;white-space:nowrap;font-size:0.78rem;border-bottom:1px solid #EFE4CC;">'+rid+'</td>';
+    bHtml+='<td style="position:sticky;left:80px;z-index:2;background:#FDF8F0;font-size:0.65rem;color:var(--text-light);padding:4px 6px;border-right:2px solid #EFE4CC;white-space:nowrap;border-bottom:1px solid #EFE4CC;">'+cat.replace('Guest House','GH').replace(' Room','')+'</td>';
+    filteredGrid[ri].forEach(function(cell,di){
+      const dt=new Date(dates[di]+'T00:00:00');
+      const isMo=dt.getDate()===1;
+      var bg,fc,abbr,title;
+      if(cell.s==='Occupied'){bg='#FFCDD2';fc='#B71C1C';abbr='OCC';title=cell.who+(cell.resId?' ('+cell.resId+')':'');}
+      else if(cell.s==='Maintenance'){bg='#FFF9C4';fc='#F57F17';abbr='MNT';title='Maintenance';}
+      else{bg='#C8E6C9';fc='#1B5E20';abbr='';title='Available';}
+      bHtml+='<td style="background:'+bg+';color:'+fc+';text-align:center;font-size:0.58rem;font-weight:700;padding:0;width:26px;min-width:26px;max-width:26px;height:22px;border:1px solid rgba(0,0,0,0.06);'+(isMo?'border-left:2px solid #C8973A;':'')+'" title="'+rid+' | '+dates[di]+' | '+title+'">'+(abbr?'<span style="font-size:0.52rem;">'+abbr+'</span>':'')+'</td>';
+    });
+    bHtml+='</tr>';
+  });
+  if(!filteredRooms.length)bHtml='<tr><td colspan="'+(dates.length+2)+'" style="text-align:center;padding:30px;color:var(--text-light);">No rooms match the selected filter.</td></tr>';
+  document.getElementById('occCalBody').innerHTML=bHtml;
 }
+
+function exportOccupancyExcel() {
+  const filterVal=document.getElementById('occ-filter')?.value||'all';
+  const catFilter=document.getElementById('occ-cat')?.value||'';
+  const filterLabel=filterVal==='occupied'?'Occupied':filterVal==='available'?'Available':filterVal==='maintenance'?'Maintenance':'All';
+  const dates=[];
+  for(var d=0;d<90;d++){const dt=new Date(TODAY+'T00:00:00');dt.setDate(dt.getDate()+d);dates.push(dt.toISOString().split('T')[0]);}
+  function catOrder(cat){const c=(cat||'').toLowerCase();if(c.includes('3bhk'))return 1;if(c.includes('2bhk'))return 2;if(c.includes('ac')&&!c.includes('non'))return 3;if(c.includes('non'))return 4;return 5;}
+  let rooms=[...allRooms].sort(function(a,b){const co=catOrder(val(a,'Category'))-catOrder(val(b,'Category'));return co||parseInt(String(val(a,'Room ID')).replace(/[^0-9]/g,''))-parseInt(String(val(b,'Room ID')).replace(/[^0-9]/g,''));});
+  if(catFilter){rooms=rooms.filter(function(r){const c=(val(r,'Category')||'').toLowerCase();if(catFilter==='GH3BHK')return c.includes('3bhk');if(catFilter==='GH2BHK')return c.includes('2bhk');if(catFilter==='AC')return c.includes('ac')&&!c.includes('non')&&!c.includes('guest');if(catFilter==='NonAC')return c.includes('non');return true;});}
+  const today=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var lines=[];
+  lines.push('"Shri Parmagam Shravak Trust — Room Status Report"');
+  lines.push('"As on: '+today+' | Filter: '+filterLabel+' | Period: Next 90 days"');
+  lines.push('');
+  var hdr=['"Room No."','"Category"','"Rate/Night"'];
+  dates.forEach(function(d){const dt=new Date(d+'T00:00:00');hdr.push('"'+dt.getDate()+'/'+(dt.getMonth()+1)+'/'+String(dt.getFullYear()).slice(2)+'"');});
+  lines.push(hdr.join(','));
+  var lastCat='';
+  rooms.forEach(function(r){
+    const rid=String(val(r,'Room ID')||'').trim();
+    const cat=val(r,'Category')||'';
+    const rate=val(r,'Rate')||'';
+    if(cat!==lastCat){lines.push('"--- '+cat+' ---"');lastCat=cat;}
+    const row=['"'+rid+'"','"'+cat+'"','"'+rate+'"'];
+    var hasTarget=false;
+    dates.forEach(function(d){
+      var s='Available';
+      if((val(r,'Status')||'').toLowerCase()==='maintenance'){s='Maintenance';}
+      else{for(var i=0;i<allReservations.length;i++){var res=allReservations[i];var rs=(val(res,'Status')||'').toLowerCase();if(rs==='cancelled'||rs==='regret')continue;var ar=String(val(res,'Allocated Rooms')||'').split(',').map(function(x){return x.trim();});if(ar.indexOf(rid)<0)continue;var ci=toISO(val(res,'Check-In'));var co=toISO(val(res,'Check-Out'));if(ci&&co&&d>=ci&&d<co){s='Occupied';break;}}}
+      if(filterVal==='all'||(filterVal==='occupied'&&s==='Occupied')||(filterVal==='available'&&s==='Available')||(filterVal==='maintenance'&&s==='Maintenance'))hasTarget=true;
+      row.push('"'+s+'"');
+    });
+    if(hasTarget)lines.push(row.join(','));
+  });
+  const bom='\uFEFF';
+  const blob=new Blob([bom+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='PST_Room_Status_'+filterLabel+'_'+TODAY+'.csv';a.click();URL.revokeObjectURL(url);
+}
+
 
 function loadTrReport() {
   const date = document.getElementById('tr-date').value;
