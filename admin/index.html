@@ -75,7 +75,7 @@
     <div class="login-subtitle">Authorized Personnel Only · अधिकृत कर्मचारी</div>
 
     <input type="password" class="login-input" id="passwordInput"
-      placeholder="Enter Admin Password"
+      placeholder="Enter Password"
       onkeydown="if(event.key==='Enter') doLogin()">
 
     <div class="login-error" id="loginError">❌ Incorrect password. Please try again.</div>
@@ -84,7 +84,7 @@
       🔓 Login to Dashboard
     </button>
 
-    <div class="login-note">
+    <div class="login-note">Two access levels available: Full Admin &amp; View Only<br>
       For access assistance, contact system administrator.<br>
       This portal is restricted to trust management only.
     </div>
@@ -96,13 +96,18 @@
 </footer>
 
 <script>
-// ⚠️ CHANGE THIS PASSWORD before going live
-const ADMIN_PASSWORD = 'Parmagam@2025';
+const ADMIN_PASSWORD   = 'PSTAdmin@2026';      // Full access
+const VIEWER_PASSWORD  = 'PST@View2025';       // View only — change as needed
 
 function doLogin() {
-  const pwd = document.getElementById('passwordInput').value;
+  const pwd = document.getElementById('passwordInput').value.trim();
   if (pwd === ADMIN_PASSWORD) {
     sessionStorage.setItem('adminAuth', 'true');
+    sessionStorage.setItem('adminRole', 'admin');   // full access
+    window.location.href = 'dashboard.html';
+  } else if (pwd === VIEWER_PASSWORD) {
+    sessionStorage.setItem('adminAuth', 'true');
+    sessionStorage.setItem('adminRole', 'viewer');  // view only
     window.location.href = 'dashboard.html';
   } else {
     document.getElementById('loginError').style.display = 'block';
