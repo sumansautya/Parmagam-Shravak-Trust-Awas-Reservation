@@ -133,6 +133,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
     letter-spacing:0.05em;
   }
   body.view-only .viewer-badge { display:inline-block; }
+  body.view-only button[onclick*="changeRoom"],
   body.view-only .act-allocate,
   body.view-only .act-regret,
   body.view-only .act-cancel,
@@ -988,7 +989,8 @@ function renderReservTable(data) {
       <td><span class="badge s-${(val(r,'Status')||'pending').toLowerCase()}">${val(r,'Status')||'Pending'}</span></td>
       <td style="font-size:0.75rem;">${val(r,'Allocated Rooms')||'—'}</td>
       <td style="white-space:nowrap;">
-        ${val(r,'Status')!=='Confirmed'?`<button class="act-btn act-allocate" onclick="openAllocModal('${val(r,'ID')}')">🏠 Allocate</button> `:''}
+        ${val(r,'Status')==='Pending'?`<button class="act-btn act-allocate" onclick="openAllocModal('${val(r,'ID')}')">🏠 Allocate</button> `:''}
+        ${val(r,'Status')==='Confirmed'?`<button class="act-btn" style="border-color:#1565C0;color:#1565C0;" onclick="changeRoom('${val(r,'ID')}','${val(r,'Allocated Rooms')||''}')" title="Change allocated room">🔄 Change Room</button> `:''}
         <button class="act-btn act-view" onclick="viewReservation('${val(r,'ID')}')">👁 View</button>
         ${(val(r,'Status')==='Pending')?`<button class="act-btn act-regret" onclick="sendRegretMail('${val(r,'ID')}')" title="Send Regret — Before Payment Only">📩 Regret</button>`:''}
         ${val(r,'Status')!=='Cancelled'?`<button class="act-btn act-cancel" onclick="cancelReservation('${val(r,'ID')}')">✕</button>`:''}
@@ -1229,6 +1231,36 @@ function toggleChip(roomId, roomNum, status) {
     chip.classList.add('chip-selected');
     chip.classList.remove('chip-available');
   }
+}
+
+// ── Change Room for Confirmed reservation ──
+function changeRoom(resId, currentRooms) {
+  if (window.IS_VIEWER) { alert('👁 View Only Mode — Please login as Admin.'); return; }
+  const r = allReservations.find(x => val(x,'ID') === resId);
+  if (!r) return;
+  const visName = val(r,'Full Name');
+
+  const msg = '🔄 ROOM CHANGE — ' + visName + '\n\n'
+    + 'Currently Allocated: ' + (currentRooms || 'None') + '\n'
+    + 'Check-In : ' + val(r,'Check-In') + '\n'
+    + 'Check-Out: ' + val(r,'Check-Out') + '\n\n'
+    + '⚠️  IMPORTANT — Before selecting new rooms:\n'
+    + '1. Go to Manage Rooms\n'
+    + '2. Free the current rooms (' + (currentRooms||'') + ') by changing their Status to Available\n'
+    + '3. Then come back and select new rooms\n\n'
+    + 'Click OK to open the Room Selection now.\n'
+    + '(Make sure old rooms are already freed first)';
+
+  if (!confirm(msg)) return;
+
+  // Open allocation modal — same as normal allocation
+  openAllocModal(resId);
+
+  // Update modal title to show this is a room change
+  setTimeout(() => {
+    const titleEl = document.querySelector('#allocModal .modal-title');
+    if (titleEl) titleEl.innerHTML = '🔄 Change Room — ' + visName;
+  }, 100);
 }
 
 // ── Send Regret directly from Allocation Modal ──
