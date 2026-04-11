@@ -58,6 +58,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
 .s-pending   { background:#FFF8E1; color:#F57F17; }
 .s-confirmed { background:#E8F5E9; color:var(--green); }
 .s-cancelled { background:#FFEBEE; color:#C62828; }
+.s-regret    { background:#FFE0B2; color:#E65100; font-weight:700; }
 
 /* FILTERS */
 .filter-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
@@ -185,6 +186,7 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
   <div class="nav-item" onclick="nav('rpt-devotee',this)"><span class="ni">👤</span> Devotee History</div>
   <div class="nav-item" onclick="nav('rpt-feedback',this)"><span class="ni">💬</span> Feedback Reports</div>
   <div class="nav-item" onclick="nav('rpt-payments',this)"><span class="ni">💳</span> Payments</div>
+  <div class="nav-item" onclick="nav('rpt-regret',this)"><span class="ni">📩</span> Regret List</div>
   <div class="nav-item" onclick="nav('rpt-visitors',this)"><span class="ni">📊</span> Visitor Report</div>
   <a href="javascript:void(0)" onclick="openInvoice()" class="nav-item" style="text-decoration:none;display:block;color:inherit;"><span class="ni">🧾</span> Invoice / Billing ↗</a>
   <div class="nav-group-label">System</div>
@@ -494,10 +496,37 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
     <div class="panel">
       <div style="overflow-x:auto;"><table class="data-table"><thead><tr>
         <th>#</th><th>Date</th><th>Ref ID</th><th>Visitor</th><th>Mobile</th>
-        <th>Check-In</th><th>Rooms</th><th>Mode</th><th>Txn Ref</th><th>Amount</th><th>Invoice</th>
-      </tr></thead><tbody id="payTbody"><tr class="loading-row"><td colspan="11">Loading payment records...</td></tr></tbody></table></div>
+        <th>Check-In</th><th>Rooms</th><th>Mode</th><th>Txn Ref</th><th>Amount</th><th>Receipt</th><th>Action</th>
+      </tr></thead><tbody id="payTbody"><tr class="loading-row"><td colspan="12">Loading payment records...</td></tr></tbody></table></div>
     </div>
   </div>
+  <!-- ── REGRET LIST ── -->
+  <div class="page-section" id="page-rpt-regret">
+    <div class="dash-header">
+      <div class="dash-title">📩 Regret List</div>
+      <div class="dash-actions">
+        <input type="text" id="reg-search" class="field-input"
+          placeholder="Search name / ref / mobile..."
+          style="width:200px;padding:7px 12px;font-size:0.83rem;"
+          oninput="filterRegretTable()">
+        <button class="btn-dash btn-primary-dash" onclick="renderRegretList()">🔄 Refresh</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
+      <div class="stat-card"><div class="stat-icon">📩</div><div class="stat-num" id="reg-count">—</div><div class="stat-label">Total Regrets</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num" id="reg-month">—</div><div class="stat-label">This Month</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num" id="reg-pending">—</div><div class="stat-label">Still Pending</div></div>
+    </div>
+    <div class="panel">
+      <div style="overflow-x:auto;"><table class="data-table"><thead><tr>
+        <th>#</th><th>Ref ID</th><th>Visitor</th><th>Mobile</th><th>City / State</th>
+        <th>Check-In</th><th>Check-Out</th><th>Nights</th><th>Rooms Requested</th><th>Status</th>
+      </tr></thead><tbody id="regretTbody">
+        <tr class="loading-row"><td colspan="10">Loading...</td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+
   <!-- ══ VISITOR REPORT ══ -->
   <div class="page-section" id="page-rpt-visitors">
     <div class="section-header">
@@ -619,6 +648,21 @@ body { display:flex; flex-direction:column; min-height:100vh; background:#F5EDD8
   </div>
 </div>
 
+<!-- ══ PAYMENT RECEIPT LIGHTBOX ══ -->
+<div id="receiptModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:20px;max-width:520px;width:90%;max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="document.getElementById('receiptModal').style.display='none'"
+      style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#666;">✕</button>
+    <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--maroon);margin-bottom:14px;padding-right:30px;">📷 Payment Receipt</div>
+    <div id="receiptInfo" style="font-size:0.82rem;color:var(--text-light);margin-bottom:10px;"></div>
+    <img id="receiptImg" src="" alt="Payment Receipt" style="width:100%;border-radius:8px;border:1px solid var(--border-gold);display:block;">
+    <div id="receiptNoImg" style="display:none;text-align:center;padding:30px;color:var(--text-light);">
+      📭 No receipt image uploaded for this payment.<br><br>
+      <span style="font-size:0.75rem;">Visitor may have submitted without uploading screenshot. Please verify via UPI/Bank statement.</span>
+    </div>
+  </div>
+</div>
+
 <!-- ══ VIEW RESERVATION MODAL ══ -->
 <div class="modal-overlay" id="viewModal">
   <div class="modal-box" style="max-width:600px;">
@@ -727,6 +771,65 @@ async function loadFeedback() {
   renderFeedback(filteredFeedback);
 }
 
+// ── View payment receipt screenshot ──
+function viewReceipt(resId) {
+  const p = allPayments.find(x => (x['Reservation ID']||x['Ref ID']) === resId);
+  if (!p) { alert('Payment record not found.'); return; }
+  const modal   = document.getElementById('receiptModal');
+  const img     = document.getElementById('receiptImg');
+  const noImg   = document.getElementById('receiptNoImg');
+  const info    = document.getElementById('receiptInfo');
+  info.innerHTML = `<strong>${p['Visitor Name']||'—'}</strong> | Ref: ${resId} | Rs.${parseFloat(p['Advance Amount']||p['Amount']||0).toLocaleString('en-IN')} | ${p['Payment Mode']||''} | Txn: ${p['Transaction Ref']||'N/A'}`;
+  const ss = p['Screenshot'] || '';
+  if (ss && ss.length > 10) {
+    img.src = ss.startsWith('data:') ? ss : 'data:image/jpeg;base64,' + ss;
+    img.style.display = 'block';
+    noImg.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    noImg.style.display = 'block';
+  }
+  modal.style.display = 'flex';
+}
+
+// ── Admin manually sends payment confirmation after verifying receipt ──
+async function sendPayConfirmation(resId) {
+  if (window.IS_VIEWER) { alert('View Only Mode — Please login as Admin.'); return; }
+  const p = allPayments.find(x => (x['Reservation ID']||x['Ref ID']) === resId);
+  const r = allReservations.find(x => val(x,'ID') === resId);
+  const visName = (p && p['Visitor Name']) || (r && val(r,'Full Name')) || resId;
+  const amt     = p ? (p['Advance Amount']||p['Amount']||'') : '';
+  const mode    = p ? (p['Payment Mode']||'') : '';
+  const txn     = p ? (p['Transaction Ref']||'') : '';
+
+  if (!confirm(
+    'Send Booking Confirmation email to visitor?\n\n' +
+    'Visitor  : ' + visName + '\n' +
+    'Ref ID   : ' + resId   + '\n' +
+    'Amount   : Rs.' + amt  + '\n' +
+    'Txn Ref  : ' + (txn||'N/A') + '\n\n' +
+    'Please confirm you have verified the payment receipt before proceeding.'
+  )) return;
+
+  try {
+    await fetch(SHEETS_CONFIG.APPS_SCRIPT_URL, {
+      method:  'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body:    JSON.stringify({
+        action:         'sendPaymentConfirmation',
+        reservationId:  resId,
+        advanceAmount:  amt,
+        paymentMode:    mode,
+        transactionRef: txn
+      }),
+      mode: 'no-cors'
+    });
+    alert('✅ Booking Confirmation email sent to visitor!\n\nRef: ' + resId);
+  } catch(e) {
+    alert('❌ Error sending email. Please try again.\n' + e.message);
+  }
+}
+
 async function loadPayments() {
   document.getElementById('payTbody').innerHTML = '<tr class="loading-row"><td colspan="11">Loading...</td></tr>';
   try {
@@ -790,6 +893,7 @@ function nav(page, el) {
   if (page==='rpt-visitors')  renderVisitorReport();
   if (page==='rpt-feedback')  { if(!allFeedback.length) loadFeedback(); else renderFeedback(filteredFeedback); }
   if (page==='rpt-payments')  { if(!allPayments.length) loadPayments(); else renderPayments(allPayments); }
+  if (page==='rpt-regret')    renderRegretList();
 }
 
 // Called from overview "Go →" button — navigates to allocation page
@@ -1361,7 +1465,13 @@ async function sendRegretMail(resId) {
   try {
     const result = await sendRegretEmail(resId, reason || '');
     if (result && result.success) {
-      alert('✅ Regret mail sent successfully to ' + visitorEmail);
+      // Update local data — move from Pending to Regret
+      if (r) r['Status'] = 'Regret';
+      // Refresh table views
+      renderReservTable(allReservations);
+      renderAllocTable();
+      renderOverview();
+      alert('✅ Regret mail sent successfully to ' + visitorEmail + '\n\nThe reservation status has been updated to Regret.');
     } else {
       alert('⚠️ Mail sending failed. Please try again or contact visitor directly at ' + visitorEmail);
     }
@@ -1752,6 +1862,48 @@ function exportFeedbackCSV() {
 }
 
 // ══ PAYMENTS ══
+// ══ REGRET LIST ══
+function renderRegretList() {
+  const regrets = allReservations.filter(r => (val(r,'Status')||'').toLowerCase() === 'regret');
+  const pending = allReservations.filter(r => (val(r,'Status')||'').toLowerCase() === 'pending').length;
+  const thisMonth = new Date().toISOString().slice(0,7); // YYYY-MM
+  const monthCount = regrets.filter(r => {
+    const dt = val(r,'Allocation Date') || val(r,'Timestamp') || '';
+    return dt.includes(thisMonth) || dt.includes(new Date().toLocaleDateString('en-IN',{month:'2-digit',year:'numeric'}));
+  }).length;
+
+  setText('reg-count',   regrets.length);
+  setText('reg-month',   monthCount);
+  setText('reg-pending', pending + ' pending');
+
+  const tbody = document.getElementById('regretTbody');
+  if (!regrets.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">✅ No regret records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = regrets.map((r,i) => `<tr>
+    <td style="font-size:0.72rem;color:var(--text-light);">${i+1}</td>
+    <td style="font-weight:700;font-size:0.8rem;color:var(--maroon);">${val(r,'ID')}</td>
+    <td><strong>${val(r,'Full Name')}</strong><br><span style="font-size:0.72rem;color:var(--text-light);">${val(r,'Email')||''}</span></td>
+    <td style="font-size:0.78rem;">${val(r,'Mobile')}</td>
+    <td style="font-size:0.78rem;">${val(r,'City')||'—'}, ${val(r,'State')||''}</td>
+    <td style="font-size:0.78rem;white-space:nowrap;">${fmtDate(val(r,'Check-In'))}</td>
+    <td style="font-size:0.78rem;white-space:nowrap;">${fmtDate(val(r,'Check-Out'))}</td>
+    <td style="text-align:center;">${val(r,'Nights')||'—'}</td>
+    <td style="font-size:0.78rem;">${roomSummary(r)}</td>
+    <td><span class="badge s-regret">📩 Regret</span></td>
+  </tr>`).join('');
+}
+
+function filterRegretTable() {
+  const q = (document.getElementById('reg-search')?.value||'').toLowerCase();
+  if (!q) { renderRegretList(); return; }
+  const rows = document.querySelectorAll('#regretTbody tr');
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
 function renderPayments(data) {
   const total    = data.reduce((s,p)=>s+parseFloat(p['Advance Amount']||p['Amount']||0),0);
   const todayStr = new Date().toLocaleDateString('en-IN');
@@ -1766,19 +1918,31 @@ function renderPayments(data) {
 
   const tbody = document.getElementById('payTbody');
   if (!data.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="11">No payment records found</td></tr>'; return; }
-  tbody.innerHTML = data.map((p,i)=>`<tr>
-    <td style="font-size:0.72rem;color:var(--text-light);">${i+1}</td>
-    <td style="font-size:0.75rem;white-space:nowrap;">${(p['Timestamp']||p['Payment Date']||'—').split(',')[0]}</td>
-    <td style="font-weight:700;font-size:0.8rem;color:var(--maroon);">${p['Reservation ID']||p['Ref ID']||'—'}</td>
-    <td><strong>${p['Visitor Name']||'—'}</strong></td>
-    <td style="font-size:0.78rem;">${p['Mobile']||'—'}</td>
-    <td style="font-size:0.78rem;">${fmtDate(p['Check-In'])}</td>
-    <td style="font-size:0.78rem;">${p['Room Details']||'—'}</td>
-    <td><span class="badge s-confirmed" style="font-size:0.7rem;">${p['Payment Mode']||'—'}</span></td>
-    <td style="font-size:0.75rem;color:var(--text-light);">${p['Transaction Ref']||'—'}</td>
-    <td style="font-weight:700;color:var(--green);font-size:0.9rem;">₹${parseFloat(p['Advance Amount']||p['Amount']||0).toLocaleString('en-IN')}</td>
-    <td><button onclick="openInvoice(this.getAttribute('data-ref'))" data-ref="${p['Reservation ID']||p['Ref ID']||''}" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:var(--saffron);font-weight:700;text-decoration:underline;padding:2px 6px;">🧾 View</button></td>
-  </tr>`).join('');
+  tbody.innerHTML = data.map((p,i)=>{
+    const resId   = p['Reservation ID']||p['Ref ID']||'';
+    const amt     = parseFloat(p['Advance Amount']||p['Amount']||0);
+    const hasSS   = p['Screenshot'] && p['Screenshot'].length > 10;
+    const ssBtn   = hasSS
+      ? `<button onclick="viewReceipt('${resId}')" class="act-btn act-view" style="font-size:0.7rem;">📷 View</button>`
+      : `<span style="font-size:0.72rem;color:var(--text-light);">No image</span>`;
+    const confBtn = `<button onclick="sendPayConfirmation('${resId}')"
+      class="act-btn act-allocate" style="font-size:0.7rem;white-space:nowrap;">
+      ✅ Send Confirmation</button>`;
+    return \`<tr>
+    <td style="font-size:0.72rem;color:var(--text-light);">\${i+1}</td>
+    <td style="font-size:0.75rem;white-space:nowrap;">\${(p['Timestamp']||p['Payment Date']||'—').split(',')[0]}</td>
+    <td style="font-weight:700;font-size:0.8rem;color:var(--maroon);">\${resId||'—'}</td>
+    <td><strong>\${p['Visitor Name']||'—'}</strong></td>
+    <td style="font-size:0.78rem;">\${p['Mobile']||'—'}</td>
+    <td style="font-size:0.78rem;">\${fmtDate(p['Check-In'])}</td>
+    <td style="font-size:0.78rem;">\${p['Room Details']||'—'}</td>
+    <td><span class="badge s-confirmed" style="font-size:0.7rem;">\${p['Payment Mode']||'—'}</span></td>
+    <td style="font-size:0.75rem;color:var(--text-light);">\${p['Transaction Ref']||'—'}</td>
+    <td style="font-weight:700;color:var(--green);font-size:0.9rem;">₹\${amt.toLocaleString('en-IN')}</td>
+    <td>\${ssBtn}</td>
+    <td>\${confBtn}</td>
+  </tr>\`;
+  }).join('');
 }
 
 async function loadReservations() {
